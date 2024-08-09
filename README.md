@@ -1,6 +1,6 @@
 # Tech Ops Hub
 
-
+Django Version: 5.1
 
 ## Getting started
 
