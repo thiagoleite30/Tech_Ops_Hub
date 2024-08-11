@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 
-
+"""
 class GPOS(models.Model):
 
     id_gpos_mtvd_bd = models.IntegerField(null=False, blank=False)
@@ -69,3 +69,4 @@ class Request(models.Model):
 
     def __unicode__(self):
         return
+"""

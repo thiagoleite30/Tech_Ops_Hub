@@ -1,8 +1,7 @@
 from django.urls import path
-from apps.move_gpos.views import index, request
+from apps.move_gpos.views import  request
 
 # Lista de endpoints:
 urlpatterns = [
-    path('', index),
     path('request/', request, name='request')
 ]

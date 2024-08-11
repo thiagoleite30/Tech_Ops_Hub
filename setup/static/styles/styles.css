@@ -29,3 +29,18 @@ footer {
   justify-content: center;
 }
 
+@keyframes blink {
+  0%, 50%, 100% {
+      opacity: 1;
+  }
+  25%, 75% {
+      opacity: 0;
+  }
+}
+
+.icon-alert {
+  font-size: 28px;
+  color: red;
+  margin-bottom: 8px; /* Espaçamento entre o ícone e o link */
+  animation: blink 1s infinite;
+}

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'apps.move_gpos.apps.MoveGposConfig',
+    'apps.tech_assets.apps.TechAssetsConfig',
 ]
 
 MIDDLEWARE = [
