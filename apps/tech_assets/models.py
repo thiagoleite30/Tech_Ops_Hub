@@ -91,7 +91,7 @@ class Asset(models.Model):
     ]
 
     nome = models.CharField(max_length=100, null=False)
-    patrimonio = models.CharField(max_length=100, null=True, blank=True)
+    patrimonio = models.CharField(max_length=100, null=True, blank=True, unique=True)
     site = models.CharField(max_length=100, null=False,
                             choices=SITE_CHOICES, default='rio_quente')
     tipo = models.ForeignKey(AssetType, on_delete=models.SET_NULL, null=True)
@@ -111,7 +111,7 @@ class Asset(models.Model):
         verbose_name_plural = 'Ativos'
 
     def __str__(self):
-        return self
+        return self.nome
 
 
 class Loan(models.Model):
@@ -206,7 +206,9 @@ class Maintenance(models.Model):
 
     class Meta:
         verbose_name = 'Manutenção'
-
+        
+    def __str__(self):
+        return self.id
 
 class Software(models.Model):
     nome = models.CharField(max_length=100)
@@ -230,7 +232,9 @@ class NetworkDevice(models.Model):
     class Meta:
         verbose_name = 'Dispositivo de Rede'
         verbose_name_plural = 'Dispositivos de Rede'
-
+        
+    def __str__(self):
+        return self.id
 
 class Approval(models.Model):
     STATUS_APPROVAL = [
@@ -245,3 +249,6 @@ class Approval(models.Model):
         max_length=20, choices=STATUS_APPROVAL, default='pendente')
     emprestimo_id = models.ForeignKey(
         Loan, on_delete=models.CASCADE, related_name='approver')
+        
+    def __str__(self):
+        return f'Apovação criada para analise do aprovador {self.aprovador.username}'

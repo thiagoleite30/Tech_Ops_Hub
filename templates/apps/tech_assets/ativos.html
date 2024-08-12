@@ -4,8 +4,12 @@
         <div class="starter-template" style="justify-content: center; align-items: center;">
             <h1 style="text-align: center;" name="assets">Ativos Cadastrados</h1>
         </div>
-        <div class="mb-3">
-            <input type="text" id="filterInput" class="form-control" placeholder="Filtrar ativos...">
+        <div style="margin-bottom: 10px; display: flex; justify-content: flex-end;">
+            <form method="GET" action="{% url 'ativos' %}" class="form-inline my-2 my-lg-0">
+                <input class="form-control" type="text" name="q" id="filterInput" value="{{ query }}"
+                    placeholder="Pesquisar...">
+                <button class="btn btn-primary my-2 my-sm-0" type="submit">Search</button>
+            </form>
         </div>
         <div class="table-container">
             <table id="assetsTable" class="table table-bordered">
@@ -20,7 +24,7 @@
                     <th scope="col">Carrinho</th>
                 </thead>
                 <tbody>
-                    {% for asset in items %}
+                    {% for asset in page_obj %}
                     <tr data-item-id="{{ asset.id }}">
                         <th scope="row">{{ asset.id }}</th>
                         <td>{{ asset.nome }}</td>
@@ -29,7 +33,12 @@
                         <td>{{ asset.numero_serie }}</td>
                         <td>{{ asset.status }}</td>
                         <td><a href="#">Abrir</a></td>
+                        {% if asset.id in assets_in_cart %}
+                        <td><a style="pointer-events: none; color: gray;"
+                                href="{% url 'remove_do_carrinho' asset.id %}">No Carrinho</a></td>
+                        {% else %}
                         <td><a href="{% url 'add_carrinho' asset.id %}">Adicionar</a></td>
+                        {% endif %}
                     </tr>
                     {% empty %}
                     <tr>
@@ -39,6 +48,25 @@
                 </tbody>
             </table>
         </div>
+        <!-- Controles de Paginação -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; primeira</a>
+                <a href="?page={{ page_obj.previous_page_number }}">anterior</a>
+                {% endif %}
+
+                <span class="current">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">próxima</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">última &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+
     </div>
 </main>
 
@@ -54,33 +82,6 @@
         </div>
     </footer>
     -->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const filterInput = document.getElementById('filterInput');
-        const table = document.getElementById('assetsTable');
-        const rows = table.getElementsByTagName('tr');
-
-        filterInput.addEventListener('keyup', function () {
-            const filterValue = filterInput.value.toLowerCase();
-
-            for (let i = 1; i < rows.length; i++) {
-                let row = rows[i];
-                let showRow = false;
-                let cells = row.getElementsByTagName('td');
-
-                for (let j = 0; j < cells.length; j++) {
-                    let cell = cells[j];
-                    if (cell.innerHTML.toLowerCase().indexOf(filterValue) > -1) {
-                        showRow = true;
-                        break;
-                    }
-                }
-
-                row.style.display = showRow ? '' : 'none';
-            }
-        });
-    });
-</script>
 
 
 {% endblock %}

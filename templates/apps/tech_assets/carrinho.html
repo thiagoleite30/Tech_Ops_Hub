@@ -2,7 +2,7 @@
 <main role="main" class="container-fluid">
     <div class="container-fluid" style="padding-top: 20px;">
         <div class="starter-template" style="justify-content: center; align-items: center;">
-            <h1 style="text-align: center;" name="assets">Ativos Cadastrados</h1>
+            <h1 style="text-align: center;" name="assets">Carrinho de Seleções</h1>
         </div>
         <div class="mb-3">
             <input type="text" id="filterInput" class="form-control" placeholder="Filtrar ativos...">
@@ -22,18 +22,18 @@
                 <tbody>
                     {% for asset in cart_items %}
                     <tr data-item-id="{{ asset.ativo.id }}">
-                        <th scope="row">{{ asset.ativo.id }}</th>
+                        <th scope="row">{{ asset.ativo_id }}</th>
                         <td>{{ asset.ativo.nome }}</td>
                         <td>{{ asset.ativo.patrimonio }}</td>
                         <td>{{ asset.ativo.tipo }}</td>
                         <td>{{ asset.ativo.numero_serie }}</td>
                         <td>{{ asset.ativo.status }}</td>
                         <td><a href="#">Abrir</a></td>
-                        <td><a href="{% url 'remove_do_carrinho' asset.id %}">Remover</a></td>
+                        <td><a href="{% url 'remove_do_carrinho' asset.ativo.id %}">Remover</a></td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9">No assets found.</td>
+                        <td colspan="9">O carrinho esta vazio.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

@@ -6,6 +6,7 @@ import base64
 
 def register_logentry(instance, action, **kwargs):
     usuario=kwargs.get('user', None)
+    print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: {usuario}')
     content_type = ContentType.objects.get_for_model(instance)
     object_id=instance.pk
     if action == ADDITION:
@@ -17,6 +18,10 @@ def register_logentry(instance, action, **kwargs):
         details = f"O objeto {content_type.model} ID '{instance.pk}' foi deletado pelo usuário {usuario}"
 
     print(details)
+    print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: content_type {content_type}')
+    print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: object_id {object_id}')
+    print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: object_repr {str(instance)}')
+    print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: action_flag {action}')
     # Salvar no log 
     LogEntry.objects.create(
         user=usuario,

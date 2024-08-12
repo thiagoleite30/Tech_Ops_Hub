@@ -24,7 +24,6 @@ def verifica_aprovacoes_pendentes(request):
 
 def get_profile_foto(request):
     if request.user.is_authenticated:
-        print(f'DEBUG :: GET PROFILE PHOTO :: {get_user_photo_microsoft(request.user)}')
         foto = get_user_photo_microsoft(request.user)
     else:
         foto = None

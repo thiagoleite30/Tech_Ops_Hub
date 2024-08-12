@@ -187,11 +187,12 @@ SOCIALACCOUNT_STORE_TOKENS = True # Para que o model guarde o social token
 
 LOGIN_URL = str(os.getenv('URL_REDIRECT_POSLOGOUT'))
 
-LOGIN_REDIRECT_URL = '/ativos'  # ou a URL para onde deseja redirecionar após o login
+LOGIN_REDIRECT_URL = '/'  # ou a URL para onde deseja redirecionar após o login
 
 SOCIALACCOUNT_LOGIN_ON_GET = True # Altera o comportamento de, após login social do provedor, ir para uma tela padrão do Allauth. Vai direto pro URL definido acima
 
 ACCOUNT_LOGOUT_ON_GET = True # Altera o comportamento de, após clicar no logout, ou digitar a URL de logout, ele não manda para uma página que pergunta se quero mesmo sair
 
-LOGOUT_REDIRECT_URL = f'https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={str(os.getenv('URL_REDIRECT_POSLOGOUT'))}'  # ou a URL para onde deseja redirecionar após o logout - aqui tá indo pra index
+LOGOUT_REDIRECT_URL = f'https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={LOGIN_URL}'  # ou a URL para onde deseja redirecionar após o logout - aqui tá indo pra index
 
+#LOGOUT_REDIRECT_URL = '/login'

@@ -92,3 +92,20 @@ footer {
   object-fit: cover; /* Garante que a imagem cubra a área especificada */
   object-position: center; /* Centraliza a imagem dentro do círculo */
 }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.step-links a {
+  margin: 0 5px;
+  text-decoration: none;
+  color: #007bff;
+}
+
+.step-links .current {
+  margin: 0 5px;
+  font-weight: bold;
+}
