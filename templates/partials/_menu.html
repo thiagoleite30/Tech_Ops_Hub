@@ -13,15 +13,20 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <a class="navbar-brand" href="#">
-                <img src="{% static 'assets/perfil.png' %}" style="width: 60px;" />
-                <p style="margin-bottom: 0; font-size: 8pt; color: white;">Texto Grande</p>
+                {% if request.user.is_authenticated %}
+                <img class="profile-image" src="data:image/jpeg;base64,{{ profile_photo }}" style="width: 60px;" />
+                <p style="margin-bottom: 0; font-size: 8pt; color: white;">{{ request.user.first_name }}</p>
+                {% else %}
+                <img class="profile-image" src="{% static 'assets/perfil.png' %}" style="width: 60px;" />
+                <p style="margin-bottom: 0; font-size: 8pt; color: white;">user_name</p>
+                {% endif %}
             </a>
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'index' %}">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Link</a>
+                    <a class="nav-link" href="{% url 'ativos' %}">Ativos</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
@@ -30,6 +35,7 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{% url 'cadastro_fabricante' %}">Novo Fabricante</a>
+                        <a class="dropdown-item" href="{% url 'cadastro_modelo' %}">Novo Modelo</a>
                         <a class="dropdown-item" href="{% url 'cadastro_centro_custo' %}">Novo Centro de Custo</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="{% url 'cadastro_tipo_ativo' %}">Novo Tipo de Ativo</a>
@@ -53,10 +59,26 @@
 
             <div style="padding: 0.3rem; container-type: inline;">
                 <form class="form-inline my-2 my-lg-0">
-
+                    {% if cart_item_count > 0 %}
+                    <a class="nav-link" href="{% url 'carrinho' %}"
+                        style="margin-bottom: 0; display: flex; align-items: baseline;">
+                        <div class="cart-icon-container">
+                            <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 30px;"></i>
+                            <span class="cart-count">{{cart_item_count}}</span>
+                        </div>
+                    </a>
+                    {% else %}
+                    <a class="nav-link disabled" href="#"
+                        style="margin-bottom: 0; display: flex; align-items: baseline;">
+                        <div class="cart-icon-container">
+                            <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 30px;"></i>
+                            <span class="cart-count">0</span>
+                        </div>
+                    </a>
+                    {% endif %}
                     <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
                     <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
-                    <button class="btn btn-outline-secondary my-2 my-sm-0 ml-3" type="button">Sair</button>
+                    <button class="btn btn-outline-secondary my-2 my-sm-0 ml-3" type="submit"><a href="{{ URL_LOGOUT }}accounts/logout">Sair</a></button>
                 </form>
             </div>
         </div>

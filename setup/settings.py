@@ -31,6 +31,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Definindo o caminho/registro da aplicação
+# Por ser desenvolvimento então
+
+SITE_ID = 1
 
 # Application definition
 
@@ -41,8 +45,21 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.microsoft',
+    'django.contrib.sites',
     'apps.move_gpos.apps.MoveGposConfig',
     'apps.tech_assets.apps.TechAssetsConfig',
+]
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'setup.urls'
@@ -68,6 +86,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.tech_assets.context_processors.cart_item_count',
+                'apps.tech_assets.context_processors.verifica_aprovacoes_pendentes',
+                'apps.tech_assets.context_processors.get_profile_foto',
+                'apps.tech_assets.context_processors.get_url_logout',
             ],
         },
     },
@@ -140,3 +162,36 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Allauth e configurações especificas do provedor microsoft
+
+SOCIALACCOUNT_PROVIDERS = {
+    "microsoft": {
+        "APPS": [
+            {
+                "client_id": str(os.getenv('CLIENT_ID')),
+                "secret": str(os.getenv('CLIENT_SECRET')),
+                "settings": {
+                    "tenant": str(os.getenv('TENANT_ID')),
+                    # Optional: override URLs (use base URLs without path)
+                    #"login_url": "https://login.microsoftonline.com",
+                    #"graph_url": "https://graph.microsoft.com",
+                }
+            }
+        ],
+        #'REDIRECT_URI': 'http://localhost:8000/accounts/microsoft/login/callback/',
+    }
+}
+
+SOCIALACCOUNT_STORE_TOKENS = True # Para que o model guarde o social token
+
+LOGIN_URL = str(os.getenv('URL_REDIRECT_POSLOGOUT'))
+
+LOGIN_REDIRECT_URL = '/ativos'  # ou a URL para onde deseja redirecionar após o login
+
+SOCIALACCOUNT_LOGIN_ON_GET = True # Altera o comportamento de, após login social do provedor, ir para uma tela padrão do Allauth. Vai direto pro URL definido acima
+
+ACCOUNT_LOGOUT_ON_GET = True # Altera o comportamento de, após clicar no logout, ou digitar a URL de logout, ele não manda para uma página que pergunta se quero mesmo sair
+
+LOGOUT_REDIRECT_URL = f'https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={str(os.getenv('URL_REDIRECT_POSLOGOUT'))}'  # ou a URL para onde deseja redirecionar após o logout - aqui tá indo pra index
+

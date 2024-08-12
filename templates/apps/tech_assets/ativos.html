@@ -1,0 +1,86 @@
+{% extends 'shared/base.html' %} {% load static %} {% block content %}
+<main role="main" class="container-fluid">
+    <div class="container-fluid" style="padding-top: 20px;">
+        <div class="starter-template" style="justify-content: center; align-items: center;">
+            <h1 style="text-align: center;" name="assets">Ativos Cadastrados</h1>
+        </div>
+        <div class="mb-3">
+            <input type="text" id="filterInput" class="form-control" placeholder="Filtrar ativos...">
+        </div>
+        <div class="table-container">
+            <table id="assetsTable" class="table table-bordered">
+                <thead class="thead-dark">
+                    <th scope="col">ID</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Patrimônio</th>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Número de Série</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Visualizar</th>
+                    <th scope="col">Carrinho</th>
+                </thead>
+                <tbody>
+                    {% for asset in items %}
+                    <tr data-item-id="{{ asset.id }}">
+                        <th scope="row">{{ asset.id }}</th>
+                        <td>{{ asset.nome }}</td>
+                        <td>{{ asset.patrimonio }}</td>
+                        <td>{{ asset.tipo }}</td>
+                        <td>{{ asset.numero_serie }}</td>
+                        <td>{{ asset.status }}</td>
+                        <td><a href="#">Abrir</a></td>
+                        <td><a href="{% url 'add_carrinho' asset.id %}">Adicionar</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9">No assets found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!--
+    <footer>
+        <div class="container">
+            <span class="navbar-text">
+                &copy; 2024 Aviva. Todos os direitos reservados.
+            </span>
+            <div class="ml-auto">
+                <img src="{% static '/assets/marcaDaguaAviva.png' %}" class="rodape__image" alt="Icon" />
+            </div>
+        </div>
+    </footer>
+    -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterInput = document.getElementById('filterInput');
+        const table = document.getElementById('assetsTable');
+        const rows = table.getElementsByTagName('tr');
+
+        filterInput.addEventListener('keyup', function () {
+            const filterValue = filterInput.value.toLowerCase();
+
+            for (let i = 1; i < rows.length; i++) {
+                let row = rows[i];
+                let showRow = false;
+                let cells = row.getElementsByTagName('td');
+
+                for (let j = 0; j < cells.length; j++) {
+                    let cell = cells[j];
+                    if (cell.innerHTML.toLowerCase().indexOf(filterValue) > -1) {
+                        showRow = true;
+                        break;
+                    }
+                }
+
+                row.style.display = showRow ? '' : 'none';
+            }
+        });
+    });
+</script>
+
+
+{% endblock %}

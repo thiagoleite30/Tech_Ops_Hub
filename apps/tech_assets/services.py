@@ -1,6 +1,8 @@
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
-
+import requests
+from allauth.socialaccount.models import SocialAccount, SocialToken
+import base64
 
 def register_logentry(instance, action, **kwargs):
     usuario=kwargs.get('user', None)
@@ -24,3 +26,28 @@ def register_logentry(instance, action, **kwargs):
         action_flag=action,
         change_message=details
     )
+    
+    
+def get_user_photo_microsoft(user):
+    try:
+        social_account = SocialAccount.objects.get(user=user, provider='microsoft')
+        
+        #print(f"DEBUG :: SERVICES :: USER = {social_account}")
+        
+        social_token = SocialToken.objects.get(account_id=social_account.id).token
+        
+        #print(f"DEBUG :: SERVICES :: TOKEN = {social_token}")
+        
+        headers = {
+            'Authorization': 'Bearer ' + social_token
+        }
+        graph_api_url = 'https://graph.microsoft.com/v1.0/me/photo/$value'
+        response = requests.get(graph_api_url, headers=headers)
+        if response.status_code == 200:
+            image_base64 = base64.b64encode(response.content).decode('utf-8')
+            return image_base64  # Retornar a foto
+        else:
+            return None
+    except SocialAccount.DoesNotExist as erro: # Caso o usuário logado não seja um login social, ou seja, um usuário criado em admin ou superusuario
+        #print(f"ERROR :: SERVICES :: SOCIAL ACCOUNT ERROR = {erro}")
+        return None

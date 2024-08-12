@@ -44,3 +44,51 @@ footer {
   margin-bottom: 8px; /* Espaçamento entre o ícone e o link */
   animation: blink 1s infinite;
 }
+
+
+@media (max-width: 768px) {
+  .table .less-important-column {
+    display: none;
+  }
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 800px; /* Ajuste este valor conforme necessário */
+}
+
+@media (max-width: 992px) {
+  .table {
+      width: auto;
+  }
+}
+
+.cart-icon-container {
+  position: relative;
+  display: inline-block;
+}
+
+.cart-count {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.profile-image {
+  width: 60px; /* Defina o tamanho desejado */
+  height: 60; /* Defina o tamanho desejado */
+  border-radius: 50%; /* Transforma a imagem em um círculo */
+  object-fit: cover; /* Garante que a imagem cubra a área especificada */
+  object-position: center; /* Centraliza a imagem dentro do círculo */
+}

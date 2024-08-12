@@ -1,5 +1,5 @@
 from django import forms
-from apps.tech_assets.models import Asset, AssetAllocation, Manufacturer, CostCenter, \
+from apps.tech_assets.models import Asset, AssetModel, Loan, LoanAsset, Manufacturer, CostCenter, \
     AssetType, Location, Maintenance
 from datetime import datetime
 
@@ -68,6 +68,31 @@ class AssetTypeForms(forms.ModelForm):
         }
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex.: Computador'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ex.: Insira qualquer descrição do tipo de ativo aqui.'}),
+        }
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        if commit:
+            instance.save()
+
+        return instance
+
+class AssetModelForms(forms.ModelForm):
+    form_name = 'Novo Modelo de Ativo'
+
+    class Meta:
+        model = AssetModel
+        exclude = []
+        labels = {
+            'nome': 'Nome',
+            'fabricante': 'Fabricante',
+            'descricao': 'Descrição',
+        }
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex.: Computador'}),
+            'fabricante': forms.Select(attrs={'class': 'form-control'}),
             'descricao': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ex.: Insira qualquer descrição do tipo de ativo aqui.'}),
         }
 
@@ -172,7 +197,6 @@ class AssetForms(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-control'}),
         }
 
-
     def save(self, commit=True):
         instance = super().save(commit=False)
 
@@ -181,32 +205,34 @@ class AssetForms(forms.ModelForm):
 
         return instance
 
-class AssetAllocationForms(forms.ModelForm):
+
+class LoanForms(forms.ModelForm):
     form_name = 'Novo Empréstimo'
 
+
     class Meta:
-        model = AssetAllocation
+        model = Loan
         exclude = ['status']
+        fields = ['usuario', 'centro_de_custo', 'data_emprestimo',
+            'data_devolucao_prevista', 'data_devolucao_real',
+            'chamado_top_desk',  'observacoes',]
         labels = {
-            'asset': 'Ativo',
             'usuario': 'Usuário Responsável',
+            'ativos': 'Ativos Emprestados',
             'centro_de_custo': 'Centro de Custo',
             'data_emprestimo': 'Data de Empréstimo',
             'data_devolucao_prevista': 'Data de Devolução Prevista',
             'data_devolucao_real': 'Data de Devolução Real',
             'chamado_top_desk': 'Chamado Relacionado',
-            'localizacao': 'Localização',
             'observacoes': 'Observação',
         }
         widgets = {
-            'asset': forms.Select(attrs={'class': 'form-control'}),
             'usuario': forms.Select(attrs={'class': 'form-control'}),
             'centro_de_custo': forms.Select(attrs={'class': 'form-control'}),
             'data_emprestimo': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'data_devolucao_prevista': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'data_devolucao_real': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'chamado_top_desk': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex.: I2305-XXX'}),
-            'localizacao': forms.Select(attrs={'class': 'form-control'}),
             'observacoes': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Aqui você pode inserir qualquer observação sobre o empréstimo. Como por exemplo: justificativas, registros futuros e etc.'}),
         }
 
@@ -216,5 +242,12 @@ class AssetAllocationForms(forms.ModelForm):
 
         if commit:
             instance.save()
+            
+            self.save_m2m(instance)
 
         return instance
+    
+    def save_m2m(self, instance):
+        assets = self.cleaned_data['assets']
+        for asset in assets:
+            LoanAsset.objects.create(ativo=asset, emprestimo=instance)

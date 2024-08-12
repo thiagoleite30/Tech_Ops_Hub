@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('apps.tech_assets.urls')),
     path('', include('apps.move_gpos.urls')),
+    path('accounts/', include('allauth.urls')),
 ]
