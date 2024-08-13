@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q
 from django.core.paginator import Paginator
 from django.contrib import auth, messages
+from utils.decorators import group_required
 
 # Create your views here.
 
@@ -23,11 +24,13 @@ def login(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def index(request):
     return render(request, 'apps/tech_assets/index.html')
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def cadastro_fabricante(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -51,6 +54,7 @@ def cadastro_fabricante(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def cadastro_modelo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -74,6 +78,7 @@ def cadastro_modelo(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def cadastro_centro_custo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -97,6 +102,7 @@ def cadastro_centro_custo(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def cadastro_tipo_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -120,6 +126,7 @@ def cadastro_tipo_ativo(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def cadastro_local(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -143,6 +150,7 @@ def cadastro_local(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def cadastro_manutencao(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -166,6 +174,7 @@ def cadastro_manutencao(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def cadastro_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -189,6 +198,7 @@ def cadastro_ativo(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def novo_emprestimo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -228,6 +238,7 @@ def novo_emprestimo(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def ativos(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -277,6 +288,7 @@ def ativos(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def carrinho(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -317,6 +329,7 @@ def carrinho(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def add_carrinho(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -347,6 +360,7 @@ def add_carrinho(request, asset_id):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def remove_do_carrinho(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -374,6 +388,7 @@ def remove_do_carrinho(request, asset_id):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def deleta_carrinho(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -397,6 +412,7 @@ def deleta_carrinho(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def aprovacoes(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -434,7 +450,13 @@ def aprovacoes(request):
 
 
 @login_required
+@group_required('Suporte', redirect_url='forbidden_url')
 def aprovacao(request):
     if not request.user.is_authenticated:
         return redirect('login')
     pass
+
+
+@login_required
+def forbidden_url(request):
+    return render(request, 'shared/forbidden_page.html')

@@ -1,5 +1,5 @@
 from django.urls import include, path
-from apps.tech_assets.views import index, login, cadastro_fabricante, \
+from apps.tech_assets.views import forbidden_url, index, login, cadastro_fabricante, \
     cadastro_centro_custo, cadastro_tipo_ativo, cadastro_local, \
     cadastro_manutencao, cadastro_ativo, ativos, novo_emprestimo, \
     carrinho, add_carrinho, remove_do_carrinho, cadastro_modelo, \
@@ -9,6 +9,7 @@ from apps.tech_assets.views import index, login, cadastro_fabricante, \
 urlpatterns = [
     path('', index, name='index'),
     path('login', login, name='login'),
+    path('forbidden_url', forbidden_url, name='forbidden_url'),
     path('cadastro_fabricante/', cadastro_fabricante, name='cadastro_fabricante'),
     path('cadastro_modelo/', cadastro_modelo, name='cadastro_modelo'),
     path('cadastro_centro_custo/', cadastro_centro_custo,
