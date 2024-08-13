@@ -5,11 +5,6 @@
             <h1 style="text-align: center;" name="assets">Ativos Cadastrados</h1>
         </div>
         <div style="margin-bottom: 10px; display: flex; justify-content: flex-end;">
-            <form method="GET" action="{% url 'ativos' %}" class="form-inline my-2 my-lg-0">
-                <input class="form-control" type="text" name="q" id="filterInput" value="{{ query }}"
-                    placeholder="Pesquisar...">
-                <button class="btn btn-primary my-2 my-sm-0" type="submit">Search</button>
-            </form>
         </div>
         <div class="table-container">
             <table id="assetsTable" class="table table-bordered">
@@ -32,12 +27,26 @@
                         <td>{{ asset.tipo }}</td>
                         <td>{{ asset.numero_serie }}</td>
                         <td>{{ asset.status }}</td>
-                        <td><a href="#">Abrir</a></td>
+                        <td><a style="pointer-events: stroke;" href="#">
+                            <div class="cart-icon-container">
+                                <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
+                            </div>
+                        </a></td>
                         {% if asset.id in assets_in_cart %}
                         <td><a style="pointer-events: none; color: gray;"
-                                href="{% url 'remove_do_carrinho' asset.id %}">No Carrinho</a></td>
+                                href="{% url 'remove_do_carrinho' asset.id %}" title="Já no carrinho">
+                                <div class="cart-icon-container">
+                                    <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 25px;"></i>
+                                    <span class="cart-block"><i class="fa fa-ban"></i></span>
+                                </div>
+                            </a></td>
                         {% else %}
-                        <td><a href="{% url 'add_carrinho' asset.id %}">Adicionar</a></td>
+                        <td><a style="pointer-events: stroke; color: green;" href="{% url 'add_carrinho' asset.id %}">
+                                <div class="cart-icon-container">
+                                    <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 25px;"></i>
+                                    <span class="cart-add"><i class="fa fa-arrow-up"></i></span>
+                                </div>
+                            </a></td>
                         {% endif %}
                     </tr>
                     {% empty %}

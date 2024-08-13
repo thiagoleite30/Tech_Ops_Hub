@@ -178,7 +178,7 @@ class LoanAsset(models.Model):
 
 
 class Cart(models.Model):
-    ativos = models.ManyToManyField(Asset, through='AssetCart')
+    #ativos = models.ManyToManyField(Asset, through='AssetCart')
     usuario_sessao = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='session_user_cart')
     data_criacao = models.DateTimeField(auto_now_add=True)

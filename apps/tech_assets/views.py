@@ -37,7 +37,8 @@ def cadastro_fabricante(request):
         form = ManufacturerForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(
+                usuario=request.user), action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -59,7 +60,8 @@ def cadastro_modelo(request):
         form = AssetModelForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(
+                usuario=request.user), action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -81,7 +83,8 @@ def cadastro_centro_custo(request):
         form = CostCenterForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(
+                usuario=request.user), action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -103,7 +106,8 @@ def cadastro_tipo_ativo(request):
         form = AssetTypeForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(
+                usuario=request.user), action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -125,7 +129,8 @@ def cadastro_local(request):
         form = LocationForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(
+                usuario=request.user), action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -147,7 +152,8 @@ def cadastro_manutencao(request):
         form = MaintenanceForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(
+                usuario=request.user), action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -169,7 +175,8 @@ def cadastro_ativo(request):
         form = AssetForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(),
+                              action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -193,7 +200,8 @@ def novo_emprestimo(request):
         form = LoanForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(
+                usuario=request.user), action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -205,37 +213,97 @@ def novo_emprestimo(request):
 
 
 @login_required
+def ativos(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    # Instancia um subquery que trará uma lista de ativos \
+        # que já estão em carrinho
+    subquery = AssetCart.objects.filter(ativo_id=OuterRef('pk')).values('pk')
+
+    # Captura a lista dos objetos já em um carrinho
+    assets_in_cart = [
+        asset.id for asset in Asset.objects.filter(Exists(subquery))]
+
+    # Define um objeto request para capturar informação q ou vazio '' da url
+    query = request.GET.get('q', '')
+
+    # Obtém todos os assets cadastrados
+    assets = Asset.objects.all()
+
+    # Estrutura lógica na view de ativos para modificar os assets de acordo \
+    # com a consulta obtida na query
+    if query:
+        assets = assets.filter(
+            Q(nome__icontains=query) |
+            Q(patrimonio__icontains=query)
+        )
+
+    # Uma instancia paginator definida para o máximo de 15 ativos por pagina \
+        # E já captura dos assets os 15 primeiros da consulta
+    paginator = Paginator(assets, 15)
+
+    # Obtém o número da página atual
+    page_number = request.GET.get('page')
+
+    # Obtém os objetos de acordo com a página presente no URL
+    page_obj = paginator.get_page(page_number)
+
+    print(f'DEBUG :: VIEW :: CARRINHO :: PAGE OBJ :: {page_obj}')
+
+    return render(request, 'apps/tech_assets/ativos.html', {'assets_in_cart': assets_in_cart, 'page_obj': page_obj, 'query': query})
+
+
+@login_required
 def carrinho(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    
-    # Obtenha o carrinho do usuário atual
-    cart, created = Cart.objects.get_or_create(usuario_sessao=request.user)
 
-    # Recupere os itens do carrinho
+    subquery = AssetCart.objects.filter(ativo_id=OuterRef('pk')).values('pk')
+    query = request.GET.get('q', '')
+
+    # Obtenha o carrinho do usuário logado
+    cart = get_object_or_404(Cart, usuario_sessao=request.user)
+
+    # Recupere os itens do carrinho do usuario logado
     cart_items = AssetCart.objects.filter(carrinho=cart)
 
-    # Crie uma lista de ativos
-    assets = [item.ativo for item in cart_items]
+    # Crie uma lista com is ids dos ativos no carrinho
+    ids_assets_in_cart = [item.ativo_id for item in cart_items]
+
+    # Busca na tabela asset todos os ids na lista acima
+    assets = Asset.objects.filter(id__in=ids_assets_in_cart)
+
+    # Query pode ser alterada dependendo de como queremos consultar
+    if query:
+        assets = assets.filter(
+            Q(nome__icontains=query) |
+            Q(patrimonio__icontains=query)
+        )
+
+    paginator = Paginator(assets, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    print(f'DEBUG :: VIEW :: CARRINHO :: PAGE OBJ :: {page_obj}')
 
     # Passe os dados para o template
     context = {
-        'cart_items': cart_items,
-        'assets': assets,
-        'qnt_items': len(assets)
+        'page_obj': page_obj,
+        'query': query
     }
 
     print(f"ASSETS: {len(assets)}")
 
     # Redireciona para a lista de itens
-    return render(request, 'apps/tech_assets/carrinho.html', context)
+    return render(request, 'apps/tech_assets/carrinho_cards.html', context)
 
 
 @login_required
 def add_carrinho(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
-    
+
     # Assume que o usuário está autenticado
     asset = get_object_or_404(Asset, id=asset_id)
     user_instance = get_object_or_404(User, username=request.user)
@@ -265,18 +333,20 @@ def add_carrinho(request, asset_id):
 def remove_do_carrinho(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
-    
-    # Assume que o usuário está autenticado
+
+    # Pega da tabela asset o ativo pelo id
     asset = get_object_or_404(Asset, id=asset_id)
-    print(f'DEBUG :: ASSET NOME :: ID {asset_id} {asset.nome}')
-    user_instance = get_object_or_404(User, username=request.user)
-    print(f'DEBUG :: USER NOME :: ID {user_instance.id} {user_instance.username}')
     
+    # Pega a instancia do usuário logado
+    user_instance = get_object_or_404(User, username=request.user)
+
+    # Se houver asset
     if asset:
         try:
             cart = get_object_or_404(Cart, usuario_sessao=user_instance)
             if cart:
-                asset_cart = get_object_or_404(AssetCart, ativo=asset, carrinho=cart)
+                asset_cart = get_object_or_404(
+                    AssetCart, ativo=asset, carrinho=cart)
                 if asset_cart:
                     asset_cart.delete()
                 return redirect('carrinho')
@@ -286,26 +356,25 @@ def remove_do_carrinho(request, asset_id):
     return redirect('index')
 
 
-
 @login_required
-def ativos(request):
+def deleta_carrinho(request):
     if not request.user.is_authenticated:
         return redirect('login')
+
     
-    subquery = AssetCart.objects.filter(ativo_id=OuterRef('pk')).values('pk')
-    assets_in_cart = [asset.id for asset in Asset.objects.filter(Exists(subquery))]
-    
-    query = request.GET.get('q', '')
-    assets = Asset.objects.all()
-    
-    if query:
-        assets = assets.filter(
-            Q(nome__icontains=query) |
-            Q(patrimonio__icontains=query)
-        )
-        
-    paginator = Paginator(assets, 15)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    return render(request, 'apps/tech_assets/ativos.html', {'assets_in_cart': assets_in_cart, 'page_obj': page_obj, 'query': query})
+    # Pega a instancia do usuário logado
+    user_instance = get_object_or_404(User, username=request.user)
+
+    # Se houver usuario
+    if user_instance:
+        try:
+            cart = get_object_or_404(Cart, usuario_sessao=user_instance)
+            if cart:
+                assets_cart = AssetCart.objects.filter(carrinho=cart)
+                if assets_cart:
+                    assets_cart.delete()
+                return redirect('carrinho')
+        except Exception as e:
+            print(f'ERROR :: DELETA CARRINHO :: {e}')
+
+    return redirect('index')

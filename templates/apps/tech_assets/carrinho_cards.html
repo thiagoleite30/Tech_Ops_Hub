@@ -1,0 +1,76 @@
+{% extends 'shared/base.html' %} {% load static %} {% block content %}
+<main role="main" class="container-fluid">
+    <div class="container-fluid" style="padding-top: 20px;">
+        <div class="starter-template" style="justify-content: center; align-items: center;">
+            <h1 style="text-align: center;" name="assets">Carrinho de Seleções</h1>
+        </div>
+        <div class="row">
+            {% for asset in page_obj %}
+            <div class="col-sm-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ asset.tipo }}</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">{{ asset.nome }}</li>
+                        <li class="list-group-item">{{ asset.patrimonio }}</li>
+                        <li class="list-group-item">{{ asset.numero_serie }}</li>
+                    </ul>
+                    <div class="card-body">
+                        <a style="pointer-events: stroke;" href="#">
+                            <div class="cart-icon-container">
+                                <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
+                            </div>
+                        </a>
+                        <a style="pointer-events: stroke; color: red;" href="{% url 'remove_do_carrinho' asset.id %}">
+                            <div class="cart-icon-container">
+                                <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 25px;"></i>
+                                <span class="cart-remove">X</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <!-- Controles de Paginação -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; primeira</a>
+                <a href="?page={{ page_obj.previous_page_number }}">anterior</a>
+                {% endif %}
+
+                <span class="current">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">próxima</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">última &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+        <div class="end-template container-fluid"
+            style="display: flex; align-items: center; justify-content: center; padding: 20px;">
+            <a href="#" class="btn btn-success btn-lg {% if cart_item_count <= 0 %}disabled{% endif %}" style="margin-right: 10px;">Finalizar Empréstimo</a>
+            <a href="{% url 'deleta_carrinho' %}" class="btn btn-danger btn-lg {% if cart_item_count <= 0 %}disabled{% endif %}">Apagar Carrinho</a>
+        </div>
+    </div>
+</main>
+
+<!--
+    <footer>
+        <div class="container">
+            <span class="navbar-text">
+                &copy; 2024 Aviva. Todos os direitos reservados.
+            </span>
+            <div class="ml-auto">
+                <img src="{% static '/assets/marcaDaguaAviva.png' %}" class="rodape__image" alt="Icon" />
+            </div>
+        </div>
+    </footer>
+    -->
+
+
+{% endblock %}

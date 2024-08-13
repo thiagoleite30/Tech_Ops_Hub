@@ -4,8 +4,12 @@
         <div class="starter-template" style="justify-content: center; align-items: center;">
             <h1 style="text-align: center;" name="assets">Carrinho de Seleções</h1>
         </div>
-        <div class="mb-3">
-            <input type="text" id="filterInput" class="form-control" placeholder="Filtrar ativos...">
+        <div style="margin-bottom: 10px; display: flex; justify-content: flex-end;">
+            <form method="GET" action="{% url 'carrinho' %}" class="form-inline my-2 my-lg-0">
+                <input class="form-control" type="text" name="q" id="filterInput" value="{{ query }}"
+                    placeholder="Pesquisar...">
+                <button class="btn btn-primary my-2 my-sm-0" type="submit">Search</button>
+            </form>
         </div>
         <div class="table-container">
             <table id="assetsTable" class="table table-bordered">
@@ -20,29 +24,66 @@
                     <th scope="col">Carrinho</th>
                 </thead>
                 <tbody>
-                    {% for asset in cart_items %}
-                    <tr data-item-id="{{ asset.ativo.id }}">
-                        <th scope="row">{{ asset.ativo_id }}</th>
-                        <td>{{ asset.ativo.nome }}</td>
-                        <td>{{ asset.ativo.patrimonio }}</td>
-                        <td>{{ asset.ativo.tipo }}</td>
-                        <td>{{ asset.ativo.numero_serie }}</td>
-                        <td>{{ asset.ativo.status }}</td>
-                        <td><a href="#">Abrir</a></td>
-                        <td><a href="{% url 'remove_do_carrinho' asset.ativo.id %}">Remover</a></td>
+                    {% for asset in page_obj %}
+                    <tr data-item-id="{{ asset.id }}">
+                        <th scope="row">{{ asset.id }}</th>
+                        <td>{{ asset.nome }}</td>
+                        <td>{{ asset.patrimonio }}</td>
+                        <td>{{ asset.tipo }}</td>
+                        <td>{{ asset.numero_serie }}</td>
+                        <td>{{ asset.status }}</td>
+                        <td><a style="pointer-events: stroke;" href="#">
+                            <div class="cart-icon-container">
+                                <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
+                            </div>
+                        </a></td>
+                        <td><a style="pointer-events: stroke; color: red;"
+                                href="{% url 'remove_do_carrinho' asset.id %}">
+                                <div class="cart-icon-container">
+                                    <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 25px;"></i>
+                                    <span class="cart-remove">X</span>
+                                </div>
+                            </a></td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9">O carrinho esta vazio.</td>
+                        <td colspan="9">No assets found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        <div class="end-template container-fluid" style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-                <button type="button" class="btn btn-success btn-lg" style="margin-right: 10px;">Finalizar Empréstimo</button>
-                <button type="button" class="btn btn-danger btn-lg">Apagar Carrinho</button>
+        <!-- Controles de Paginação -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; primeira</a>
+                <a href="?page={{ page_obj.previous_page_number }}">anterior</a>
+                {% endif %}
+
+                <span class="current">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">próxima</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">última &raquo;</a>
+                {% endif %}
+            </span>
         </div>
+        {% if cart_items %}
+        <div class="end-template container-fluid"
+            style="display: flex; align-items: center; justify-content: center; padding: 20px;">
+            <a href="#" class="btn btn-success btn-lg" style="margin-right: 10px;">Finalizar Empréstimo</a>
+            <a href="#" class="btn btn-danger btn-lg">Apagar Carrinho</a>
+        </div>
+        {% else %}
+        <div class="end-template container-fluid"
+            style="display: flex; align-items: center; justify-content: center; padding: 20px;">
+            <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Finalizar Empréstimo</a>
+            <a href="#" class="btn btn-danger btn-lg disabled">Apagar Carrinho</a>
+        </div>
+        {% endif %}
     </div>
 </main>
 
@@ -58,33 +99,6 @@
         </div>
     </footer>
     -->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const filterInput = document.getElementById('filterInput');
-        const table = document.getElementById('assetsTable');
-        const rows = table.getElementsByTagName('tr');
-
-        filterInput.addEventListener('keyup', function () {
-            const filterValue = filterInput.value.toLowerCase();
-
-            for (let i = 1; i < rows.length; i++) {
-                let row = rows[i];
-                let showRow = false;
-                let cells = row.getElementsByTagName('td');
-
-                for (let j = 0; j < cells.length; j++) {
-                    let cell = cells[j];
-                    if (cell.innerHTML.toLowerCase().indexOf(filterValue) > -1) {
-                        showRow = true;
-                        break;
-                    }
-                }
-
-                row.style.display = showRow ? '' : 'none';
-            }
-        });
-    });
-</script>
 
 
 {% endblock %}
