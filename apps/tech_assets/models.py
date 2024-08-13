@@ -30,7 +30,7 @@ class CostCenter(models.Model):
         verbose_name_plural = 'Centros de Custo'
 
     def __str__(self) -> str:
-        return f'{self.nome} - {self.numero}'
+        return self.numero
 
 
 '''
@@ -54,10 +54,15 @@ class AssetType(models.Model):
 
 
 class AssetModel(models.Model):
+    tipo = models.ForeignKey(
+        AssetType, on_delete=models.CASCADE, null=True, blank=True)
     nome = models.CharField(max_length=100, null=False, blank=False)
     fabricante = models.ForeignKey(
         Manufacturer, on_delete=models.CASCADE, null=True, blank=True)
     descricao = models.TextField(max_length=400, null=True, blank=True)
+
+    def __str__(self):
+        return self.nome
 
 
 class Location(models.Model):
@@ -83,17 +88,12 @@ class Asset(models.Model):
         ('em_manutencao', 'Em Manutenção'),
         ('em_estoque', 'Em Estoque'),
         ('descartado', 'Descartado'),
+        ('separado', 'Separado'),
     ]
 
-    SITE_CHOICES = [
-        ('rio_quente', 'Rio Quente'),
-        ('costa_do_sauipe', 'Costa do Sauipe'),
-    ]
-
-    nome = models.CharField(max_length=100, null=False)
-    patrimonio = models.CharField(max_length=100, null=True, blank=True, unique=True)
-    site = models.CharField(max_length=100, null=False,
-                            choices=SITE_CHOICES, default='rio_quente')
+    nome = models.CharField(max_length=100, null=True, blank=True, unique=True)
+    patrimonio = models.CharField(
+        max_length=100, null=True, blank=True, unique=True)
     tipo = models.ForeignKey(AssetType, on_delete=models.SET_NULL, null=True)
     numero_serie = models.CharField(max_length=100, unique=True, null=False)
     data_aquisicao = models.DateField(null=True, blank=True)
@@ -104,7 +104,7 @@ class Asset(models.Model):
     localizacao = models.ForeignKey(
         Location, on_delete=models.SET_NULL, max_length=100, blank=True, null=True)
     modelo = models.ForeignKey(
-        Manufacturer, on_delete=models.SET_NULL, null=True, blank=True)
+        AssetModel, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Ativo'
@@ -137,7 +137,7 @@ class Loan(models.Model):
     observacoes = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f'Empréstimo para o usuário {self.usuario.name} ({self.centro_de_custo.nome})'
+        return f'Empréstimo ID: {self.id} para o usuário {self.usuario}'
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Verifica se é uma nova instância
@@ -146,7 +146,7 @@ class Loan(models.Model):
 
         if is_new:
             # Cria uma nova aprovação automaticamente
-            Approval.objects.create(emprestimo=self)
+            Approval.objects.create(emprestimo_id=self)
 
     def esta_atrasado(self):
         if self.status == 'emprestado' and datetime.now() > self.data_devolucao_prevista:
@@ -169,7 +169,7 @@ class Loan(models.Model):
 
 
 class LoanAsset(models.Model):
-    ativo = models.OneToOneField(Asset,  on_delete=models.CASCADE)
+    ativo = models.ForeignKey(Asset,  on_delete=models.CASCADE)
     emprestimo = models.ForeignKey(Loan, on_delete=models.CASCADE)
     return_condition = models.CharField(max_length=100, null=True, blank=True)
 
@@ -178,7 +178,7 @@ class LoanAsset(models.Model):
 
 
 class Cart(models.Model):
-    #ativos = models.ManyToManyField(Asset, through='AssetCart')
+    # ativos = models.ManyToManyField(Asset, through='AssetCart')
     usuario_sessao = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='session_user_cart')
     data_criacao = models.DateTimeField(auto_now_add=True)
@@ -197,18 +197,34 @@ class AssetCart(models.Model):
 
 
 class Maintenance(models.Model):
+
+    MAINTENANCE_TYPES = [
+        ('interna', 'Interna'),
+        ('externa', 'Externa'),
+    ]
+
+    tipo_manutencao = models.CharField(
+        max_length=100, choices=MAINTENANCE_TYPES, default='interna')
     ativo = models.ForeignKey(Asset, on_delete=models.CASCADE)
+    operador = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='operator')
     data_inicio = models.DateField()
+    data_prevista_fim = models.DateField(null=True, blank=True)
     data_fim = models.DateField(null=True, blank=True)
+    chamado_top_desk = models.CharField(
+        max_length=100, null=False, blank=False)
+    chamado_externo = models.CharField(
+        max_length=100, null=True, blank=True)
     descricao = models.TextField()
     custo = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Manutenção'
-        
+
     def __str__(self):
-        return self.id
+        return f'Manutenção: {self.id}'
+
 
 class Software(models.Model):
     nome = models.CharField(max_length=100)
@@ -232,9 +248,10 @@ class NetworkDevice(models.Model):
     class Meta:
         verbose_name = 'Dispositivo de Rede'
         verbose_name_plural = 'Dispositivos de Rede'
-        
+
     def __str__(self):
         return self.id
+
 
 class Approval(models.Model):
     STATUS_APPROVAL = [
@@ -249,6 +266,6 @@ class Approval(models.Model):
         max_length=20, choices=STATUS_APPROVAL, default='pendente')
     emprestimo_id = models.ForeignKey(
         Loan, on_delete=models.CASCADE, related_name='approver')
-        
+
     def __str__(self):
         return f'Apovação criada para analise do aprovador {self.aprovador.username}'

@@ -3,7 +3,7 @@ from apps.tech_assets.views import index, login, cadastro_fabricante, \
     cadastro_centro_custo, cadastro_tipo_ativo, cadastro_local, \
     cadastro_manutencao, cadastro_ativo, ativos, novo_emprestimo, \
     carrinho, add_carrinho, remove_do_carrinho, cadastro_modelo, \
-    deleta_carrinho
+    deleta_carrinho, aprovacoes, aprovacao
 
 # Lista de endpoints:
 urlpatterns = [
@@ -25,4 +25,6 @@ urlpatterns = [
          remove_do_carrinho, name='remove_do_carrinho'),
     path('deleta_carrinho/', deleta_carrinho, name='deleta_carrinho'),
     path('ativos/', ativos, name='ativos'),
+    path('aprovacoes/', aprovacoes, name='aprovacoes'),
+    path('aprovacao/', aprovacao, name='aprovacao'),
 ]

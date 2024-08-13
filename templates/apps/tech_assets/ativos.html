@@ -26,15 +26,15 @@
                         <td>{{ asset.patrimonio }}</td>
                         <td>{{ asset.tipo }}</td>
                         <td>{{ asset.numero_serie }}</td>
-                        <td>{{ asset.status }}</td>
+                        <td>{{ asset.get_status_display }}</td>
                         <td><a style="pointer-events: stroke;" href="#">
-                            <div class="cart-icon-container">
-                                <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
-                            </div>
-                        </a></td>
-                        {% if asset.id in assets_in_cart %}
-                        <td><a style="pointer-events: none; color: gray;"
-                                href="{% url 'remove_do_carrinho' asset.id %}" title="Já no carrinho">
+                                <div class="cart-icon-container">
+                                    <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
+                                </div>
+                            </a></td>
+                        {% if asset.id in assets_in_cart or asset.id in assets_unavailable %}
+                        <td><a style="pointer-events: none; color: gray;" href="{% url 'remove_do_carrinho' asset.id %}"
+                                title="Já no carrinho">
                                 <div class="cart-icon-container">
                                     <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 25px;"></i>
                                     <span class="cart-block"><i class="fa fa-ban"></i></span>

@@ -86,11 +86,14 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'apps.tech_assets.context_processors.cart_item_count',
-                'apps.tech_assets.context_processors.verifica_aprovacoes_pendentes',
-                'apps.tech_assets.context_processors.get_profile_foto',
-                'apps.tech_assets.context_processors.get_url_logout',
+                'apps.tech_assets.context_processors_add.cart_item_count',
+                'apps.tech_assets.context_processors_add.verifica_aprovacoes_pendentes',
+                'apps.tech_assets.context_processors_add.get_profile_foto',
+                'apps.tech_assets.context_processors_add.get_url_logout',
             ],
+
+
+
         },
     },
 ]
@@ -174,25 +177,29 @@ SOCIALACCOUNT_PROVIDERS = {
                 "settings": {
                     "tenant": str(os.getenv('TENANT_ID')),
                     # Optional: override URLs (use base URLs without path)
-                    #"login_url": "https://login.microsoftonline.com",
-                    #"graph_url": "https://graph.microsoft.com",
+                    # "login_url": "https://login.microsoftonline.com",
+                    # "graph_url": "https://graph.microsoft.com",
                 }
             }
         ],
-        #'REDIRECT_URI': 'http://localhost:8000/accounts/microsoft/login/callback/',
+        # 'REDIRECT_URI': 'http://localhost:8000/accounts/microsoft/login/callback/',
     }
 }
 
-SOCIALACCOUNT_STORE_TOKENS = True # Para que o model guarde o social token
+SOCIALACCOUNT_STORE_TOKENS = True  # Para que o model guarde o social token
 
 LOGIN_URL = str(os.getenv('URL_REDIRECT_POSLOGOUT'))
 
 LOGIN_REDIRECT_URL = '/'  # ou a URL para onde deseja redirecionar após o login
 
-SOCIALACCOUNT_LOGIN_ON_GET = True # Altera o comportamento de, após login social do provedor, ir para uma tela padrão do Allauth. Vai direto pro URL definido acima
+# Altera o comportamento de, após login social do provedor, ir para uma tela padrão do Allauth. Vai direto pro URL definido acima
+SOCIALACCOUNT_LOGIN_ON_GET = True
 
-ACCOUNT_LOGOUT_ON_GET = True # Altera o comportamento de, após clicar no logout, ou digitar a URL de logout, ele não manda para uma página que pergunta se quero mesmo sair
+# Altera o comportamento de, após clicar no logout, ou digitar a URL de logout, ele não manda para uma página que pergunta se quero mesmo sair
+ACCOUNT_LOGOUT_ON_GET = True
 
-LOGOUT_REDIRECT_URL = f'https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={LOGIN_URL}'  # ou a URL para onde deseja redirecionar após o logout - aqui tá indo pra index
+# ou a URL para onde deseja redirecionar após o logout - aqui tá indo pra index
+LOGOUT_REDIRECT_URL = f'https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={
+    LOGIN_URL}'
 
-#LOGOUT_REDIRECT_URL = '/login'
+# LOGOUT_REDIRECT_URL = '/login'

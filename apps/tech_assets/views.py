@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from apps.tech_assets.context_processors import get_profile_foto
-from apps.tech_assets.models import Approval, Asset, AssetCart, Cart
+from apps.tech_assets.context_processors_add import get_profile_foto
+from apps.tech_assets.models import Approval, Asset, AssetCart, Cart, LoanAsset
 from apps.tech_assets.services import register_logentry
 from django.contrib.admin.models import CHANGE, DELETION, ADDITION
 from django.shortcuts import get_object_or_404, render, redirect
@@ -13,6 +13,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q
 from django.core.paginator import Paginator
+from django.contrib import auth, messages
 
 # Create your views here.
 
@@ -37,8 +38,8 @@ def cadastro_fabricante(request):
         form = ManufacturerForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(
-                usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(),
+                              action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -60,8 +61,8 @@ def cadastro_modelo(request):
         form = AssetModelForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(
-                usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(),
+                              action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -83,8 +84,8 @@ def cadastro_centro_custo(request):
         form = CostCenterForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(
-                usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(),
+                              action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -106,8 +107,8 @@ def cadastro_tipo_ativo(request):
         form = AssetTypeForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(
-                usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(),
+                              action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -129,8 +130,8 @@ def cadastro_local(request):
         form = LocationForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(
-                usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(),
+                              action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -152,8 +153,8 @@ def cadastro_manutencao(request):
         form = MaintenanceForms(request.POST, request.FILES)
 
         if form.is_valid():
-            register_logentry(instance=form.save(
-                usuario=request.user), action=ADDITION, user=request.user)
+            register_logentry(instance=form.save(),
+                              action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
@@ -192,17 +193,31 @@ def novo_emprestimo(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    form = LoanForms
+    # Obtenha o carrinho do usuário logado
+    cart = get_object_or_404(Cart, usuario_sessao=request.user)
 
-    print(f'DEBUG :: VIEW :: CADASTRO ATIVO :: {form.form_name}')
+    # Recupere os itens do carrinho do usuario logado
+    cart_items = AssetCart.objects.filter(carrinho=cart)
+
+    # Crie uma lista com is ids dos ativos no carrinho
+    ids_assets_in_cart = [item.ativo_id for item in cart_items]
+
+    # Busca na tabela asset todos os ids na lista acima
+    assets = Asset.objects.filter(id__in=ids_assets_in_cart)
+
+    form = LoanForms(ativos=assets)
 
     if request.method == 'POST':
-        form = LoanForms(request.POST, request.FILES)
+        form = LoanForms(request.POST, request.FILES, ativos=assets)
+        print(f'DEBUG :: VIEW :: PASSOU PRO IF :: {form.form_name}')
 
         if form.is_valid():
-            register_logentry(instance=form.save(
-                usuario=request.user), action=ADDITION, user=request.user)
-            # messages.success(request, 'Nova imagem cadastrada na galeria')
+            emprestimo = form.save()
+            # print(f'DEBUG :: VIEW :: Novo Emprestimo :: Emprestimo {emprestimo}')
+            register_logentry(instance=emprestimo,
+                              action=ADDITION, user=request.user)
+            
+            deleta_carrinho(request)
 
             if 'save' in request.POST:
                 return redirect('index')
@@ -217,8 +232,11 @@ def ativos(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
+    # Filtra os assets que não estão como Em Estoque (disponíveis)
+    assets_unavailable = [
+        asset.id for asset in Asset.objects.exclude(status__in=['em_estoque'])]
     # Instancia um subquery que trará uma lista de ativos \
-        # que já estão em carrinho
+    # que já estão em carrinho
     subquery = AssetCart.objects.filter(ativo_id=OuterRef('pk')).values('pk')
 
     # Captura a lista dos objetos já em um carrinho
@@ -249,9 +267,13 @@ def ativos(request):
     # Obtém os objetos de acordo com a página presente no URL
     page_obj = paginator.get_page(page_number)
 
-    print(f'DEBUG :: VIEW :: CARRINHO :: PAGE OBJ :: {page_obj}')
-
-    return render(request, 'apps/tech_assets/ativos.html', {'assets_in_cart': assets_in_cart, 'page_obj': page_obj, 'query': query})
+    context = {
+        'assets_in_cart': assets_in_cart,
+        'page_obj': page_obj,
+        'query': query,
+        'assets_unavailable': assets_unavailable,
+    }
+    return render(request, 'apps/tech_assets/ativos.html', context)
 
 
 @login_required
@@ -259,7 +281,6 @@ def carrinho(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    subquery = AssetCart.objects.filter(ativo_id=OuterRef('pk')).values('pk')
     query = request.GET.get('q', '')
 
     # Obtenha o carrinho do usuário logado
@@ -285,15 +306,11 @@ def carrinho(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    print(f'DEBUG :: VIEW :: CARRINHO :: PAGE OBJ :: {page_obj}')
-
     # Passe os dados para o template
     context = {
         'page_obj': page_obj,
-        'query': query
+        'query': query,
     }
-
-    print(f"ASSETS: {len(assets)}")
 
     # Redireciona para a lista de itens
     return render(request, 'apps/tech_assets/carrinho_cards.html', context)
@@ -336,7 +353,7 @@ def remove_do_carrinho(request, asset_id):
 
     # Pega da tabela asset o ativo pelo id
     asset = get_object_or_404(Asset, id=asset_id)
-    
+
     # Pega a instancia do usuário logado
     user_instance = get_object_or_404(User, username=request.user)
 
@@ -361,7 +378,6 @@ def deleta_carrinho(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    
     # Pega a instancia do usuário logado
     user_instance = get_object_or_404(User, username=request.user)
 
@@ -378,3 +394,47 @@ def deleta_carrinho(request):
             print(f'ERROR :: DELETA CARRINHO :: {e}')
 
     return redirect('index')
+
+
+@login_required
+def aprovacoes(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    user_instance = get_object_or_404(User, username=request.user)
+
+    # Se houver usuario
+    if user_instance:
+        try:
+            query = request.GET.get('q', '')
+            aprovacoes = Approval.objects.all()
+            # Query pode ser alterada dependendo de como queremos consultar
+            if query:
+                aprovacoes = aprovacoes.filter(
+                    #Q(aprovador__icontains=query) |
+                    Q(status_aprovacao__icontains=query)
+                )
+
+            paginator = Paginator(aprovacoes, 15)
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+            
+            context = {
+                'aprovacoes': aprovacoes,
+                'url_form': resolve(request.path_info).url_name,
+                'page_obj': page_obj,
+                'query': query,
+            }
+
+            return render(request, 'apps/tech_assets/aprovacoes.html', context)
+        except Exception as e:
+            print(f'ERROR :: DELETA CARRINHO :: {e}')
+
+    return redirect('index')
+
+
+@login_required
+def aprovacao(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    pass

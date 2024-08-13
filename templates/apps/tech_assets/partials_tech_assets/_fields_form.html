@@ -8,6 +8,9 @@
         {{ field }}
     </div>
 </div>
+{% for error in field.errors %}
+<div class="alert alert-danger" role="alert">{{error}}</div>
+{% endfor %}
 {% endfor %}
 <div class="form-group-new">
     <div class="col-sm-20">
