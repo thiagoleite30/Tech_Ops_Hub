@@ -27,7 +27,7 @@
                         <td>{{ asset.tipo }}</td>
                         <td>{{ asset.numero_serie }}</td>
                         <td>{{ asset.get_status_display }}</td>
-                        <td><a style="pointer-events: stroke;" href="#">
+                        <td><a style="pointer-events: stroke;" href="{% url 'ativo' asset.id %}">
                                 <div class="cart-icon-container">
                                     <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
                                 </div>

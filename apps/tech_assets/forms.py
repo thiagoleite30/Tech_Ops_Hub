@@ -153,14 +153,14 @@ class LocationForms(forms.ModelForm):
 
 class MaintenanceForms(forms.ModelForm):
     form_name = 'Registro de Manutenção'
-    
+
     operador = forms.ModelMultipleChoiceField(
         queryset=User.objects.all(),
         widget=forms.Select(
             attrs={'class': 'form-control'}),
         required=False
     )
-    
+
     if 'tipo' == 'interna':
         print(f'Manutenção interna!!!')
 
@@ -180,7 +180,7 @@ class MaintenanceForms(forms.ModelForm):
 
         }
         widgets = {
-            'tipo_manutencao':forms.Select(attrs={'class': 'form-control'}),
+            'tipo_manutencao': forms.Select(attrs={'class': 'form-control'}),
             'ativo': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Ex.: Shop Bum'}),
             'data_inicio': forms.DateTimeInput(attrs={'type': 'date', 'class': 'form-control'}),
             'data_prevista_fim': forms.DateTimeInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -190,6 +190,15 @@ class MaintenanceForms(forms.ModelForm):
             'descricao': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ex.: Insira qualquer informação sobre manutenção.'}),
             'custo': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ex.: R$ 100.50'}),
         }
+
+    def __init__(self, *args, **kwargs):
+            # Receber a lista de ativos a ser preenchida
+        ativo = kwargs.pop('ativo', None)
+        super().__init__(*args, **kwargs)
+        if ativo is not None:
+            self.fields['ativo'].queryset = Asset.objects.filter(pk=ativo)
+            self.fields['ativo'].initial = ativo
+            self.fields['ativo'].widget.attrs['readonly'] = True
 
     def save(self, commit=True):
         instance = super(MaintenanceForms, self).save(commit=False)
@@ -202,7 +211,7 @@ class MaintenanceForms(forms.ModelForm):
                 ativo.save()
             except Exception as e:
                 raise forms.ValidationError()
-            
+
         else:
             raise forms.ValidationError()
 
@@ -306,12 +315,14 @@ class LoanForms(forms.ModelForm):
             for asset in ativos:
                 print(f'DEBUG :: SAVE :: ASSET :: {asset.nome}')
                 if LoanAsset.objects.filter(ativo=asset, emprestimo__status__in=['pendente_aprovação', 'emprestado', 'atrasado']).exists():
-                    raise forms.ValidationError(f'O ativo {asset} já está emprestado.')
+                    raise forms.ValidationError(
+                        f'O ativo {asset} já está emprestado.')
                 else:
                     print(f'DEBUG RETORNOU OK PRO FORMULARIO')
                     return ativos
         else:
-            raise forms.ValidationError(f'Nenhum ativo selecionado. Verifique o carrinho!')
+            raise forms.ValidationError(
+                f'Nenhum ativo selecionado. Verifique o carrinho!')
 
     def save(self, commit=True):
         instance = super().save(commit=False)

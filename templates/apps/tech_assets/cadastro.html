@@ -7,10 +7,17 @@
 
         <div class="container"
             style="border: 2px; border-style: solid; border-color: rgb(56, 54, 54); padding: 20px; border-radius: 10px;">
+            {% if asset_id %}
+            <form action="{%    url url_form asset_id %}" method="POST" enctype="multipart/form-data">
+
+                {% include 'apps/tech_assets/partials_tech_assets/_fields_form.html' %}
+            </form>
+            {% else %}
             <form action="{%    url url_form %}" method="POST" enctype="multipart/form-data">
 
                 {% include 'apps/tech_assets/partials_tech_assets/_fields_form.html' %}
             </form>
+            {% endif %}
         </div>
     </div>
 </main>

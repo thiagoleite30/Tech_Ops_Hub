@@ -1,7 +1,6 @@
 from django.shortcuts import render
-from apps.tech_assets.context_processors_add import get_profile_foto
 from apps.tech_assets.models import Approval, Asset, AssetCart, Cart, LoanAsset
-from apps.tech_assets.services import register_logentry
+from apps.tech_assets.services import register_logentry, get_loan_asset
 from django.contrib.admin.models import CHANGE, DELETION, ADDITION
 from django.shortcuts import get_object_or_404, render, redirect
 from apps.tech_assets.forms import AssetModelForms, LoanForms, AssetForms, MaintenanceForms, \
@@ -127,6 +126,7 @@ def cadastro_tipo_ativo(request):
 
 @login_required
 @group_required('Suporte', redirect_url='forbidden_url')
+@group_required('Admin', redirect_url='forbidden_url')
 def cadastro_local(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -151,14 +151,14 @@ def cadastro_local(request):
 
 @login_required
 @group_required('Suporte', redirect_url='forbidden_url')
-def cadastro_manutencao(request):
+def cadastro_manutencao(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    form = MaintenanceForms
+    form = MaintenanceForms(ativo=asset_id)
 
     if request.method == 'POST':
-        form = MaintenanceForms(request.POST, request.FILES)
+        form = MaintenanceForms(request.POST, request.FILES, ativo=asset_id)
 
         if form.is_valid():
             register_logentry(instance=form.save(),
@@ -170,7 +170,7 @@ def cadastro_manutencao(request):
             elif 'save_and_add' in request.POST:
                 return redirect('cadastro_manutencao')
 
-    return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
+    return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name, 'asset_id': asset_id})
 
 
 @login_required
@@ -226,7 +226,7 @@ def novo_emprestimo(request):
             # print(f'DEBUG :: VIEW :: Novo Emprestimo :: Emprestimo {emprestimo}')
             register_logentry(instance=emprestimo,
                               action=ADDITION, user=request.user)
-            
+
             deleta_carrinho(request)
 
             if 'save' in request.POST:
@@ -285,6 +285,34 @@ def ativos(request):
         'assets_unavailable': assets_unavailable,
     }
     return render(request, 'apps/tech_assets/ativos.html', context)
+
+
+@login_required
+@group_required('Suporte', redirect_url='forbidden_url')
+def ativo(request, asset_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    asset = get_object_or_404(Asset, pk=asset_id)
+
+    get_loan = get_loan_asset(asset_id)
+
+    if get_loan['status']:
+        for loan in get_loan['queryset']:
+            queryset = loan
+        context = {
+            'asset': asset,
+            'is_loan': True,
+            'loan': queryset
+        }
+    else:
+        context = {
+            'asset': asset,
+            'is_loan': False,
+            'loan': None
+        }
+        
+    return render(request, 'apps/tech_assets/ativo.html', context)
 
 
 @login_required
@@ -413,6 +441,7 @@ def deleta_carrinho(request):
 
 @login_required
 @group_required('Suporte', redirect_url='forbidden_url')
+@group_required('Administradores', redirect_url='forbidden_url')
 def aprovacoes(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -427,14 +456,14 @@ def aprovacoes(request):
             # Query pode ser alterada dependendo de como queremos consultar
             if query:
                 aprovacoes = aprovacoes.filter(
-                    #Q(aprovador__icontains=query) |
+                    # Q(aprovador__icontains=query) |
                     Q(status_aprovacao__icontains=query)
                 )
 
             paginator = Paginator(aprovacoes, 15)
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
-            
+
             context = {
                 'aprovacoes': aprovacoes,
                 'url_form': resolve(request.path_info).url_name,

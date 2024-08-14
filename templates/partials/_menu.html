@@ -33,21 +33,22 @@
                         Novo(a)
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="{% url 'cadastro_fabricante' %}">Novo Fabricante</a>
-                        <a class="dropdown-item" href="{% url 'cadastro_modelo' %}">Novo Modelo</a>
-                        <a class="dropdown-item" href="{% url 'cadastro_centro_custo' %}">Novo Centro de Custo</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{% url 'cadastro_tipo_ativo' %}">Novo Tipo de Ativo</a>
-                        <a class="dropdown-item" href="{% url 'cadastro_local' %}">Novo Local</a>
-                        <a class="dropdown-item" href="{% url 'cadastro_manutencao' %}">Novo Registro de Manutenção</a>
                         <a class="dropdown-item" href="{% url 'cadastro_ativo' %}">Novo Ativo</a>
                         <a class="dropdown-item" href="{% url 'novo_emprestimo' %}">Novo Emprestimo</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'cadastro_tipo_ativo' %}">Novo Tipo de Ativo</a>
+                        <a class="dropdown-item" href="{% url 'cadastro_modelo' %}">Novo Modelo</a>
+                        <a class="dropdown-item" href="{% url 'cadastro_centro_custo' %}">Novo Centro de Custo</a>
+                        <a class="dropdown-item" href="{% url 'cadastro_local' %}">Novo Local</a>
+                        <a class="dropdown-item" href="{% url 'cadastro_fabricante' %}">Novo Fabricante</a>
+                        
                     </div>
                 </li>
             </ul>
             {% include 'partials/_alerts.html' %}
             <div style="padding: 0.3rem; container-type: inline;">
                 <form class="form-inline my-2 my-lg-0">
+                    {% if is_admin_user or is_aprovadores_user %}
                     {% if aprovacoes_pendentes %}
                     <!-- Ícone de alerta -->
                     <a class="nav-link" href="{% url 'aprovacoes' %}" style="margin-bottom: 0; display: flex; align-items: baseline;">
@@ -57,6 +58,7 @@
                     </a>
                     {% else %}
                     <a class="nav-link disabled" href="#">Aprovações Pendentes</a>
+                    {% endif %}
                     {% endif %}
                     {% if cart_item_count > 0 %}
                     <a class="nav-link" href="{% url 'carrinho' %}"

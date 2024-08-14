@@ -4,7 +4,7 @@ import requests
 from allauth.socialaccount.models import SocialAccount, SocialToken
 import base64
 
-from apps.tech_assets.models import Approval
+from apps.tech_assets.models import Approval, Loan
 
 
 def register_logentry(instance, action, **kwargs):
@@ -23,13 +23,13 @@ def register_logentry(instance, action, **kwargs):
         details = f"O objeto {content_type.model} ID '{
             instance.pk}' foi deletado pelo usuário {usuario}"
 
-    #print(details)
-    #print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: content_type {
+    # print(details)
+    # print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: content_type {
     #      content_type}')
-    #print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: object_id {object_id}')
-    #print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: object_repr {
+    # print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: object_id {object_id}')
+    # print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: object_repr {
     #      str(instance)}')
-    #print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: action_flag {action}')
+    # print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: action_flag {action}')
     # Salvar no log
     LogEntry.objects.create(
         user=usuario,
@@ -76,3 +76,15 @@ def get_user_photo_microsoft(user):
     except SocialAccount.DoesNotExist as erro:
         # print(f"ERROR :: SERVICES :: SOCIAL ACCOUNT ERROR = {erro}")
         return None
+
+# Retorna status de não disponível igual False e o queryset, que pode ser vazio
+def get_loan_asset(asset_id):
+    active_statuses = [
+        'pendente_aprovação',
+        'emprestado',
+        'atrasado'
+    ]
+    return {'status': Loan.objects.filter(status__in=active_statuses, ativos__id=asset_id).exists(), \
+        'queryset': Loan.objects.filter(status__in=active_statuses,
+                            ativos__id=asset_id)}
+

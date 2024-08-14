@@ -16,6 +16,7 @@
                         <li class="list-group-item">Status: {{ aprovall.get_status_aprovacao_display }}</li>
                     </ul>
                     <div class="card-body">
+                        {% if is_aprovadores_user %}
                         <div class="end-template container-fluid"
                             style="display: flex; align-items: center; justify-content: center; padding: 20px;">
                             <a href="{% url 'novo_emprestimo' %}"
@@ -24,6 +25,8 @@
                             <a href="{% url 'deleta_carrinho' %}"
                                 class="btn btn-danger btn-lg {% if cart_item_count <= 0 %}disabled{% endif %}">Reprovar</a>
                         </div>
+                        {% else %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
