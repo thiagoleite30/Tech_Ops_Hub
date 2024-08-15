@@ -3,7 +3,7 @@ from apps.tech_assets.views import forbidden_url, index, login, cadastro_fabrica
     cadastro_centro_custo, cadastro_tipo_ativo, cadastro_local, \
     cadastro_manutencao, cadastro_ativo, ativos, novo_emprestimo, \
     carrinho, add_carrinho, remove_do_carrinho, cadastro_modelo, \
-    deleta_carrinho, aprovacoes, aprovacao, ativo
+    deleta_carrinho, aprovacoes, aprovacao, ativo, concluir_manutencao
 
 # Lista de endpoints:
 urlpatterns = [
@@ -17,6 +17,7 @@ urlpatterns = [
     path('cadastro_tipo_ativo/', cadastro_tipo_ativo, name='cadastro_tipo_ativo'),
     path('cadastro_local/', cadastro_local, name='cadastro_local'),
     path('cadastro_manutencao/<int:asset_id>/', cadastro_manutencao, name='cadastro_manutencao'),
+    path('concluir_manutencao/<int:asset_id>/', concluir_manutencao, name='concluir_manutencao'),
     path('cadastro_ativo/', cadastro_ativo, name='cadastro_ativo'),
     path('ativos/', ativos, name='ativos'),
     path('ativo/<int:asset_id>/', ativo, name='ativo'),

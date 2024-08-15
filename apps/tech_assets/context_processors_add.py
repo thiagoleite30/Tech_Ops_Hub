@@ -35,7 +35,7 @@ def get_profile_foto(request):
 # Controles permissivos
 
 
-def is_admin_user(request):
+def is_administradores_user(request):
     is_admin = False
     if request.user.is_authenticated:
         is_admin = request.user.groups.filter(name='Administradores').exists()
@@ -45,5 +45,5 @@ def is_admin_user(request):
 def is_aprovadores_user(request):
     is_aprovadores_user = False
     if request.user.is_authenticated:
-        is_aprov = request.user.groups.filter(name='Aprovadores').exists()
-    return {'is_aprovadores_user': is_aprov}
+        is_aprovadores_user = request.user.groups.filter(name='Aprovadores').exists()
+    return {'is_aprovadores_user': is_aprovadores_user}

@@ -16,8 +16,9 @@ def register_logentry(instance, action, **kwargs):
         details = f"O objeto {content_type.model} ID '{
             instance.pk}' foi criada pelo usuário {usuario}"
     elif action == CHANGE:
+        modificacao = kwargs.get('modificacao', None)
         details = f"O objeto {content_type.model} ID '{
-            instance.pk}' foi modificado pelo usuário {usuario}"
+            instance.pk}' foi modificado pelo usuário {usuario}. {modificacao}"
     else:
         object_id = kwargs.get('foto_id', None)
         details = f"O objeto {content_type.model} ID '{
@@ -77,7 +78,8 @@ def get_user_photo_microsoft(user):
         # print(f"ERROR :: SERVICES :: SOCIAL ACCOUNT ERROR = {erro}")
         return None
 
-# Retorna status de não disponível igual False e o queryset, que pode ser vazio
+# Retorna status de não disponível igual False, ou seja,
+# sem empréstimo, e o queryset, em caso de não exisir empréstimo ativo será vazio
 def get_loan_asset(asset_id):
     active_statuses = [
         'pendente_aprovação',

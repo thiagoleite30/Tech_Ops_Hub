@@ -5,12 +5,13 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 from django.db import models
+from django.forms import ValidationError
 
 
 class Manufacturer(models.Model):
     nome = models.CharField(max_length=100, null=False, unique=True)
-    telefone = models.CharField(max_length=100)
-    email = models.EmailField(max_length=100)
+    telefone = models.CharField(max_length=100, null=True, blank=True)
+    email = models.EmailField(max_length=100, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Fabricante'
@@ -42,8 +43,9 @@ class User(models.Model):
 
 
 class AssetType(models.Model):
-    nome = models.CharField(max_length=100, null=False)
-    descricao = models.TextField(max_length=400, null=True)
+
+    nome = models.CharField(max_length=100, null=False, unique=True)
+    descricao = models.TextField(max_length=400, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Tipo de Ativo'
@@ -218,8 +220,26 @@ class Maintenance(models.Model):
     descricao = models.TextField()
     custo = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True)
+    status = models.BooleanField(default=True, null=False, blank=False)
+
+    def conclusao_atrasada(self):
+        if self.status and datetime.now() > self.data_prevista_fim:
+            return True
+        return False
+
+    def marcar_como_finalizada(self):
+        self.status = False
+        self.data_fim = datetime.now()
+        self.save()
+
+    def dias_de_atraso(self):
+        if self.status and self.conclusao_atrasada():
+            if self.data_prevista_fim:
+                return (datetime.now() - self.data_prevista_fim).days
+        return 0
 
     class Meta:
+        ordering = ['-data_inicio']
         verbose_name = 'Manutenção'
 
     def __str__(self):

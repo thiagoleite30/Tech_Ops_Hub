@@ -48,7 +48,7 @@
             {% include 'partials/_alerts.html' %}
             <div style="padding: 0.3rem; container-type: inline;">
                 <form class="form-inline my-2 my-lg-0">
-                    {% if is_admin_user or is_aprovadores_user %}
+                    {% if is_administradores_user or is_aprovadores_user %}
                     {% if aprovacoes_pendentes %}
                     <!-- Ícone de alerta -->
                     <a class="nav-link" href="{% url 'aprovacoes' %}" style="margin-bottom: 0; display: flex; align-items: baseline;">

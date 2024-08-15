@@ -1,0 +1,59 @@
+{% extends 'shared/base.html' %} {% load static %} {% block content %}
+<main role="main" class="container-fluid">
+    <div class="container-fluid" style="padding-top: 20px;">
+        <div class="starter-template" style="justify-content: center; align-items: center;">
+            <h1 style="text-align: center;" name="assets">Informações de Ativos</h1>
+        </div>
+        <div style="margin-bottom: 10px; display: flex; justify-content: flex-end;">
+        </div>
+        <div class="card text-center">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Informações</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Histórico de empréstimos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Histórico de Manutenção</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{asset.tipo}}</h5>
+
+                <div class="card" style="margin-top: 10px; margin-bottom: 10px;">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Nome: {{asset.nome}}</li>
+                        <li class="list-group-item">Patrimônio: {{asset.patrimonio}}</li>
+                        <li class="list-group-item">Número de série: {{ asset.numero_serie }}</li>
+                        <li class="list-group-item">Status: {{ asset.get_status_display }}</li>
+                    </ul>
+                </div>
+                <a href="#" class="btn btn-primary">Editar Ativo</a>
+                {% if asset.get_status_display == 'Em Manutenção' %}
+                <a href="{% url 'concluir_manutencao' asset.id %}" class="btn btn-primary">Concluir Manutenção</a>
+                {% else %}
+                <a href="{% url 'cadastro_manutencao' asset.id %}" class="btn btn-primary">Iniciar Manutenção</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+
+<!--
+    <footer>
+        <div class="container">
+            <span class="navbar-text">
+                &copy; 2024 Aviva. Todos os direitos reservados.
+            </span>
+            <div class="ml-auto">
+                <img src="{% static '/assets/marcaDaguaAviva.png' %}" class="rodape__image" alt="Icon" />
+            </div>
+        </div>
+    </footer>
+    -->
+
+
+{% endblock %}

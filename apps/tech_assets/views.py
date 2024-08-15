@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from apps.tech_assets.models import Approval, Asset, AssetCart, Cart, LoanAsset
+from apps.tech_assets.models import Approval, Asset, AssetCart, Cart, LoanAsset, Maintenance
 from apps.tech_assets.services import register_logentry, get_loan_asset
 from django.contrib.admin.models import CHANGE, DELETION, ADDITION
 from django.shortcuts import get_object_or_404, render, redirect
@@ -23,13 +23,13 @@ def login(request):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def index(request):
     return render(request, 'apps/tech_assets/index.html')
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def cadastro_fabricante(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -53,7 +53,7 @@ def cadastro_fabricante(request):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def cadastro_modelo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -77,7 +77,7 @@ def cadastro_modelo(request):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def cadastro_centro_custo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -101,7 +101,7 @@ def cadastro_centro_custo(request):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def cadastro_tipo_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -125,8 +125,8 @@ def cadastro_tipo_ativo(request):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
-@group_required('Admin', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
+# @group_required('Admin', redirect_url='forbidden_url')
 def cadastro_local(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -150,17 +150,24 @@ def cadastro_local(request):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def cadastro_manutencao(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
 
     form = MaintenanceForms(ativo=asset_id)
 
+    asset = get_object_or_404(Asset, id=asset_id)
+    if asset:
+        if Maintenance.objects.filter(ativo_id=asset_id, status=True).exists():
+            print(f'Já existe uma manutenção em aberto para este ativo')
+            return redirect('ativo', asset_id=asset_id)
+
     if request.method == 'POST':
         form = MaintenanceForms(request.POST, request.FILES, ativo=asset_id)
 
         if form.is_valid():
+
             register_logentry(instance=form.save(),
                               action=ADDITION, user=request.user)
             # messages.success(request, 'Nova imagem cadastrada na galeria')
@@ -174,7 +181,38 @@ def cadastro_manutencao(request, asset_id):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
+def concluir_manutencao(request, asset_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    asset = get_object_or_404(Asset, id=asset_id)
+    if asset:
+
+        loan_exist = get_loan_asset(asset_id)
+        if loan_exist['status']:
+            asset.status = 'em_uso'
+            asset.save()
+            modificacao = f'Alterou status para "Em Uso"'
+        else:
+            asset.status = 'em_estoque'
+            asset.save()
+            modificacao = f'Alterou status para "Em Estoque"'
+            register_logentry(instance=asset,action=CHANGE, modificacao=modificacao, user=request.user)
+        
+        maintenance = get_object_or_404(Maintenance, ativo_id=1, status=True) 
+        if maintenance:
+            print(f'DEBUG :: VIEW :: CONCLUIR MANUTENCAO :: MANUTENÇAO EXIST :: {maintenance.id}')
+            maintenance.status = False
+            maintenance.save()
+            modificacao = f'Alterou status para "False" (Não ativa)'
+            register_logentry(instance=maintenance,action=CHANGE, modificacao=modificacao, user=request.user)
+        return redirect('ativo', asset_id=asset_id)
+    return redirect('ativos')
+
+
+@login_required
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def cadastro_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -198,7 +236,7 @@ def cadastro_ativo(request):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def novo_emprestimo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -226,7 +264,8 @@ def novo_emprestimo(request):
             # print(f'DEBUG :: VIEW :: Novo Emprestimo :: Emprestimo {emprestimo}')
             register_logentry(instance=emprestimo,
                               action=ADDITION, user=request.user)
-
+            assets.update(status='em_uso')
+            
             deleta_carrinho(request)
 
             if 'save' in request.POST:
@@ -238,7 +277,7 @@ def novo_emprestimo(request):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def ativos(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -288,7 +327,7 @@ def ativos(request):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def ativo(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -311,12 +350,12 @@ def ativo(request, asset_id):
             'is_loan': False,
             'loan': None
         }
-        
+
     return render(request, 'apps/tech_assets/ativo.html', context)
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def carrinho(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -357,7 +396,7 @@ def carrinho(request):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def add_carrinho(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -388,7 +427,7 @@ def add_carrinho(request, asset_id):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def remove_do_carrinho(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -416,7 +455,7 @@ def remove_do_carrinho(request, asset_id):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='forbidden_url')
 def deleta_carrinho(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -440,8 +479,7 @@ def deleta_carrinho(request):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
-@group_required('Administradores', redirect_url='forbidden_url')
+@group_required(['Aprovadores', 'Administradores'], redirect_url='forbidden_url')
 def aprovacoes(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -479,7 +517,7 @@ def aprovacoes(request):
 
 
 @login_required
-@group_required('Suporte', redirect_url='forbidden_url')
+@group_required(['Administradores','Aprovadores'], redirect_url='forbidden_url')
 def aprovacao(request):
     if not request.user.is_authenticated:
         return redirect('login')

@@ -68,15 +68,26 @@ class CostCenterForms(forms.ModelForm):
 class AssetTypeForms(forms.ModelForm):
     form_name = 'Novo Tipo de Ativo'
 
+    nome = forms.CharField(
+        label="Nome",
+        required=True,
+        max_length=100,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'placeholder': 'Ex.: Notebook'
+            }
+        )
+    )
+    
     class Meta:
         model = AssetType
         exclude = []
+        fields = ['nome', 'descricao',]
         labels = {
-            'nome': 'Nome',
             'descricao': 'Descrição',
         }
         widgets = {
-            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex.: Computador'}),
             'descricao': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ex.: Insira qualquer descrição do tipo de ativo aqui.'}),
         }
 
@@ -89,6 +100,17 @@ class AssetTypeForms(forms.ModelForm):
             raise forms.ValidationError()
 
         return instance
+    
+    def clean_nome(self):
+        if 'nome' not in self.cleaned_data:
+            raise forms.ValidationError(f'Campo "{nome}" não encontrado nos dados limpos.')
+        nome = self.cleaned_data['nome']
+        if nome:
+            nome_exist = [t.nome for t in AssetType.objects.filter(nome__iexact=nome)]
+            if nome_exist:
+                raise forms.ValidationError(f'O nome "{nome}" já está em uso com "{nome_exist[0]}".')
+        
+        return nome
 
 
 class AssetModelForms(forms.ModelForm):
@@ -154,11 +176,11 @@ class LocationForms(forms.ModelForm):
 class MaintenanceForms(forms.ModelForm):
     form_name = 'Registro de Manutenção'
 
-    operador = forms.ModelMultipleChoiceField(
+    operador = forms.ModelChoiceField(
         queryset=User.objects.all(),
         widget=forms.Select(
             attrs={'class': 'form-control'}),
-        required=False
+        required=True
     )
 
     if 'tipo' == 'interna':
@@ -166,7 +188,7 @@ class MaintenanceForms(forms.ModelForm):
 
     class Meta:
         model = Maintenance
-        exclude = []
+        exclude = ['status',]
         labels = {
             'tipo_manutencao': 'Tipo de Manutenção',
             'ativo': 'Ativo em Manutenção',
@@ -177,7 +199,6 @@ class MaintenanceForms(forms.ModelForm):
             'chamado_externo': 'Chamado Externo',
             'descricao': 'Descrição',
             'custo': 'Custo de Manutenção'
-
         }
         widgets = {
             'tipo_manutencao': forms.Select(attrs={'class': 'form-control'}),
@@ -191,14 +212,21 @@ class MaintenanceForms(forms.ModelForm):
             'custo': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ex.: R$ 100.50'}),
         }
 
+    def clean_operador(self):
+        operador = self.cleaned_data.get('operador')
+        
+        if not operador:
+            raise forms.ValidationError()
+        return operador
+
     def __init__(self, *args, **kwargs):
-            # Receber a lista de ativos a ser preenchida
+        # Receber a lista de ativos a ser preenchida
         ativo = kwargs.pop('ativo', None)
         super().__init__(*args, **kwargs)
         if ativo is not None:
             self.fields['ativo'].queryset = Asset.objects.filter(pk=ativo)
             self.fields['ativo'].initial = ativo
-            self.fields['ativo'].widget.attrs['readonly'] = True
+            self.fields['ativo'].widget.attrs['readonly'] = False
 
     def save(self, commit=True):
         instance = super(MaintenanceForms, self).save(commit=False)
@@ -210,10 +238,12 @@ class MaintenanceForms(forms.ModelForm):
                 ativo.status = 'em_manutencao'
                 ativo.save()
             except Exception as e:
-                raise forms.ValidationError()
+                raise forms.ValidationError(
+                    f"Erro ao salvar a manutenção: {str(e)}")
 
         else:
-            raise forms.ValidationError()
+            raise forms.ValidationError(
+                "O formulário não foi salvo corretamente.")
 
         return instance
 
