@@ -23,7 +23,7 @@ class Manufacturer(models.Model):
 
 class CostCenter(models.Model):
     nome = models.CharField(max_length=100, null=False)
-    responsavel = models.CharField(max_length=100, null=True)
+    responsavel = models.CharField(max_length=100, null=True, blank=True)
     numero = models.CharField(null=False, unique=True)
 
     class Meta:
@@ -32,14 +32,6 @@ class CostCenter(models.Model):
 
     def __str__(self) -> str:
         return self.numero
-
-
-'''
-class User(models.Model):
-    nome = models.CharField(max_length=100)
-    cargo = models.CharField(max_length=100)
-    departamento = models.ForeignKey(CostCenter, on_delete=models.CASCADE)
-'''
 
 
 class AssetType(models.Model):
@@ -114,6 +106,26 @@ class Asset(models.Model):
 
     def __str__(self):
         return self.nome
+
+
+class AssetInfo(models.Model):
+    ativo = models.ForeignKey(Asset, on_delete=models.CASCADE)
+    fabricante = models.ForeignKey(
+        Manufacturer, on_delete=models.SET_NULL, null=True, blank=True)
+    memoria = models.CharField(max_length=100, null=True, blank=True)
+    armazenamento = models.CharField(max_length=100, null=True, blank=True)
+    processador = models.CharField(max_length=100, null=True, blank=True)
+    so = models.CharField(max_length=100, null=True, blank=True)
+    versao_so = models.CharField(max_length=100, null=True, blank=True)
+    licenca_so = models.CharField(max_length=100, null=True, blank=True)
+    data_instalacao_so = models.DateField(null=True, blank=True, default='')
+    data_garantia = models.DateField(null=True, blank=True, default='')
+    endereco_mac = models.CharField(max_length=40, null=True, blank=True)
+    ultimo_logon = models.DateField(null=True, blank=True, default='')
+    ultimo_scan = models.DateField(null=True, blank=True, default='')
+
+    def __str__(self):
+        return f'{self.ativo.nome}'
 
 
 class Loan(models.Model):
@@ -289,3 +301,5 @@ class Approval(models.Model):
 
     def __str__(self):
         return f'Apovação criada para analise do aprovador {self.aprovador.username}'
+
+

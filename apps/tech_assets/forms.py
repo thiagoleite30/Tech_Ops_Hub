@@ -291,7 +291,6 @@ class AssetForms(forms.ModelForm):
 
         return instance
 
-
 class LoanForms(forms.ModelForm):
     form_name = 'Novo Empréstimo'
 
@@ -370,3 +369,7 @@ class LoanForms(forms.ModelForm):
         ativos = self.cleaned_data['ativos']
         for asset in ativos:
             LoanAsset.objects.create(ativo=asset, emprestimo=instance)
+
+class CSVUploadForm(forms.Form):
+    csv_file = forms.FileField()
+        

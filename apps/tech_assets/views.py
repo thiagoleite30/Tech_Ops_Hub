@@ -1,9 +1,9 @@
 from django.shortcuts import render
-from apps.tech_assets.models import Approval, Asset, AssetCart, Cart, LoanAsset, Maintenance
-from apps.tech_assets.services import register_logentry, get_loan_asset
+from apps.tech_assets.models import Approval, Asset, AssetCart, AssetInfo, AssetModel, AssetType, Cart, LoanAsset, Maintenance, Manufacturer
+from apps.tech_assets.services import register_logentry, get_loan_asset, upload_assets
 from django.contrib.admin.models import CHANGE, DELETION, ADDITION
 from django.shortcuts import get_object_or_404, render, redirect
-from apps.tech_assets.forms import AssetModelForms, LoanForms, AssetForms, MaintenanceForms, \
+from apps.tech_assets.forms import AssetModelForms, CSVUploadForm, LoanForms, AssetForms, MaintenanceForms, \
     LocationForms, ManufacturerForms, CostCenterForms, \
     AssetTypeForms
 from django.urls import resolve
@@ -185,7 +185,7 @@ def cadastro_manutencao(request, asset_id):
 def concluir_manutencao(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
-    
+
     asset = get_object_or_404(Asset, id=asset_id)
     if asset:
 
@@ -198,15 +198,18 @@ def concluir_manutencao(request, asset_id):
             asset.status = 'em_estoque'
             asset.save()
             modificacao = f'Alterou status para "Em Estoque"'
-            register_logentry(instance=asset,action=CHANGE, modificacao=modificacao, user=request.user)
-        
-        maintenance = get_object_or_404(Maintenance, ativo_id=1, status=True) 
+            register_logentry(instance=asset, action=CHANGE,
+                              modificacao=modificacao, user=request.user)
+
+        maintenance = get_object_or_404(Maintenance, ativo_id=1, status=True)
         if maintenance:
-            print(f'DEBUG :: VIEW :: CONCLUIR MANUTENCAO :: MANUTENÇAO EXIST :: {maintenance.id}')
+            print(f'DEBUG :: VIEW :: CONCLUIR MANUTENCAO :: MANUTENÇAO EXIST :: {
+                  maintenance.id}')
             maintenance.status = False
             maintenance.save()
             modificacao = f'Alterou status para "False" (Não ativa)'
-            register_logentry(instance=maintenance,action=CHANGE, modificacao=modificacao, user=request.user)
+            register_logentry(instance=maintenance, action=CHANGE,
+                              modificacao=modificacao, user=request.user)
         return redirect('ativo', asset_id=asset_id)
     return redirect('ativos')
 
@@ -265,7 +268,7 @@ def novo_emprestimo(request):
             register_logentry(instance=emprestimo,
                               action=ADDITION, user=request.user)
             assets.update(status='em_uso')
-            
+
             deleta_carrinho(request)
 
             if 'save' in request.POST:
@@ -517,7 +520,7 @@ def aprovacoes(request):
 
 
 @login_required
-@group_required(['Administradores','Aprovadores'], redirect_url='forbidden_url')
+@group_required(['Administradores', 'Aprovadores'], redirect_url='forbidden_url')
 def aprovacao(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -527,3 +530,16 @@ def aprovacao(request):
 @login_required
 def forbidden_url(request):
     return render(request, 'shared/forbidden_page.html')
+
+
+@login_required
+def cadastro_ativos_csv(request):
+    form = CSVUploadForm()
+    if request.method == 'POST':
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = request.FILES['csv_file']
+            upload_assets(csv_file, request.user)
+
+                    
+    return render(request, 'apps/tech_assets/upload_csv.html', {'form': form})
