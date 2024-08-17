@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from apps.tech_assets.models import Approval, Asset, AssetCart, AssetInfo, AssetModel, AssetType, Cart, LoanAsset, Maintenance, Manufacturer
-from apps.tech_assets.services import register_logentry, get_loan_asset, upload_assets
+from apps.tech_assets.services import register_logentry, get_loan_asset, upload_assets, concluir_manutencao_service, get_maintenance_asset
 from django.contrib.admin.models import CHANGE, DELETION, ADDITION
 from django.shortcuts import get_object_or_404, render, redirect
 from apps.tech_assets.forms import AssetModelForms, CSVUploadForm, LoanForms, AssetForms, MaintenanceForms, \
@@ -186,30 +186,7 @@ def concluir_manutencao(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    asset = get_object_or_404(Asset, id=asset_id)
-    if asset:
-
-        loan_exist = get_loan_asset(asset_id)
-        if loan_exist['status']:
-            asset.status = 'em_uso'
-            asset.save()
-            modificacao = f'Alterou status para "Em Uso"'
-        else:
-            asset.status = 'em_estoque'
-            asset.save()
-            modificacao = f'Alterou status para "Em Estoque"'
-            register_logentry(instance=asset, action=CHANGE,
-                              modificacao=modificacao, user=request.user)
-
-        maintenance = get_object_or_404(Maintenance, ativo_id=1, status=True)
-        if maintenance:
-            print(f'DEBUG :: VIEW :: CONCLUIR MANUTENCAO :: MANUTENÇAO EXIST :: {
-                  maintenance.id}')
-            maintenance.status = False
-            maintenance.save()
-            modificacao = f'Alterou status para "False" (Não ativa)'
-            register_logentry(instance=maintenance, action=CHANGE,
-                              modificacao=modificacao, user=request.user)
+    if concluir_manutencao_service(asset_id, request.user):
         return redirect('ativo', asset_id=asset_id)
     return redirect('ativos')
 
@@ -307,7 +284,10 @@ def ativos(request):
     if query:
         assets = assets.filter(
             Q(nome__icontains=query) |
-            Q(patrimonio__icontains=query)
+            Q(patrimonio__icontains=query) |
+            Q(numero_serie__icontains=query) |
+            Q(status__icontains=query) |
+            Q(tipo__nome__icontains=query)
         )
 
     # Uma instancia paginator definida para o máximo de 15 ativos por pagina \
@@ -319,6 +299,14 @@ def ativos(request):
 
     # Obtém os objetos de acordo com a página presente no URL
     page_obj = paginator.get_page(page_number)
+
+    # Verifica se tem manutenção ativa pro asset
+    # Se houver, muda status
+    for asset in assets:
+        if get_maintenance_asset(asset.id)['status']:
+            asset = get_object_or_404(Asset, pk=asset.id)
+            asset.status = 'em_manutencao'
+            asset.save()
 
     context = {
         'assets_in_cart': assets_in_cart,
@@ -336,23 +324,30 @@ def ativo(request, asset_id):
         return redirect('login')
 
     asset = get_object_or_404(Asset, pk=asset_id)
+    asset_infos = AssetInfo.objects.get(ativo=asset)
+    maintenances = Maintenance.objects.filter(ativo_id=asset_id)
+
+    if maintenances:
+        for maintenance in maintenances:
+            Maintenance.dias_de_atraso(maintenance)
 
     get_loan = get_loan_asset(asset_id)
+    loans = get_loan['queryset']
 
-    if get_loan['status']:
-        for loan in get_loan['queryset']:
-            queryset = loan
-        context = {
-            'asset': asset,
-            'is_loan': True,
-            'loan': queryset
-        }
-    else:
-        context = {
-            'asset': asset,
-            'is_loan': False,
-            'loan': None
-        }
+    paginator_loans = Paginator(loans, 10)
+    paginator_maintenances = Paginator(maintenances, 10)
+    page_number = request.GET.get('page')
+    page_obj_loans = paginator_loans.get_page(page_number)
+    page_obj_maintenances = paginator_maintenances.get_page(page_number)
+
+    context = {
+        'asset': asset,
+        'asset_infos': asset_infos if asset_infos else None,
+        'maintenances':  maintenances if maintenances else None,
+        'is_loan': get_loan['status'],
+        'page_obj_loans': page_obj_loans,
+        'page_obj_maintenances': page_obj_maintenances
+    }
 
     return render(request, 'apps/tech_assets/ativo.html', context)
 
@@ -395,7 +390,7 @@ def carrinho(request):
     }
 
     # Redireciona para a lista de itens
-    return render(request, 'apps/tech_assets/carrinho_cards.html', context)
+    return render(request, 'apps/tech_assets/carrinho.html', context)
 
 
 @login_required
@@ -533,6 +528,7 @@ def forbidden_url(request):
 
 
 @login_required
+@group_required(['Administradores'], redirect_url='forbidden_url')
 def cadastro_ativos_csv(request):
     form = CSVUploadForm()
     if request.method == 'POST':
@@ -541,5 +537,4 @@ def cadastro_ativos_csv(request):
             csv_file = request.FILES['csv_file']
             upload_assets(csv_file, request.user)
 
-                    
     return render(request, 'apps/tech_assets/upload_csv.html', {'form': form})

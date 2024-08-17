@@ -233,10 +233,19 @@ class Maintenance(models.Model):
     custo = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True)
     status = models.BooleanField(default=True, null=False, blank=False)
+    dias_atraso = models.IntegerField(default=0)
 
     def conclusao_atrasada(self):
-        if self.status and datetime.now() > self.data_prevista_fim:
-            return True
+        if self.data_prevista_fim:
+            if self.status:
+                if isinstance(self.data_prevista_fim, datetime):
+                    data_prevista_fim = self.data_prevista_fim
+                else:
+                    data_prevista_fim = datetime.combine(
+                        self.data_prevista_fim, datetime.min.time())
+
+                if datetime.now() > data_prevista_fim:
+                    return True
         return False
 
     def marcar_como_finalizada(self):
@@ -245,10 +254,15 @@ class Maintenance(models.Model):
         self.save()
 
     def dias_de_atraso(self):
-        if self.status and self.conclusao_atrasada():
-            if self.data_prevista_fim:
-                return (datetime.now() - self.data_prevista_fim).days
-        return 0
+        if self.data_prevista_fim:
+            if self.status and self.conclusao_atrasada():
+                if isinstance(self.data_prevista_fim, datetime):
+                    data_prevista_fim = self.data_prevista_fim
+                else:
+                    data_prevista_fim = datetime.combine(
+                        self.data_prevista_fim, datetime.min.time())
+                self.dias_atraso = (datetime.now() - data_prevista_fim).days
+                self.save()
 
     class Meta:
         ordering = ['-data_inicio']
@@ -301,5 +315,3 @@ class Approval(models.Model):
 
     def __str__(self):
         return f'Apovação criada para analise do aprovador {self.aprovador.username}'
-
-

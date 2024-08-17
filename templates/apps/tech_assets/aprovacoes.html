@@ -20,12 +20,20 @@
                         <div class="end-template container-fluid"
                             style="display: flex; align-items: center; justify-content: center; padding: 20px;">
                             <a href="{% url 'novo_emprestimo' %}"
-                                class="btn btn-success btn-lg {% if cart_item_count <= 0 %}disabled{% endif %}"
+                                class="btn btn-success btn-lg"
                                 style="margin-right: 10px;">Aprovar</a>
                             <a href="{% url 'deleta_carrinho' %}"
-                                class="btn btn-danger btn-lg {% if cart_item_count <= 0 %}disabled{% endif %}">Reprovar</a>
+                                class="btn btn-danger btn-lg">Reprovar</a>
                         </div>
                         {% else %}
+                        <div class="end-template container-fluid"
+                            style="display: flex; align-items: center; justify-content: center; padding: 20px;">
+                            <a href="{% url 'novo_emprestimo' %}"
+                                class="btn btn-success btn-lg disabled"
+                                style="margin-right: 10px;">Aprovar</a>
+                            <a href="{% url 'deleta_carrinho' %}"
+                                class="btn btn-danger btn-lg disabled">Reprovar</a>
+                        </div>
                         {% endif %}
                     </div>
                 </div>

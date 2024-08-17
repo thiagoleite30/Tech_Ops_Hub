@@ -4,54 +4,34 @@
         <div class="starter-template" style="justify-content: center; align-items: center;">
             <h1 style="text-align: center;" name="assets">Carrinho de Seleções</h1>
         </div>
-        <div style="margin-bottom: 10px; display: flex; justify-content: flex-end;">
-            <form method="GET" action="{% url 'carrinho' %}" class="form-inline my-2 my-lg-0">
-                <input class="form-control" type="text" name="q" id="filterInput" value="{{ query }}"
-                    placeholder="Pesquisar...">
-                <button class="btn btn-primary my-2 my-sm-0" type="submit">Search</button>
-            </form>
-        </div>
-        <div class="table-container">
-            <table id="assetsTable" class="table table-bordered">
-                <thead class="thead-dark">
-                    <th scope="col">ID</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Patrimônio</th>
-                    <th scope="col">Tipo</th>
-                    <th scope="col">Número de Série</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Visualizar</th>
-                    <th scope="col">Carrinho</th>
-                </thead>
-                <tbody>
-                    {% for asset in page_obj %}
-                    <tr data-item-id="{{ asset.id }}">
-                        <th scope="row">{{ asset.id }}</th>
-                        <td>{{ asset.nome }}</td>
-                        <td>{{ asset.patrimonio }}</td>
-                        <td>{{ asset.tipo }}</td>
-                        <td>{{ asset.numero_serie }}</td>
-                        <td>{{ asset.status }}</td>
-                        <td><a style="pointer-events: stroke;" href="#">
+        <div class="row">
+            {% for asset in page_obj %}
+            <div class="col-sm-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ asset.tipo }}</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Nome: {{ asset.nome }}</li>
+                        <li class="list-group-item">Patrimônio: {{ asset.patrimonio }}</li>
+                        <li class="list-group-item">Número de Série: {{ asset.numero_serie }}</li>
+                    </ul>
+                    <div class="card-body">
+                        <a style="pointer-events: stroke;" href="#">
                             <div class="cart-icon-container">
                                 <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
                             </div>
-                        </a></td>
-                        <td><a style="pointer-events: stroke; color: red;"
-                                href="{% url 'remove_do_carrinho' asset.id %}">
-                                <div class="cart-icon-container">
-                                    <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 25px;"></i>
-                                    <span class="cart-remove">X</span>
-                                </div>
-                            </a></td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="9">No assets found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        </a>
+                        <a style="pointer-events: stroke; color: red;" href="{% url 'remove_do_carrinho' asset.id %}">
+                            <div class="cart-icon-container">
+                                <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 25px;"></i>
+                                <span class="cart-remove">X</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
         <!-- Controles de Paginação -->
         <div class="pagination">
@@ -71,19 +51,11 @@
                 {% endif %}
             </span>
         </div>
-        {% if cart_items %}
         <div class="end-template container-fluid"
             style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-            <a href="#" class="btn btn-success btn-lg" style="margin-right: 10px;">Finalizar Empréstimo</a>
-            <a href="#" class="btn btn-danger btn-lg">Apagar Carrinho</a>
+            <a href="{% url 'novo_emprestimo' %}" class="btn btn-success btn-lg {% if cart_item_count <= 0 %}disabled{% endif %}" style="margin-right: 10px;">Finalizar Empréstimo Carirho</a>
+            <a href="{% url 'deleta_carrinho' %}" class="btn btn-danger btn-lg {% if cart_item_count <= 0 %}disabled{% endif %}">Apagar Carrinho</a>
         </div>
-        {% else %}
-        <div class="end-template container-fluid"
-            style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-            <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Finalizar Empréstimo</a>
-            <a href="#" class="btn btn-danger btn-lg disabled">Apagar Carrinho</a>
-        </div>
-        {% endif %}
     </div>
 </main>
 

@@ -188,7 +188,7 @@ class MaintenanceForms(forms.ModelForm):
 
     class Meta:
         model = Maintenance
-        exclude = ['status',]
+        exclude = ['status', 'dias_atraso']
         labels = {
             'tipo_manutencao': 'Tipo de Manutenção',
             'ativo': 'Ativo em Manutenção',
@@ -335,7 +335,7 @@ class LoanForms(forms.ModelForm):
             self.fields['ativos'].queryset = Asset.objects.filter(
                 id__in=[a.id for a in ativos])
             self.fields['ativos'].initial = ativos
-            self.fields['ativos'].widget.attrs['readonly'] = True
+            self.fields['ativos'].widget.attrs['readonly'] = False
 
     def clean_ativos(self):
         ativos = self.cleaned_data['ativos']

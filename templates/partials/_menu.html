@@ -1,7 +1,7 @@
 {% load static %}
 <header>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div style="border-style: double; border-color: black; padding: 2px; margin-left: 0; margin-right: 15px;">
+        <div style="border-style: double; border-color: rgb(0, 0, 0); padding: 2px; margin-left: 0; margin-right: 15px;">
             <img src="{% static 'assets/marcaDaguaAviva.png' %}" style="width: 60px;" />
             <a class="navbar-brand" href="#">TechOps Hub</a>
         </div>
@@ -41,7 +41,7 @@
                         <a class="dropdown-item" href="{% url 'cadastro_centro_custo' %}">Novo Centro de Custo</a>
                         <a class="dropdown-item" href="{% url 'cadastro_local' %}">Novo Local</a>
                         <a class="dropdown-item" href="{% url 'cadastro_fabricante' %}">Novo Fabricante</a>
-                        
+
                     </div>
                 </li>
             </ul>
@@ -49,32 +49,31 @@
             <div style="padding: 0.3rem; container-type: inline;">
                 <form class="form-inline my-2 my-lg-0">
                     {% if is_administradores_user or is_aprovadores_user %}
-                    {% if aprovacoes_pendentes > 0 %}
+                    {% if aprovacoes_pendentes %}
                     <!-- Ícone de alerta -->
-                    <a class="nav-link" href="{% url 'aprovacoes' %}" style="margin-bottom: 0; display: flex; align-items: baseline;">
+                    <a class="nav-link" href="{% url 'aprovacoes' %}"
+                        style="margin-bottom: 0; display: flex; align-items: baseline;">
                         <p style=" color: yellow;">Aprovações
                             Pendentes</p>
                         <span class="icon-alert" style="margin-left: 8px;">&#9888;</span>
                     </a>
                     {% else %}
-                    <a class="nav-link disabled" href="{% url 'aprovacoes' %}">Aprovações Pendentes</a>
+                    <a class="nav-link disabled" href="#">Aprovações Pendentes</a>
                     {% endif %}
-                    {% else %}
-                    <a class="nav-link" href="{% url 'aprovacoes' %}" style="color: white;">Aprovações Pendentes</a>
                     {% endif %}
                     {% if cart_item_count > 0 %}
                     <a class="nav-link" href="{% url 'carrinho' %}"
-                        style="margin-bottom: 0; display: flex; align-items: baseline;">
+                        style="margin-bottom: 0; margin-right: 20px; display: flex; align-items: baseline;">
                         <div class="cart-icon-container">
-                            <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 30px;"></i>
+                            <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 30px; color: grey;"></i>
                             <span class="cart-count">{{cart_item_count}}</span>
                         </div>
                     </a>
                     {% else %}
                     <a class="nav-link disabled" href="#"
-                        style="margin-bottom: 0; display: flex; align-items: baseline;">
-                        <div class="cart-icon-container">
-                            <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 30px;"></i>
+                        style="margin-bottom: 0; margin-right: 20px; display: flex; align-items: baseline;">
+                        <div class="cart-icon-container disabled">
+                            <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 30px; color: rgb(82, 82, 82);"></i>
                             <span class="cart-count">0</span>
                         </div>
                     </a>

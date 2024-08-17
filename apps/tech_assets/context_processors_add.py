@@ -27,7 +27,13 @@ def verifica_aprovacoes_pendentes(request):
 
 def get_profile_foto(request):
     if request.user.is_authenticated:
-        foto = get_user_photo_microsoft(request.user)
+        if 'profile_photo' not in request.session:
+            # Buscar a foto e salvar na sessão
+            foto = get_user_photo_microsoft(request.user)
+            request.session['profile_photo'] = foto
+        else:
+            # Recuperar a foto da sessão
+            foto = request.session['profile_photo']
     else:
         foto = None
     return {'profile_photo': foto}
@@ -45,5 +51,6 @@ def is_administradores_user(request):
 def is_aprovadores_user(request):
     is_aprovadores_user = False
     if request.user.is_authenticated:
-        is_aprovadores_user = request.user.groups.filter(name='Aprovadores').exists()
+        is_aprovadores_user = request.user.groups.filter(
+            name='Aprovadores').exists()
     return {'is_aprovadores_user': is_aprovadores_user}

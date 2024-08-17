@@ -1,11 +1,12 @@
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
 import requests
 from allauth.socialaccount.models import SocialAccount, SocialToken
 import base64
 
-from apps.tech_assets.models import Approval, Asset, AssetInfo, AssetModel, AssetType, Loan, Manufacturer
+from apps.tech_assets.models import Approval, Asset, AssetInfo, AssetModel, AssetType, Loan, Maintenance, Manufacturer
 import pandas as pd
 
 
@@ -106,6 +107,38 @@ def get_loan_asset(asset_id):
                                             ativos__id=asset_id)}
 
 
+def get_maintenance_asset(asset_id):  # Busca manutencia de um asset
+
+    return {'status': Maintenance.objects.filter(status=True, ativo=asset_id).exists(),
+            'queryset': Maintenance.objects.filter(status=True, ativo=asset_id)}
+
+
+def concluir_manutencao_service(asset_id, user):
+    asset = get_object_or_404(Asset, id=asset_id)
+    if asset:
+        if Maintenance.objects.filter(ativo=asset, status=True).exists():
+            maintenance = get_object_or_404(
+                Maintenance, ativo=asset, status=True)
+            Maintenance.marcar_como_finalizada(maintenance)
+            modificacao = f'Alterou status para "False" (Não ativa)'
+            register_logentry(instance=maintenance, action=CHANGE,
+                            modificacao=modificacao, user=user)
+            
+        loan_exist = get_loan_asset(asset_id)
+        if loan_exist['status']:
+            asset.status = 'em_uso'
+            asset.save()
+            modificacao = f'Alterou status para "Em Uso"'
+        else:
+            asset.status = 'em_estoque'
+            asset.save()
+            modificacao = f'Alterou status para "Em Estoque"'
+            register_logentry(instance=asset, action=CHANGE,
+                            modificacao=modificacao, user=user)
+        return True
+    return False
+
+
 def upload_assets(csv_file, user):
     df = pd.read_csv(csv_file, sep=';')
 
@@ -155,7 +188,8 @@ def upload_assets(csv_file, user):
             # Ignora o erro e continua o fluxo
             print(f"Erro ao criar o tipo '{row['modelo']}': {e}")
         except Exception as e:
-            print(f"Erro inesperado ao processar '{row['modelo']}' ativo {ativo.id}: {e}")
+            print(f"Erro inesperado ao processar '{
+                  row['modelo']}' ativo {ativo.id}: {e}")
 
         # criando os objetos Asset e AssetInfo, tipos e fabricantes
 
@@ -199,9 +233,10 @@ def upload_assets(csv_file, user):
             else:
                 register_logentry(instance=ativo_info, action=CHANGE,
                                   user=user, modificacao='Usando Import CSV')
-                
+
         except IntegrityError as e:
             # Ignora o erro e continua o fluxo
             print(f"Erro ao criar o tipo '{row['modelo']}': {e}")
         except Exception as e:
-            print(f"Erro inesperado ao processar '{row['modelo']}' ativo {ativo.id}: {e}")
+            print(f"Erro inesperado ao processar '{
+                  row['modelo']}' ativo {ativo.id}: {e}")
