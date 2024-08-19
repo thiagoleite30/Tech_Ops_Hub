@@ -1,10 +1,12 @@
 from django.urls import include, path
 from apps.tech_assets.views import forbidden_url, index, login, cadastro_fabricante, \
     cadastro_centro_custo, cadastro_tipo_ativo, cadastro_local, \
-    cadastro_manutencao, cadastro_ativo, ativos, novo_emprestimo, \
+    cadastro_manutencao, cadastro_ativo, ativos, novo_movimento, \
     carrinho, add_carrinho, remove_do_carrinho, cadastro_modelo, \
     deleta_carrinho, aprovacoes, aprovacao, ativo, concluir_manutencao, \
-    cadastro_ativos_csv
+    cadastro_ativos_csv, aprova_movimentacao, reprova_movimentacao
+         
+
 
 # Lista de endpoints:
 urlpatterns = [
@@ -24,13 +26,15 @@ urlpatterns = [
     path('cadastro_ativo/', cadastro_ativo, name='cadastro_ativo'),
     path('ativos/', ativos, name='ativos'),
     path('ativo/<int:asset_id>/', ativo, name='ativo'),
-    path('novo_emprestimo/', novo_emprestimo, name='novo_emprestimo'),
+    path('novo_movimento/', novo_movimento, name='novo_movimento'),
     path('carrinho/', carrinho, name='carrinho'),
     path('add_carrinho/<int:asset_id>/', add_carrinho, name='add_carrinho'),
     path('remove_do_carrinho/<int:asset_id>/',
          remove_do_carrinho, name='remove_do_carrinho'),
     path('deleta_carrinho/', deleta_carrinho, name='deleta_carrinho'),
     path('aprovacoes/', aprovacoes, name='aprovacoes'),
-    path('aprovacao/', aprovacao, name='aprovacao'),
+    path('aprovacao/<int:aprovacao_id>/', aprovacao, name='aprovacao'),
+    path('aprova_movimentacao/<int:aprovacao_id>/', aprova_movimentacao, name='aprova_movimentacao'),
+    path('reprova_movimentacao/<int:aprovacao_id>/', reprova_movimentacao, name='reprova_movimentacao'),
     path('upload_csv/', cadastro_ativos_csv, name='upload_csv')
 ]

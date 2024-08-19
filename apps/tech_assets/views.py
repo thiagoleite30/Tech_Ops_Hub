@@ -1,18 +1,16 @@
 from django.shortcuts import render
-from apps.tech_assets.models import Approval, Asset, AssetCart, AssetInfo, AssetModel, AssetType, Cart, LoanAsset, Maintenance, Manufacturer
-from apps.tech_assets.services import register_logentry, get_loan_asset, upload_assets, concluir_manutencao_service, get_maintenance_asset
+from apps.tech_assets.models import Approval, Asset, AssetCart, AssetInfo, AssetModel, AssetType, Cart, Movement, MovementAsset, Maintenance, Manufacturer
+from apps.tech_assets.services import register_logentry, upload_assets, concluir_manutencao_service, get_maintenance_asset, get_movement_asset
 from django.contrib.admin.models import CHANGE, DELETION, ADDITION
 from django.shortcuts import get_object_or_404, render, redirect
-from apps.tech_assets.forms import AssetModelForms, CSVUploadForm, LoanForms, AssetForms, MaintenanceForms, \
+from apps.tech_assets.forms import AssetModelForms, CSVUploadForm, MovementForms, AssetForms, MaintenanceForms, \
     LocationForms, ManufacturerForms, CostCenterForms, \
     AssetTypeForms
 from django.urls import resolve
-from django.views.generic import ListView
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q
 from django.core.paginator import Paginator
-from django.contrib import auth, messages
 from utils.decorators import group_required
 
 # Create your views here.
@@ -217,7 +215,7 @@ def cadastro_ativo(request):
 
 @login_required
 @group_required(['Suporte'], redirect_url='forbidden_url')
-def novo_emprestimo(request):
+def novo_movimento(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
@@ -233,25 +231,28 @@ def novo_emprestimo(request):
     # Busca na tabela asset todos os ids na lista acima
     assets = Asset.objects.filter(id__in=ids_assets_in_cart)
 
-    form = LoanForms(ativos=assets)
+    form = MovementForms(ativos=assets)
 
     if request.method == 'POST':
-        form = LoanForms(request.POST, request.FILES, ativos=assets)
-        print(f'DEBUG :: VIEW :: PASSOU PRO IF :: {form.form_name}')
+        form = MovementForms(request.POST, request.FILES, ativos=assets)
+        print(f'DEBUG :: VIEW NOVO MOVIMENTO :: PASSOU PRO IF :: {form.form_name}')
 
         if form.is_valid():
-            emprestimo = form.save()
+            movimento = form.save()
+            print(f'DEBUG :: VIEW NOVO MOVIMENTO :: CRIOU INSTANCE')
             # print(f'DEBUG :: VIEW :: Novo Emprestimo :: Emprestimo {emprestimo}')
-            register_logentry(instance=emprestimo,
+            register_logentry(instance=movimento,
                               action=ADDITION, user=request.user)
-            assets.update(status='em_uso')
+            print(f'DEBUG :: VIEW NOVO MOVIMENTO :: REGISTROU LOG')
+            #assets.update(status='separado')
 
             deleta_carrinho(request)
-
+            print(f'DEBUG :: VIEW NOVO MOVIMENTO :: DELETOU CARRINHO')
+            
             if 'save' in request.POST:
                 return redirect('index')
             elif 'save_and_add' in request.POST:
-                return redirect('novo_emprestimo')
+                return redirect('novo_movimento')
 
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
@@ -281,12 +282,26 @@ def ativos(request):
 
     # Estrutura lógica na view de ativos para modificar os assets de acordo \
     # com a consulta obtida na query
+    STATUS_CHOICES = [
+        ('em_uso', 'Em Uso'),
+        ('em_manutencao', 'Em Manutenção'),
+        ('em_estoque', 'Em Estoque'),
+        ('descartado', 'Descartado'),
+        ('separado', 'Separado'),
+    ]
+    STATUS_MAP = dict((v, k) for k, v in STATUS_CHOICES)
     if query:
+        # Verificar se a query corresponde parcialmente a um valor legível do status
+        status_codigo = None
+        for status_legivel, codigo in STATUS_MAP.items():
+            if query.lower() in status_legivel.lower():
+                status_codigo = codigo
+                break
         assets = assets.filter(
             Q(nome__icontains=query) |
             Q(patrimonio__icontains=query) |
             Q(numero_serie__icontains=query) |
-            Q(status__icontains=query) |
+            Q(status__icontains=status_codigo if status_codigo else query) |
             Q(tipo__nome__icontains=query)
         )
 
@@ -331,7 +346,7 @@ def ativo(request, asset_id):
         for maintenance in maintenances:
             Maintenance.dias_de_atraso(maintenance)
 
-    get_loan = get_loan_asset(asset_id)
+    get_loan = get_movement_asset(asset_id)
     loans = get_loan['queryset']
 
     paginator_loans = Paginator(loans, 10)
@@ -348,6 +363,9 @@ def ativo(request, asset_id):
         'page_obj_loans': page_obj_loans,
         'page_obj_maintenances': page_obj_maintenances
     }
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'apps/tech_assets/partials/_ativo_tab_content.html', context)
 
     return render(request, 'apps/tech_assets/ativo.html', context)
 
@@ -477,7 +495,7 @@ def deleta_carrinho(request):
 
 
 @login_required
-@group_required(['Aprovadores', 'Administradores'], redirect_url='forbidden_url')
+@group_required(['Aprovadores TI', 'Administradores'], redirect_url='forbidden_url')
 def aprovacoes(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -509,18 +527,88 @@ def aprovacoes(request):
 
             return render(request, 'apps/tech_assets/aprovacoes.html', context)
         except Exception as e:
-            print(f'ERROR :: DELETA CARRINHO :: {e}')
+            print(f'ERROR :: APROVACOES :: {e}')
 
     return redirect('index')
 
 
 @login_required
-@group_required(['Administradores', 'Aprovadores'], redirect_url='forbidden_url')
-def aprovacao(request):
+@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+def aprovacao(request, aprovacao_id):
     if not request.user.is_authenticated:
         return redirect('login')
-    pass
 
+    aprovacao = get_object_or_404(Approval, pk=aprovacao_id)
+
+    if MovementAsset.objects.filter(movimento=aprovacao.movimentacao).exists():
+        ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
+            movimento=aprovacao.movimentacao)]
+        movimentacao = get_object_or_404(
+            Movement, pk=aprovacao.movimentacao.id)
+
+    print(f'DEBUG :: VIEW APROVACAO :: ASSETS ID :: {
+          MovementAsset.objects.filter(movimento=aprovacao.movimentacao).exists()}')
+    print(f'DEBUG :: VIEW APROVACAO :: ASSETS ID :: {ativos_id}')
+
+    if ativos_id:
+        ativos_na_movimentacao = Asset.objects.filter(id__in=ativos_id)
+
+    context = {
+        'aprovall': aprovacao,
+        'movement': movimentacao if movimentacao else None,
+        'assets': ativos_na_movimentacao if ativos_na_movimentacao else None,
+    }
+
+    return render(request, 'apps/tech_assets/aprovacao.html', context)
+
+
+@login_required
+@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+def aprova_movimentacao(request, aprovacao_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    try:
+        # Pega da tabela asset o ativo pelo id
+        aprovacao = get_object_or_404(Approval, id=aprovacao_id)
+
+        # Pega a instancia do usuário logado
+        user_instance = get_object_or_404(User, username=request.user)
+
+        # Se houver asset
+        if aprovacao_id:
+            pass
+
+    except Exception as e:
+        print(f'ERROR :: VIEW :: APROVA MOVIMENTACAO :: {e}')
+
+    return redirect('index')
+
+@login_required
+@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+def reprova_movimentacao(request, aprovacao_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    # Pega da tabela asset o ativo pelo id
+    asset = get_object_or_404(Asset, id=asset_id)
+
+    # Pega a instancia do usuário logado
+    user_instance = get_object_or_404(User, username=request.user)
+
+    # Se houver asset
+    if asset:
+        try:
+            cart = get_object_or_404(Cart, usuario_sessao=user_instance)
+            if cart:
+                asset_cart = get_object_or_404(
+                    AssetCart, ativo=asset, carrinho=cart)
+                if asset_cart:
+                    asset_cart.delete()
+                return redirect('carrinho')
+        except Exception as e:
+            print(f'ERROR :: REMOVE CARRINHO :: {e}')
+
+    return redirect('index')
 
 @login_required
 def forbidden_url(request):

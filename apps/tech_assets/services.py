@@ -6,7 +6,7 @@ import requests
 from allauth.socialaccount.models import SocialAccount, SocialToken
 import base64
 
-from apps.tech_assets.models import Approval, Asset, AssetInfo, AssetModel, AssetType, Loan, Maintenance, Manufacturer
+from apps.tech_assets.models import Approval, Asset, AssetInfo, AssetModel, AssetType, Movement, Maintenance, Manufacturer
 import pandas as pd
 
 
@@ -92,19 +92,19 @@ def get_user_photo_microsoft(user):
         # print(f"ERROR :: SERVICES :: SOCIAL ACCOUNT ERROR = {erro}")
         return None
 
+
 # Retorna status de não disponível igual False, ou seja,
-# sem empréstimo, e o queryset, em caso de não exisir empréstimo ativo será vazio
+    # sem empréstimo, e o queryset, em caso de não exisir empréstimo ativo será vazio
+def get_movement_asset(asset_id):
 
-
-def get_loan_asset(asset_id):
-    active_statuses = [
+    status_ativos = [
         'pendente_aprovação',
-        'emprestado',
+        'em_andamento',
         'atrasado'
     ]
-    return {'status': Loan.objects.filter(status__in=active_statuses, ativos__id=asset_id).exists(),
-            'queryset': Loan.objects.filter(status__in=active_statuses,
-                                            ativos__id=asset_id)}
+    return {'status': Movement.objects.filter(status__in=status_ativos, ativos__id=asset_id).exists(),
+            'queryset': Movement.objects.filter(status__in=status_ativos,
+                                                ativos__id=asset_id)}
 
 
 def get_maintenance_asset(asset_id):  # Busca manutencia de um asset
@@ -122,10 +122,10 @@ def concluir_manutencao_service(asset_id, user):
             Maintenance.marcar_como_finalizada(maintenance)
             modificacao = f'Alterou status para "False" (Não ativa)'
             register_logentry(instance=maintenance, action=CHANGE,
-                            modificacao=modificacao, user=user)
-            
-        loan_exist = get_loan_asset(asset_id)
-        if loan_exist['status']:
+                              modificacao=modificacao, user=user)
+
+        movement_exist = get_movement_asset(asset_id)
+        if movement_exist['status']:
             asset.status = 'em_uso'
             asset.save()
             modificacao = f'Alterou status para "Em Uso"'
@@ -134,7 +134,7 @@ def concluir_manutencao_service(asset_id, user):
             asset.save()
             modificacao = f'Alterou status para "Em Estoque"'
             register_logentry(instance=asset, action=CHANGE,
-                            modificacao=modificacao, user=user)
+                              modificacao=modificacao, user=user)
         return True
     return False
 

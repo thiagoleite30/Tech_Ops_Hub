@@ -128,20 +128,28 @@ class AssetInfo(models.Model):
         return f'{self.ativo.nome}'
 
 
-class Loan(models.Model):
+class Movement(models.Model):
     STATUS_CHOICES = [
         ('pendente_aprovação', 'Aprovação Pendente'),
-        ('emprestado', 'Emprestado'),
-        ('devolvido', 'Devolvido'),
+        ('em_andamento', 'Em Andamento'),
+        ('concluido', 'Concluído'),
         ('atrasado', 'Atrasado'),
     ]
 
-    ativos = models.ManyToManyField(Asset, through='LoanAsset')
+    TIPOS = [
+        ('transferencia', 'Transferência'),
+        ('emprestimo', 'Empréstimo'),
+        ('baixa', 'Baixa')
+    ]
+
+    ativos = models.ManyToManyField(Asset, through='MovementAsset')
+    tipo = models.CharField(
+        max_length=50, choices=TIPOS, default='emprestimo')
     usuario = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='allocated_asset')
     centro_de_custo = models.ForeignKey(
         CostCenter, on_delete=models.CASCADE, related_name='allocated_asset')
-    data_emprestimo = models.DateTimeField(default=datetime.now)
+    data_movimento = models.DateTimeField(default=datetime.now)
     data_devolucao_prevista = models.DateTimeField(null=True, blank=True)
     data_devolucao_real = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
@@ -151,40 +159,48 @@ class Loan(models.Model):
     observacoes = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f'Empréstimo ID: {self.id} para o usuário {self.usuario}'
+        return f'Movimento Tipo: {self.tipo} ID: {self.id} para o usuário {self.usuario} no centro de custo {self.centro_de_custo}'
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Verifica se é uma nova instância
-
-        super(Loan, self).save(*args, **kwargs)
+        ativos = kwargs.pop('ativos', None)
+        aprovador = kwargs.pop('aprovador', None)
+        super(Movement, self).save(*args, **kwargs)
 
         if is_new:
+            print(f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: IS NEW!')
+            if ativos:
+                print(f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: EXISTEM OS ATIVOS!')
+                for ativo in ativos:
+                    MovementAsset.objects.create(ativo=ativo, movimento=self)  
+                print(f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: CRIOU OS MOVEMENT ASSETS!')
             # Cria uma nova aprovação automaticamente
-            Approval.objects.create(emprestimo_id=self)
+            print(f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: CHAMANDO A CRIACAO DE APPROVAL!')
+            Approval.objects.create(movimentacao=self, aprovador=aprovador)
 
     def esta_atrasado(self):
-        if self.status == 'emprestado' and datetime.now() > self.data_devolucao_prevista:
+        if self.status == 'em_andamento' and datetime.now() > self.data_devolucao_prevista:
             return True
         return False
 
-    def marcar_como_devolvido(self):
-        self.status = 'devolvido'
+    def marcar_como_concluido(self):
+        self.status = 'concluido'
         self.data_devolucao_real = datetime.now()
         self.save()
 
     def dias_de_atraso(self):
-        if self.status == 'emprestado' and self.esta_atrasado():
+        if self.status == 'em_andamento' and self.esta_atrasado():
             return (datetime.now() - self.data_devolucao_prevista).days
         return 0
 
     class Meta:
-        ordering = ['-data_emprestimo']
+        ordering = ['-data_movimento']
         verbose_name = 'Alocação de Ativo'
 
 
-class LoanAsset(models.Model):
+class MovementAsset(models.Model):
     ativo = models.ForeignKey(Asset,  on_delete=models.CASCADE)
-    emprestimo = models.ForeignKey(Loan, on_delete=models.CASCADE)
+    movimento = models.ForeignKey(Movement, on_delete=models.CASCADE)
     return_condition = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
@@ -310,8 +326,58 @@ class Approval(models.Model):
         User, on_delete=models.CASCADE, null=True, blank=True, related_name='approver')
     status_aprovacao = models.CharField(
         max_length=20, choices=STATUS_APPROVAL, default='pendente')
-    emprestimo_id = models.ForeignKey(
-        Loan, on_delete=models.CASCADE, related_name='approver')
+    movimentacao = models.ForeignKey(
+        Movement, on_delete=models.CASCADE, related_name='approver')
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    ultima_modificacao = models.DateTimeField(auto_now=True)
+    data_conclusao = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f'Apovação criada para analise do aprovador {self.aprovador.username}'
+        return f'{self.id}'
+        # return f'Apovação criada para analise do aprovador {self.aprovador.username}'
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None  # Verifica se é uma nova instância
+        super(Approval, self).save(*args, **kwargs)
+
+        if is_new:
+            print(f'DEBUG :: DENTRO DO SAVE DO APPROVAL :: IS NEW!')
+            print(f'DEBUG :: DENTRO DO SAVE DO APPROVAL :: CHAMANDO MUDAR STATUS ATIVO!')
+            self.mudar_status_ativo('separado')
+
+
+    def aprovar_movimentacao(self):
+        self.status = 'aprovado'
+        self.data_conclusao = datetime.now()
+        self.mudar_status_ativo('separado')
+        self.save()
+
+    def reprovar_movimentacao(self):
+        self.status = 'reprovado'
+        self.data_conclusao = datetime.now()
+        self.mudar_status_ativo('em_estoque')
+        self.save()
+
+    def mudar_status_ativo(self, status):
+        print(f'DEBUG :: DENTRO DO MUDAR STATUS ATIVO! STATUS PASSADO {status}')
+        # Muda status do ativo de separado para pendente_aprovacao
+        if MovementAsset.objects.filter(movimento=self.movimentacao).exists():
+            print(f'DEBUG :: MUDAR STATUS ATIVO :: ACHOU MOVEMENT ASSET!')
+            ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
+                movimento=self.movimentacao)]
+
+        if ativos_id:
+            print(f'DEBUG :: MUDAR STATUS ATIVO :: EXISTEM ASSETS!')
+            ativos = Asset.objects.filter(id__in=ativos_id)
+
+        for ativo in ativos:
+            print(f'DEBUG :: MUDAR STATUS ATIVO :: DENTRO DO FOR!')
+            if Maintenance.objects.filter(ativo=ativo).exists():
+                print(f'DEBUG :: MUDAR STATUS ATIVO :: DENTRO DO IF FILTRA ASSET :: "TEM MANUTENCAO"!')
+                ativo.status = 'em_manutencao'
+                ativo.save()
+            
+            else:
+                print(f'DEBUG :: MUDAR STATUS ATIVO :: DENTRO DO IF FILTRA ASSET :: "NÃO EXISTE MANUTENCAO"!')
+                ativo.status = status
+                ativo.save()

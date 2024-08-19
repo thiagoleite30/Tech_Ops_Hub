@@ -1,9 +1,9 @@
 from django import forms
 from django.shortcuts import get_object_or_404
-from apps.tech_assets.models import Asset, AssetCart, AssetModel, Cart, Loan, LoanAsset, Manufacturer, CostCenter, \
-    AssetType, Location, Maintenance
+from apps.tech_assets.models import Asset, AssetCart, AssetModel, Cart, Manufacturer, CostCenter, \
+    AssetType, Location, Maintenance, Movement, MovementAsset
 from datetime import datetime
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.admin.models import CHANGE, DELETION, ADDITION
 
 from apps.tech_assets.services import register_logentry
@@ -79,7 +79,7 @@ class AssetTypeForms(forms.ModelForm):
             }
         )
     )
-    
+
     class Meta:
         model = AssetType
         exclude = []
@@ -100,16 +100,19 @@ class AssetTypeForms(forms.ModelForm):
             raise forms.ValidationError()
 
         return instance
-    
+
     def clean_nome(self):
         if 'nome' not in self.cleaned_data:
-            raise forms.ValidationError(f'Campo "{nome}" não encontrado nos dados limpos.')
+            raise forms.ValidationError(
+                f'Campo "{nome}" não encontrado nos dados limpos.')
         nome = self.cleaned_data['nome']
         if nome:
-            nome_exist = [t.nome for t in AssetType.objects.filter(nome__iexact=nome)]
+            nome_exist = [
+                t.nome for t in AssetType.objects.filter(nome__iexact=nome)]
             if nome_exist:
-                raise forms.ValidationError(f'O nome "{nome}" já está em uso com "{nome_exist[0]}".')
-        
+                raise forms.ValidationError(
+                    f'O nome "{nome}" já está em uso com "{nome_exist[0]}".')
+
         return nome
 
 
@@ -214,7 +217,7 @@ class MaintenanceForms(forms.ModelForm):
 
     def clean_operador(self):
         operador = self.cleaned_data.get('operador')
-        
+
         if not operador:
             raise forms.ValidationError()
         return operador
@@ -291,8 +294,9 @@ class AssetForms(forms.ModelForm):
 
         return instance
 
-class LoanForms(forms.ModelForm):
-    form_name = 'Novo Empréstimo'
+
+class MovementForms(forms.ModelForm):
+    form_name = 'Nova Movimentação'
 
     ativos = forms.ModelMultipleChoiceField(
         queryset=Asset.objects.none(),
@@ -301,26 +305,45 @@ class LoanForms(forms.ModelForm):
         required=False
     )
 
+    
+    if Group.objects.filter(name='Aprovadores TI').exists():
+        grupo = get_object_or_404(Group, name='Aprovadores TI')
+        aprovador = forms.ModelChoiceField(
+            queryset=grupo.user_set.all() if grupo else User.objects.none(),
+            widget=forms.Select(
+                attrs={'class': 'form-control'}),
+            required=True
+        )
+    else:
+        aprovador = forms.ModelChoiceField(
+            queryset=User.objects.none(),
+            widget=forms.Select(
+                attrs={'class': 'form-control'}),
+            required=True
+        )
+
     class Meta:
-        model = Loan
+        model = Movement
         exclude = ['status']
-        fields = ['usuario', 'centro_de_custo', 'data_emprestimo',
+        fields = ['tipo', 'usuario', 'centro_de_custo', 'aprovador', 'data_movimento',
                   'data_devolucao_prevista', 'data_devolucao_real',
                   'chamado_top_desk',  'observacoes', 'ativos']
         labels = {
-            'usuario': 'Usuário Responsável',
-            'ativos': 'Ativos Emprestados',
+            'tipo': 'Tipo de Movimentação',
+            'usuario': 'Usuário Recebedor',
+            'ativos': 'Ativos Selecionados',
             'centro_de_custo': 'Centro de Custo',
-            'data_emprestimo': 'Data de Empréstimo',
+            'data_movimento': 'Data de Início',
             'data_devolucao_prevista': 'Data de Devolução Prevista',
             'data_devolucao_real': 'Data de Devolução Real',
             'chamado_top_desk': 'Chamado Relacionado',
             'observacoes': 'Observação',
         }
         widgets = {
+            'tipo': forms.Select(attrs={'class': 'form-control'}),
             'usuario': forms.Select(attrs={'class': 'form-control'}),
             'centro_de_custo': forms.Select(attrs={'class': 'form-control'}),
-            'data_emprestimo': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'data_movimento': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'data_devolucao_prevista': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'data_devolucao_real': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'chamado_top_desk': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex.: I2305-XXX'}),
@@ -330,12 +353,18 @@ class LoanForms(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         # Receber a lista de ativos a ser preenchida
         ativos = kwargs.pop('ativos', None)
+        aprovador = kwargs.pop('aprovador', None)
         super().__init__(*args, **kwargs)
         if ativos is not None:
             self.fields['ativos'].queryset = Asset.objects.filter(
                 id__in=[a.id for a in ativos])
             self.fields['ativos'].initial = ativos
             self.fields['ativos'].widget.attrs['readonly'] = False
+        
+        if aprovador is not None:
+            self.fields['aprovador'].initial = aprovador
+            self.fields['aprovador'].widget.attrs['readonly'] = False
+            
 
     def clean_ativos(self):
         ativos = self.cleaned_data['ativos']
@@ -343,11 +372,11 @@ class LoanForms(forms.ModelForm):
             print(f'DEBUG ENTROU NO IF ATIVOS')
             for asset in ativos:
                 print(f'DEBUG :: SAVE :: ASSET :: {asset.nome}')
-                if LoanAsset.objects.filter(ativo=asset, emprestimo__status__in=['pendente_aprovação', 'emprestado', 'atrasado']).exists():
+                if MovementAsset.objects.filter(ativo=asset, movimento__status__in=['pendente_aprovação', 'em_andamento', 'atrasado']).exists():
                     raise forms.ValidationError(
-                        f'O ativo {asset} já está emprestado.')
+                        f'O ativo {asset} já está em uma movimentação de ativos.')
                 else:
-                    print(f'DEBUG RETORNOU OK PRO FORMULARIO')
+                    print(f'DEBUG :: FORMS :: MOVIMENTFORM :: CLEAN ATIVO :: RETORNOU OK PRO FORMULARIO')
                     return ativos
         else:
             raise forms.ValidationError(
@@ -355,21 +384,22 @@ class LoanForms(forms.ModelForm):
 
     def save(self, commit=True):
         instance = super().save(commit=False)
-        # ativos = self.cleaned_data['ativos']
-        # print(f'DEBUG :: SAVE :: ASSET :: {ativos}')
+        ativos = self.cleaned_data['ativos']
+        aprovador = self.cleaned_data['aprovador']
         if commit:
-            instance.save()
-            self.save_loan_asset(instance)
+            instance.save(ativos=ativos, aprovador=aprovador)
+            #self.save_movement_asset(instance)
         else:
             raise forms.ValidationError()
 
         return instance
 
-    def save_loan_asset(self, instance):
+    def save_movement_asset(self, instance):
         ativos = self.cleaned_data['ativos']
         for asset in ativos:
-            LoanAsset.objects.create(ativo=asset, emprestimo=instance)
+            MovementAsset.objects.create(ativo=asset, movimento=instance)
+    
+
 
 class CSVUploadForm(forms.Form):
     csv_file = forms.FileField()
-        

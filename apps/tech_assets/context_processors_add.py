@@ -52,5 +52,5 @@ def is_aprovadores_user(request):
     is_aprovadores_user = False
     if request.user.is_authenticated:
         is_aprovadores_user = request.user.groups.filter(
-            name='Aprovadores').exists()
+            name='Aprovadores TI').exists()
     return {'is_aprovadores_user': is_aprovadores_user}

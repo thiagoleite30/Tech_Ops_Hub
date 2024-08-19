@@ -9,9 +9,10 @@
             <div class="col-sm-3">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h5 class="card-title"><a href="#">{{ aprovall.emprestimo_id }}</a></h5>
+                        <h5 class="card-title"><a href="{% url 'aprovacao' aprovall.id %}">{{ aprovall.movimentacao }}</a></h5>
                     </div>
                     <ul class="list-group list-group-flush">
+                        <li class="list-group-item">ID: {{ aprovall.id }}</li>
                         <li class="list-group-item">Aprovador designado: {{ aprovall.aprovador }}</li>
                         <li class="list-group-item">Status: {{ aprovall.get_status_aprovacao_display }}</li>
                     </ul>
@@ -19,7 +20,7 @@
                         {% if is_aprovadores_user %}
                         <div class="end-template container-fluid"
                             style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-                            <a href="{% url 'novo_emprestimo' %}"
+                            <a href="{% url 'novo_movimento' %}"
                                 class="btn btn-success btn-lg"
                                 style="margin-right: 10px;">Aprovar</a>
                             <a href="{% url 'deleta_carrinho' %}"
@@ -28,7 +29,7 @@
                         {% else %}
                         <div class="end-template container-fluid"
                             style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-                            <a href="{% url 'novo_emprestimo' %}"
+                            <a href="{% url 'novo_movimento' %}"
                                 class="btn btn-success btn-lg disabled"
                                 style="margin-right: 10px;">Aprovar</a>
                             <a href="{% url 'deleta_carrinho' %}"
