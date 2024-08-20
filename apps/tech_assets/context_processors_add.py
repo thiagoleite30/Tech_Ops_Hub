@@ -48,9 +48,16 @@ def is_administradores_user(request):
     return {'is_admin_user': is_admin}
 
 
-def is_aprovadores_user(request):
-    is_aprovadores_user = False
+def is_aprovadores_ti_user(request):
+    is_aprovadores_ti_user = False
     if request.user.is_authenticated:
-        is_aprovadores_user = request.user.groups.filter(
+        is_aprovadores_ti_user = request.user.groups.filter(
             name='Aprovadores TI').exists()
-    return {'is_aprovadores_user': is_aprovadores_user}
+    return {'is_aprovadores_ti_user': is_aprovadores_ti_user}
+
+def is_suporte_user(request):
+    is_suporte_user = False
+    if request.user.is_authenticated:
+        is_suporte_user = request.user.groups.filter(
+            name='Suporte').exists()
+    return {'is_suporte_user': is_suporte_user}

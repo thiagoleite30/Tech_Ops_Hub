@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q
 from django.core.paginator import Paginator
 from utils.decorators import group_required
+from django.contrib import messages
 
 # Create your views here.
 
@@ -235,7 +236,8 @@ def novo_movimento(request):
 
     if request.method == 'POST':
         form = MovementForms(request.POST, request.FILES, ativos=assets)
-        print(f'DEBUG :: VIEW NOVO MOVIMENTO :: PASSOU PRO IF :: {form.form_name}')
+        print(f'DEBUG :: VIEW NOVO MOVIMENTO :: PASSOU PRO IF :: {
+              form.form_name}')
 
         if form.is_valid():
             movimento = form.save()
@@ -244,11 +246,11 @@ def novo_movimento(request):
             register_logentry(instance=movimento,
                               action=ADDITION, user=request.user)
             print(f'DEBUG :: VIEW NOVO MOVIMENTO :: REGISTROU LOG')
-            #assets.update(status='separado')
+            # assets.update(status='separado')
 
             deleta_carrinho(request)
             print(f'DEBUG :: VIEW NOVO MOVIMENTO :: DELETOU CARRINHO')
-            
+
             if 'save' in request.POST:
                 return redirect('index')
             elif 'save_and_add' in request.POST:
@@ -346,21 +348,20 @@ def ativo(request, asset_id):
         for maintenance in maintenances:
             Maintenance.dias_de_atraso(maintenance)
 
-    get_loan = get_movement_asset(asset_id)
-    loans = get_loan['queryset']
+    movement = Movement.objects.filter(ativos=asset)
 
-    paginator_loans = Paginator(loans, 10)
+    paginator_movement = Paginator(movement, 10)
     paginator_maintenances = Paginator(maintenances, 10)
     page_number = request.GET.get('page')
-    page_obj_loans = paginator_loans.get_page(page_number)
+    page_obj_movements = paginator_movement.get_page(page_number)
     page_obj_maintenances = paginator_maintenances.get_page(page_number)
 
     context = {
         'asset': asset,
         'asset_infos': asset_infos if asset_infos else None,
         'maintenances':  maintenances if maintenances else None,
-        'is_loan': get_loan['status'],
-        'page_obj_loans': page_obj_loans,
+        'is_loan': Movement.objects.filter(ativos=asset).exists(),
+        'page_obj_movements': page_obj_movements,
         'page_obj_maintenances': page_obj_maintenances
     }
 
@@ -546,10 +547,6 @@ def aprovacao(request, aprovacao_id):
         movimentacao = get_object_or_404(
             Movement, pk=aprovacao.movimentacao.id)
 
-    print(f'DEBUG :: VIEW APROVACAO :: ASSETS ID :: {
-          MovementAsset.objects.filter(movimento=aprovacao.movimentacao).exists()}')
-    print(f'DEBUG :: VIEW APROVACAO :: ASSETS ID :: {ativos_id}')
-
     if ativos_id:
         ativos_na_movimentacao = Asset.objects.filter(id__in=ativos_id)
 
@@ -583,32 +580,29 @@ def aprova_movimentacao(request, aprovacao_id):
 
     return redirect('index')
 
+
 @login_required
-@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+@group_required(['Aprovadores TI'], redirect_url='forbidden_url')
 def reprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
         return redirect('login')
+    try:
+        # Pega da tabela asset o ativo pelo id
+        aprovacao = get_object_or_404(Approval, id=aprovacao_id)
+        if request.user != aprovacao.aprovador:
+            messages.warning(request, 'Você não é o aprovador designado para esta aprovação.')
+            return redirect('aprovacoes')
+        # Pega a instancia do usuário logado
+        user_instance = get_object_or_404(User, username=request.user)
 
-    # Pega da tabela asset o ativo pelo id
-    asset = get_object_or_404(Asset, id=asset_id)
+        # Se houver asset
+        if aprovacao:
+            Approval.reprovar_movimentacao(aprovacao)
+    except Exception as e:
+        print(f'ERROR :: REPROVA MOVIMENTACAO :: {e}')
 
-    # Pega a instancia do usuário logado
-    user_instance = get_object_or_404(User, username=request.user)
+    return redirect('aprovacoes')
 
-    # Se houver asset
-    if asset:
-        try:
-            cart = get_object_or_404(Cart, usuario_sessao=user_instance)
-            if cart:
-                asset_cart = get_object_or_404(
-                    AssetCart, ativo=asset, carrinho=cart)
-                if asset_cart:
-                    asset_cart.delete()
-                return redirect('carrinho')
-        except Exception as e:
-            print(f'ERROR :: REMOVE CARRINHO :: {e}')
-
-    return redirect('index')
 
 @login_required
 def forbidden_url(request):

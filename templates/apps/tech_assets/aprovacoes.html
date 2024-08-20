@@ -5,37 +5,35 @@
             <h1 style="text-align: center;" name="assets">Aprovações</h1>
         </div>
         <div class="row">
-            {% for aprovall in page_obj %}
+            {% for approvall in page_obj %}
             <div class="col-sm-3">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h5 class="card-title"><a href="{% url 'aprovacao' aprovall.id %}">{{ aprovall.movimentacao }}</a></h5>
+                        <h5 class="card-title"><a
+                                href="{% url 'aprovacao' approvall.id %}">{{approvall.movimentacao}}</a></h5>
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">ID: {{ aprovall.id }}</li>
-                        <li class="list-group-item">Aprovador designado: {{ aprovall.aprovador }}</li>
-                        <li class="list-group-item">Status: {{ aprovall.get_status_aprovacao_display }}</li>
+                        <li class="list-group-item">ID: {{ approvall.id }}</li>
+                        <li class="list-group-item">Aprovador designado: {{ approvall.aprovador}}</li>
+                        <li class="list-group-item">Status: {{ approvall.get_status_aprovacao_display }}</li>
                     </ul>
                     <div class="card-body">
-                        {% if is_aprovadores_user %}
+                        {% if approvall.status_aprovacao == 'pendente' %}
                         <div class="end-template container-fluid"
                             style="display: flex; align-items: center; justify-content: center; padding: 20px;">
                             <a href="{% url 'novo_movimento' %}"
-                                class="btn btn-success btn-lg"
+                                class="btn btn-success btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}"
                                 style="margin-right: 10px;">Aprovar</a>
-                            <a href="{% url 'deleta_carrinho' %}"
-                                class="btn btn-danger btn-lg">Reprovar</a>
+                            <a href="{% url 'reprova_movimentacao' approvall.id %}"
+                                class="btn btn-danger btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}">Reprovar</a>
                         </div>
-                        {% else %}
+                        {%else%}
                         <div class="end-template container-fluid"
                             style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-                            <a href="{% url 'novo_movimento' %}"
-                                class="btn btn-success btn-lg disabled"
-                                style="margin-right: 10px;">Aprovar</a>
-                            <a href="{% url 'deleta_carrinho' %}"
-                                class="btn btn-danger btn-lg disabled">Reprovar</a>
+                            <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aprovar</a>
+                            <a href="#" class="btn btn-danger btn-lg disabled">Reprovar</a>
                         </div>
-                        {% endif %}
+                        {%endif%}
                     </div>
                 </div>
             </div>

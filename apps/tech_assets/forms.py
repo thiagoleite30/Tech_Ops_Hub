@@ -1,4 +1,5 @@
 from django import forms
+from django.db import connection
 from django.shortcuts import get_object_or_404
 from apps.tech_assets.models import Asset, AssetCart, AssetModel, Cart, Manufacturer, CostCenter, \
     AssetType, Location, Maintenance, Movement, MovementAsset
@@ -305,18 +306,9 @@ class MovementForms(forms.ModelForm):
         required=False
     )
 
-    
-    if Group.objects.filter(name='Aprovadores TI').exists():
-        grupo = get_object_or_404(Group, name='Aprovadores TI')
-        aprovador = forms.ModelChoiceField(
-            queryset=grupo.user_set.all() if grupo else User.objects.none(),
-            widget=forms.Select(
-                attrs={'class': 'form-control'}),
-            required=True
-        )
-    else:
-        aprovador = forms.ModelChoiceField(
-            queryset=User.objects.none(),
+
+    aprovador = forms.ModelChoiceField(
+            queryset=Group.objects.none(),
             widget=forms.Select(
                 attrs={'class': 'form-control'}),
             required=True
@@ -354,14 +346,17 @@ class MovementForms(forms.ModelForm):
         # Receber a lista de ativos a ser preenchida
         ativos = kwargs.pop('ativos', None)
         aprovador = kwargs.pop('aprovador', None)
+        
         super().__init__(*args, **kwargs)
         if ativos is not None:
             self.fields['ativos'].queryset = Asset.objects.filter(
                 id__in=[a.id for a in ativos])
             self.fields['ativos'].initial = ativos
             self.fields['ativos'].widget.attrs['readonly'] = False
-        
-        if aprovador is not None:
+        if 'auth_group' in connection.introspection.table_names():
+            grupo = get_object_or_404(Group, name='Aprovadores TI')
+            users = grupo.user_set.all()
+            self.fields['aprovador'].queryset = users
             self.fields['aprovador'].initial = aprovador
             self.fields['aprovador'].widget.attrs['readonly'] = False
             
@@ -369,14 +364,11 @@ class MovementForms(forms.ModelForm):
     def clean_ativos(self):
         ativos = self.cleaned_data['ativos']
         if ativos:
-            print(f'DEBUG ENTROU NO IF ATIVOS')
             for asset in ativos:
-                print(f'DEBUG :: SAVE :: ASSET :: {asset.nome}')
                 if MovementAsset.objects.filter(ativo=asset, movimento__status__in=['pendente_aprovação', 'em_andamento', 'atrasado']).exists():
                     raise forms.ValidationError(
                         f'O ativo {asset} já está em uma movimentação de ativos.')
                 else:
-                    print(f'DEBUG :: FORMS :: MOVIMENTFORM :: CLEAN ATIVO :: RETORNOU OK PRO FORMULARIO')
                     return ativos
         else:
             raise forms.ValidationError(

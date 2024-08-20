@@ -1,7 +1,9 @@
 from datetime import datetime
+from django.utils import timezone
 from typing import Iterable
 from django.db import models
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 
 # Create your models here.
 from django.db import models
@@ -130,7 +132,7 @@ class AssetInfo(models.Model):
 
 class Movement(models.Model):
     STATUS_CHOICES = [
-        ('pendente_aprovação', 'Aprovação Pendente'),
+        ('pendente_aprovacao', 'Aprovação Pendente'),
         ('em_andamento', 'Em Andamento'),
         ('concluido', 'Concluído'),
         ('atrasado', 'Atrasado'),
@@ -153,7 +155,7 @@ class Movement(models.Model):
     data_devolucao_prevista = models.DateTimeField(null=True, blank=True)
     data_devolucao_real = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default='pendente_aprovação')
+        max_length=20, choices=STATUS_CHOICES, default='pendente_aprovacao')
     chamado_top_desk = models.CharField(
         max_length=100, null=False, default=None)
     observacoes = models.TextField(blank=True, null=True)
@@ -239,7 +241,7 @@ class Maintenance(models.Model):
     operador = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='operator')
     data_inicio = models.DateField()
-    data_prevista_fim = models.DateField(null=True, blank=True)
+    data_prevista_fim = models.DateField()
     data_fim = models.DateField(null=True, blank=True)
     chamado_top_desk = models.CharField(
         max_length=100, null=False, blank=False)
@@ -341,43 +343,53 @@ class Approval(models.Model):
         super(Approval, self).save(*args, **kwargs)
 
         if is_new:
-            print(f'DEBUG :: DENTRO DO SAVE DO APPROVAL :: IS NEW!')
-            print(f'DEBUG :: DENTRO DO SAVE DO APPROVAL :: CHAMANDO MUDAR STATUS ATIVO!')
-            self.mudar_status_ativo('separado')
+            self.mudar_status_ativos('separado')
 
 
     def aprovar_movimentacao(self):
-        self.status = 'aprovado'
+        self.status_aprovacao = 'aprovado'
         self.data_conclusao = datetime.now()
-        self.mudar_status_ativo('separado')
+        self.mudar_status_ativos('separado')
+        self.mudar_status_movimentacao('aprovar')
         self.save()
 
     def reprovar_movimentacao(self):
-        self.status = 'reprovado'
+        self.status_aprovacao = 'reprovado'
         self.data_conclusao = datetime.now()
-        self.mudar_status_ativo('em_estoque')
+        self.mudar_status_ativos('em_estoque')
+        self.mudar_status_movimentacao('reprovar')
         self.save()
 
-    def mudar_status_ativo(self, status):
-        print(f'DEBUG :: DENTRO DO MUDAR STATUS ATIVO! STATUS PASSADO {status}')
+    def mudar_status_ativos(self, status):
         # Muda status do ativo de separado para pendente_aprovacao
         if MovementAsset.objects.filter(movimento=self.movimentacao).exists():
-            print(f'DEBUG :: MUDAR STATUS ATIVO :: ACHOU MOVEMENT ASSET!')
             ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
                 movimento=self.movimentacao)]
 
         if ativos_id:
-            print(f'DEBUG :: MUDAR STATUS ATIVO :: EXISTEM ASSETS!')
             ativos = Asset.objects.filter(id__in=ativos_id)
 
         for ativo in ativos:
-            print(f'DEBUG :: MUDAR STATUS ATIVO :: DENTRO DO FOR!')
-            if Maintenance.objects.filter(ativo=ativo).exists():
-                print(f'DEBUG :: MUDAR STATUS ATIVO :: DENTRO DO IF FILTRA ASSET :: "TEM MANUTENCAO"!')
+            if Maintenance.objects.filter(ativo=ativo, status=True).exists():
                 ativo.status = 'em_manutencao'
                 ativo.save()
             
             else:
-                print(f'DEBUG :: MUDAR STATUS ATIVO :: DENTRO DO IF FILTRA ASSET :: "NÃO EXISTE MANUTENCAO"!')
                 ativo.status = status
                 ativo.save()
+    
+    def mudar_status_movimentacao(self,status):
+        movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
+        
+        if movimentacao:
+            if movimentacao.tipo == 'emprestimo':
+                if status == 'aprovar':
+                    movimentacao.status = 'em_andamento'   
+                else:
+                    movimentacao.status = 'concluido'
+            elif movimentacao.tipo == 'transferencia':
+                movimentacao.status = 'concluido'
+            elif movimentacao.tipo == 'baixa':
+                movimentacao.status = 'concluido'
+            movimentacao.data_devolucao_real = timezone.now()
+            movimentacao.save()

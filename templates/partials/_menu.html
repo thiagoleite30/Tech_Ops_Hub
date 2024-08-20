@@ -44,22 +44,31 @@
 
                     </div>
                 </li>
+                {% if not is_aprovadores_ti_user %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'aprovacoes' %}">Aprovações</a>
+                </li>
+                {% else %}
+                {% if not aprovacoes_pendentes %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'aprovacoes' %}">Aprovações</a>
+                </li>
+                {% endif %}
+                {% endif %}
             </ul>
             {% include 'partials/_alerts.html' %}
             <div style="padding: 0.3rem; container-type: inline;">
                 <form class="form-inline my-2 my-lg-0">
-                    {% if is_administradores_user or is_aprovadores_user %}
-                    {% if aprovacoes_pendentes %}
-                    <!-- Ícone de alerta -->
-                    <a class="nav-link" href="{% url 'aprovacoes' %}"
-                        style="margin-bottom: 0; display: flex; align-items: baseline;">
-                        <p style=" color: yellow;">Aprovações
-                            Pendentes</p>
-                        <span class="icon-alert" style="margin-left: 8px;">&#9888;</span>
-                    </a>
-                    {% else %}
-                    <a class="nav-link disabled" href="#">Aprovações Pendentes</a>
-                    {% endif %}
+                    {% if is_aprovadores_ti_user %}
+                        {% if aprovacoes_pendentes %}
+                        <!-- Ícone de alerta -->
+                        <a class="nav-link" href="{% url 'aprovacoes' %}"
+                            style="margin-bottom: 0; display: flex; align-items: baseline;">
+                            <p style=" color: yellow;">Aprovações
+                                Pendentes</p>
+                            <span class="icon-alert" style="margin-left: 8px;">&#9888;</span>
+                        </a>
+                        {% endif %}
                     {% endif %}
                     {% if cart_item_count > 0 %}
                     <a class="nav-link" href="{% url 'carrinho' %}"

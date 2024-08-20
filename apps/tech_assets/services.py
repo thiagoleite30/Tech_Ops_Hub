@@ -98,13 +98,15 @@ def get_user_photo_microsoft(user):
 def get_movement_asset(asset_id):
 
     status_ativos = [
-        'pendente_aprovação',
+        'pendente_aprovacao',
         'em_andamento',
         'atrasado'
     ]
     return {'status': Movement.objects.filter(status__in=status_ativos, ativos__id=asset_id).exists(),
             'queryset': Movement.objects.filter(status__in=status_ativos,
-                                                ativos__id=asset_id)}
+                                                ativos__id=asset_id),
+            'list_status': [movimento.status for movimento in Movement.objects.filter(status__in=status_ativos,
+                                                ativos__id=asset_id)] }
 
 
 def get_maintenance_asset(asset_id):  # Busca manutencia de um asset
@@ -112,6 +114,8 @@ def get_maintenance_asset(asset_id):  # Busca manutencia de um asset
     return {'status': Maintenance.objects.filter(status=True, ativo=asset_id).exists(),
             'queryset': Maintenance.objects.filter(status=True, ativo=asset_id)}
 
+def get_movement_status_pendente(asset_id):
+    return Movement.objects.filter(ativos=asset_id, status__in=['pendente_aprovacao']).exists()
 
 def concluir_manutencao_service(asset_id, user):
     asset = get_object_or_404(Asset, id=asset_id)
@@ -126,9 +130,14 @@ def concluir_manutencao_service(asset_id, user):
 
         movement_exist = get_movement_asset(asset_id)
         if movement_exist['status']:
-            asset.status = 'em_uso'
-            asset.save()
-            modificacao = f'Alterou status para "Em Uso"'
+            if 'pendente_aprovacao' in movement_exist['list_status']:
+                asset.status = 'separado'
+                asset.save()
+                modificacao = f'Alterou status para "Separado"'
+            elif 'em_andamento' in movement_exist['list_status'] or 'atrasado' in movement_exist['list_status']:
+                asset.status = 'em_uso'
+                asset.save()
+                modificacao = f'Alterou status para "Em Uso"'
         else:
             asset.status = 'em_estoque'
             asset.save()

@@ -91,7 +91,8 @@ TEMPLATES = [
                 'apps.tech_assets.context_processors_add.get_profile_foto',
                 'apps.tech_assets.context_processors_add.get_url_logout',
                 'apps.tech_assets.context_processors_add.is_administradores_user',
-                'apps.tech_assets.context_processors_add.is_aprovadores_user',
+                'apps.tech_assets.context_processors_add.is_aprovadores_ti_user',
+                'apps.tech_assets.context_processors_add.is_suporte_user',
             ],
 
 
