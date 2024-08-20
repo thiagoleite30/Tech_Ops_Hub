@@ -174,10 +174,12 @@ class Movement(models.Model):
             if ativos:
                 print(f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: EXISTEM OS ATIVOS!')
                 for ativo in ativos:
-                    MovementAsset.objects.create(ativo=ativo, movimento=self)  
-                print(f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: CRIOU OS MOVEMENT ASSETS!')
+                    MovementAsset.objects.create(ativo=ativo, movimento=self)
+                print(
+                    f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: CRIOU OS MOVEMENT ASSETS!')
             # Cria uma nova aprovação automaticamente
-            print(f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: CHAMANDO A CRIACAO DE APPROVAL!')
+            print(
+                f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: CHAMANDO A CRIACAO DE APPROVAL!')
             Approval.objects.create(movimentacao=self, aprovador=aprovador)
 
     def esta_atrasado(self):
@@ -241,7 +243,7 @@ class Maintenance(models.Model):
     operador = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='operator')
     data_inicio = models.DateField()
-    data_prevista_fim = models.DateField()
+    data_prevista_fim = models.DateField(null=True, blank=True)
     data_fim = models.DateField(null=True, blank=True)
     chamado_top_desk = models.CharField(
         max_length=100, null=False, blank=False)
@@ -345,7 +347,6 @@ class Approval(models.Model):
         if is_new:
             self.mudar_status_ativos('separado')
 
-
     def aprovar_movimentacao(self):
         self.status_aprovacao = 'aprovado'
         self.data_conclusao = datetime.now()
@@ -370,21 +371,21 @@ class Approval(models.Model):
             ativos = Asset.objects.filter(id__in=ativos_id)
 
         for ativo in ativos:
-            if Maintenance.objects.filter(ativo=ativo, status=True).exists():
+            if Maintenance.objects.filter(ativo=ativo).exists():
                 ativo.status = 'em_manutencao'
                 ativo.save()
-            
+
             else:
                 ativo.status = status
                 ativo.save()
-    
-    def mudar_status_movimentacao(self,status):
+
+    def mudar_status_movimentacao(self, status):
         movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
-        
+
         if movimentacao:
             if movimentacao.tipo == 'emprestimo':
                 if status == 'aprovar':
-                    movimentacao.status = 'em_andamento'   
+                    movimentacao.status = 'em_andamento'
                 else:
                     movimentacao.status = 'concluido'
             elif movimentacao.tipo == 'transferencia':
@@ -393,3 +394,50 @@ class Approval(models.Model):
                 movimentacao.status = 'concluido'
             movimentacao.data_devolucao_real = timezone.now()
             movimentacao.save()
+
+
+class TermRes(models.Model):
+
+    
+    movimentacao = models.ForeignKey(Movement, on_delete=models.CASCADE, related_name='resp')
+    aprovacao = models.ForeignKey(Approval,on_delete=models.CASCADE, related_name='approval')
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_resposta = models.DateTimeField(null=True, blank=True)
+    status = models.BooleanField(default=False)
+    
+    
+    def marcar_como_aceito(self):
+        self.status = True
+        self.data_resposta = datetime.now()
+        self.save()
+        #movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
+        self.movimentacao.status = 'em_andamento'
+        self.movimentacao.save()
+        Approval.mudar_status_ativos(self.aprovacao, 'em_uso')
+    
+    def marcar_como_recusa(self):
+        self.data_resposta = datetime.now()
+        self.save()
+        #movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
+        self.movimentacao.status = 'concluido'
+        self.movimentacao.save()
+        Approval.mudar_status_ativos(self.aprovacao, 'em_estoque')
+
+class ReturnTerm(models.Model):
+    movimentacao = models.ForeignKey(Movement, on_delete=models.CASCADE, related_name='returned')
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_devolucao = models.DateTimeField(null=True, blank=True)
+    status = models.BooleanField(default=False)
+    
+    def marcar_como_devolvido(self):
+        self.status = True
+        self.data_aceite = datetime.now()
+        self.save()
+        #movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
+        self.movimentacao.status = 'concluido'
+        self.movimentacao.save()
+        Approval.mudar_status_ativos(self.aprovacao, 'em_estoque')
+
+        
+    
+    

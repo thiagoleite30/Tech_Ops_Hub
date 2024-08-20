@@ -560,25 +560,24 @@ def aprovacao(request, aprovacao_id):
 
 
 @login_required
-@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+@group_required(['Aprovadores TI'], redirect_url='forbidden_url')
 def aprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
         return redirect('login')
     try:
         # Pega da tabela asset o ativo pelo id
         aprovacao = get_object_or_404(Approval, id=aprovacao_id)
-
-        # Pega a instancia do usuário logado
-        user_instance = get_object_or_404(User, username=request.user)
+        if request.user != aprovacao.aprovador:
+            messages.warning(request, 'Você não é o aprovador designado para esta aprovação.')
+            return redirect('aprovacoes')
 
         # Se houver asset
-        if aprovacao_id:
-            pass
-
+        if aprovacao:
+            Approval.aprovar_movimentacao(aprovacao)
     except Exception as e:
-        print(f'ERROR :: VIEW :: APROVA MOVIMENTACAO :: {e}')
+        print(f'ERROR :: APROVA MOVIMENTACAO :: {e}')
 
-    return redirect('index')
+    return redirect('aprovacoes')
 
 
 @login_required
@@ -592,8 +591,6 @@ def reprova_movimentacao(request, aprovacao_id):
         if request.user != aprovacao.aprovador:
             messages.warning(request, 'Você não é o aprovador designado para esta aprovação.')
             return redirect('aprovacoes')
-        # Pega a instancia do usuário logado
-        user_instance = get_object_or_404(User, username=request.user)
 
         # Se houver asset
         if aprovacao:
@@ -602,6 +599,32 @@ def reprova_movimentacao(request, aprovacao_id):
         print(f'ERROR :: REPROVA MOVIMENTACAO :: {e}')
 
     return redirect('aprovacoes')
+
+
+@login_required
+@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+def aprova_termo(request, aprovacao_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    aprovacao = get_object_or_404(Approval, pk=aprovacao_id)
+
+    if MovementAsset.objects.filter(movimento=aprovacao.movimentacao).exists():
+        ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
+            movimento=aprovacao.movimentacao)]
+        movimentacao = get_object_or_404(
+            Movement, pk=aprovacao.movimentacao.id)
+
+    if ativos_id:
+        ativos_na_movimentacao = Asset.objects.filter(id__in=ativos_id)
+
+    context = {
+        'aprovall': aprovacao,
+        'movement': movimentacao if movimentacao else None,
+        'assets': ativos_na_movimentacao if ativos_na_movimentacao else None,
+    }
+
+    return render(request, 'apps/tech_assets/term_res.html', context)
 
 
 @login_required

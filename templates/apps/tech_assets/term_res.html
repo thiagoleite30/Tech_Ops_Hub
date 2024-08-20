@@ -2,7 +2,7 @@
 <main role="main" class="container-fluid">
     <div class="container-fluid" style="padding-top: 20px;">
         <div class="starter-template" style="justify-content: center; align-items: center;">
-            <h1 style="text-align: center;" name="assets">Informações de Ativos</h1>
+            <h1 style="text-align: center;" name="assets">Termo de Responsabilidade</h1>
         </div>
         <div style="margin-bottom: 10px; display: flex; justify-content: flex-end;">
         </div>
@@ -12,25 +12,21 @@
                 <ul class="nav nav-tabs" id="myTab" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link active" id="perfil-tab" data-toggle="tab" href="#perfil" role="tab"
-                            aria-controls="perfil" aria-selected="true">Perfil</a>
+                            aria-controls="perfil" aria-selected="true">Aprovação</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info"
-                            aria-selected="false">Mais Informações</a>
+                            aria-selected="false">Informações da Movimentação</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link " id="manutencoes-tab" data-toggle="tab" href="#manutencoes" role="tab"
-                            aria-controls="manutencoes" aria-selected="false">Manutenções</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="emprestimos-tab" data-toggle="tab" href="#emprestimos" role="tab"
-                            aria-controls="emprestimos" aria-selected="false">Empréstimos</a>
+                        <a class="nav-link " id="ativos-tab" data-toggle="tab" href="#ativos" role="tab"
+                            aria-controls="ativos" aria-selected="false">Ativos</a>
                     </li>
                 </ul>
             </div>
             <div class="card-body">
                 <div class="tab-content" id="myTabContent">
-                    {% include 'apps/tech_assets/partials_tech_assets/_ativo_tab_content.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/_term_res_tab_content.html' %}
                 </div>
             </div>
         </div>
@@ -43,8 +39,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-
-
 <!--
     <footer>
         <div class="container">
@@ -56,5 +50,5 @@
             </div>
         </div>
     </footer>
-    -->
+-->
 {% endblock %}

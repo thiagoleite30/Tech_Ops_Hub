@@ -10,10 +10,10 @@
                 <div class="card text-center">
                     <div class="card-body">
                         <h5 class="card-title"><a
-                                href="{% url 'aprovacao' approvall.id %}">{{approvall.movimentacao}}</a></h5>
+                                href="{% url 'aprovacao' approvall.id %}">Aprovação Número: {{approvall.id}}</a></h5>
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">ID: {{ approvall.id }}</li>
+                        <li class="list-group-item">{{ approvall.movimentacao }}</li>
                         <li class="list-group-item">Aprovador designado: {{ approvall.aprovador}}</li>
                         <li class="list-group-item">Status: {{ approvall.get_status_aprovacao_display }}</li>
                     </ul>
@@ -21,7 +21,7 @@
                         {% if approvall.status_aprovacao == 'pendente' %}
                         <div class="end-template container-fluid"
                             style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-                            <a href="{% url 'novo_movimento' %}"
+                            <a href="{% url 'aprova_movimentacao' approvall.id %}"
                                 class="btn btn-success btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}"
                                 style="margin-right: 10px;">Aprovar</a>
                             <a href="{% url 'reprova_movimentacao' approvall.id %}"

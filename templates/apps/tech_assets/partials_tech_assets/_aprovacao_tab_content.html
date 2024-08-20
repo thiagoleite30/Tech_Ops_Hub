@@ -1,0 +1,73 @@
+{% load static %}
+<div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
+    <h5 class="card-title">{{aprovall.movimentacao}}</h5>
+    <div class="card" style="margin-top: 10px; margin-bottom: 10px;">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">ID Movimentação: {{aprovall.movimentacao.id}}</li>
+            <li class="list-group-item">Data Inclusão: {{aprovall.data_criacao}}</li>
+            <li class="list-group-item">Data Aprovação: {{aprovall.data_conclusao}}</li>
+            <li class="list-group-item">Aprovador: {{aprovall.aprovador}}</li>
+            <li class="list-group-item">Status: {{aprovall.get_status_aprovacao_display}}</li>
+        </ul>
+    </div>
+    {% if is_aprovadores_user %}
+    <div class="end-template container-fluid"
+        style="display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <a href="#" class="btn btn-success btn-lg" style="margin-right: 10px;">Aprovar</a>
+        <a href="#" class="btn btn-danger btn-lg">Reprovar</a>
+    </div>
+    {% else %}
+    <div class="end-template container-fluid"
+        style="display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aprovar</a>
+        <a href="#" class="btn btn-danger btn-lg disabled">Reprovar</a>
+    </div>
+    {% endif %}
+</div>
+<div class="tab-pane fade" id="info" role="tabpanel" aria-labelledby="info-tab">
+    <h5 class="card-title">{{movement.get_tipo_display}} ID {{movement.id}}</h5>
+    <div class="card" style="margin-top: 10px; margin-bottom: 10px;">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">Nome do Responsável: {{movement.usuario.first_name}}
+                {{movement.usuario.last_name}}</li>
+            <li class="list-group-item">Usuário Responsável: {{movement.usuario}}</li>
+            <li class="list-group-item">Centro de Custo: {{movement.centro_de_custo.nome}}
+                ({{movement.centro_de_custo}})</li>
+            <li class="list-group-item">Data Inicio: {{movement.data_movimento}}</li>
+            <li class="list-group-item">Previsão de Término: {{movement.data_devolucao_prevista}}</li>
+            <li class="list-group-item">Chamado Interno: {{movement.chamado_top_desk}}</li>
+            <li class="list-group-item">Observação: {{movement.observacoes}}</li>
+        </ul>
+    </div>
+</div>
+<div class="tab-pane fade" id="ativos" role="tabpanel" aria-labelledby="ativos-tab">
+    <div class="row">
+        {% for asset in assets %}
+        <div class="col-sm-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{asset.tipo}}</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Ativo: {{asset.nome}}</li>
+
+                    <li class="list-group-item">Modelo: {{asset.modelo}}
+                    </li>
+                    <li class="list-group-item">Patrimonio: {{asset.patrimonio}}
+                    </li>
+                    <li class="list-group-item">Número de Série: {{asset.numero_serie}}
+                    </li>
+                </ul>
+                <div class="card-body">
+                    <a style="pointer-events: stroke;" href="{% url 'ativo' asset.id %}">
+                        <div class="cart-icon-container">
+                            <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+</div>
