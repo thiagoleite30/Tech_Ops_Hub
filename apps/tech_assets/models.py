@@ -371,7 +371,7 @@ class Approval(models.Model):
             ativos = Asset.objects.filter(id__in=ativos_id)
 
         for ativo in ativos:
-            if Maintenance.objects.filter(ativo=ativo).exists():
+            if Maintenance.objects.filter(ativo=ativo, status=True).exists():
                 ativo.status = 'em_manutencao'
                 ativo.save()
 

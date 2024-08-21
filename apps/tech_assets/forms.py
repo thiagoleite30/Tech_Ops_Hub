@@ -192,7 +192,7 @@ class MaintenanceForms(forms.ModelForm):
 
     class Meta:
         model = Maintenance
-        exclude = ['status', 'dias_atraso']
+        exclude = ['status', 'dias_atraso', 'data_fim']
         labels = {
             'tipo_manutencao': 'Tipo de Manutenção',
             'ativo': 'Ativo em Manutenção',
@@ -208,7 +208,7 @@ class MaintenanceForms(forms.ModelForm):
             'tipo_manutencao': forms.Select(attrs={'class': 'form-control'}),
             'ativo': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Ex.: Shop Bum'}),
             'data_inicio': forms.DateTimeInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'data_prevista_fim': forms.DateTimeInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'data_prevista_fim': forms.DateTimeInput(attrs={'type': 'date', 'class': 'form-control'},),
             'data_fim': forms.DateTimeInput(attrs={'type': 'date', 'class': 'form-control'}),
             'chamado_top_desk': forms.TextInput(attrs={'class': 'form-control'}),
             'chamado_externo': forms.TextInput(attrs={'class': 'form-control'}),
@@ -222,6 +222,27 @@ class MaintenanceForms(forms.ModelForm):
         if not operador:
             raise forms.ValidationError()
         return operador
+    
+    def clean_data_prevista_fim(self):
+        data_inicio = self.cleaned_data.get('data_inicio')
+        data_prevista_fim = self.cleaned_data.get('data_prevista_fim')
+
+        if not data_prevista_fim:
+            raise forms.ValidationError(message=f'Uma previsão de fim de manutenção dever ser passada!')
+        if data_inicio > data_prevista_fim:
+            raise forms.ValidationError(message=f'A data prevista para conclusão não pode ser inferior a data de inicio!')
+        
+        return data_prevista_fim
+    
+    def clean_chamado_externo(self):
+        chamado_externo = self.cleaned_data.get('chamado_externo')
+        tipo_manutencao = self.cleaned_data.get('tipo_manutencao')
+        
+        if tipo_manutencao == 'externa' and not chamado_externo:
+            raise forms.ValidationError(message=f'Um número de chamado externo deve ser informado para manutenções Externas!')
+        
+        return chamado_externo
+            
 
     def __init__(self, *args, **kwargs):
         # Receber a lista de ativos a ser preenchida
@@ -284,6 +305,8 @@ class AssetForms(forms.ModelForm):
             'centro_de_custo': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
         }
+        
+            
 
     def save(self, commit=True):
         instance = super().save(commit=False)

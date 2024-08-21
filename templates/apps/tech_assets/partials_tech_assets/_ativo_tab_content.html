@@ -179,18 +179,18 @@
     <!-- Controles de Paginação -->
     <div class="pagination">
         <span class="step-links">
-            {% if page_obj_loans.has_previous %}
+            {% if page_obj_movements.has_previous %}
             <a href="?page=1">&laquo; primeira</a>
-            <a href="?page={{ page_obj_loans.previous_page_number }}">anterior</a>
+            <a href="?page={{ page_obj_movements.previous_page_number }}">anterior</a>
             {% endif %}
 
             <span class="current">
-                Página {{ page_obj_loans.number }} de {{ page_obj_loans.paginator.num_pages }}.
+                Página {{ page_obj_movements.number }} de {{ page_obj_movements.paginator.num_pages }}.
             </span>
 
-            {% if page_obj_loans.has_next %}
-            <a href="?page={{ page_obj_loans.next_page_number }}">próxima</a>
-            <a href="?page={{ page_obj_loans.paginator.num_pages }}">última &raquo;</a>
+            {% if page_obj_movements.has_next %}
+            <a href="?page={{ page_obj_movements.next_page_number }}">próxima</a>
+            <a href="?page={{ page_obj_movements.paginator.num_pages }}">última &raquo;</a>
             {% endif %}
         </span>
     </div>

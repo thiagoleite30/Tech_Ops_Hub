@@ -236,20 +236,14 @@ def novo_movimento(request):
 
     if request.method == 'POST':
         form = MovementForms(request.POST, request.FILES, ativos=assets)
-        print(f'DEBUG :: VIEW NOVO MOVIMENTO :: PASSOU PRO IF :: {
-              form.form_name}')
 
         if form.is_valid():
             movimento = form.save()
-            print(f'DEBUG :: VIEW NOVO MOVIMENTO :: CRIOU INSTANCE')
-            # print(f'DEBUG :: VIEW :: Novo Emprestimo :: Emprestimo {emprestimo}')
             register_logentry(instance=movimento,
                               action=ADDITION, user=request.user)
-            print(f'DEBUG :: VIEW NOVO MOVIMENTO :: REGISTROU LOG')
             # assets.update(status='separado')
 
             deleta_carrinho(request)
-            print(f'DEBUG :: VIEW NOVO MOVIMENTO :: DELETOU CARRINHO')
 
             if 'save' in request.POST:
                 return redirect('index')
@@ -325,8 +319,12 @@ def ativos(request):
             asset.status = 'em_manutencao'
             asset.save()
 
+    modelo = Asset
+    cabecalhos = [fiel.name for fiel in modelo._meta.fields]
+
     context = {
         'assets_in_cart': assets_in_cart,
+        'cabecalhos': cabecalhos,
         'page_obj': page_obj,
         'query': query,
         'assets_unavailable': assets_unavailable,
@@ -508,12 +506,26 @@ def aprovacoes(request):
         try:
             query = request.GET.get('q', '')
             aprovacoes = Approval.objects.all()
+            status_aprovacao = request.GET.getlist('status')
+
             # Query pode ser alterada dependendo de como queremos consultar
             if query:
                 aprovacoes = aprovacoes.filter(
                     # Q(aprovador__icontains=query) |
                     Q(status_aprovacao__icontains=query)
                 )
+            
+            status_query = Q()
+            if status_aprovacao:
+                
+                if 'aprovado' in status_aprovacao:
+                    status_query |= Q(status_aprovacao='aprovado')
+                if 'reprovado' in status_aprovacao:
+                    status_query |= Q(status_aprovacao='reprovado')
+                if 'pendente' in status_aprovacao:
+                    status_query |= Q(status_aprovacao='pendente')
+                    
+            aprovacoes = aprovacoes.filter(status_query)
 
             paginator = Paginator(aprovacoes, 15)
             page_number = request.GET.get('page')
@@ -568,7 +580,8 @@ def aprova_movimentacao(request, aprovacao_id):
         # Pega da tabela asset o ativo pelo id
         aprovacao = get_object_or_404(Approval, id=aprovacao_id)
         if request.user != aprovacao.aprovador:
-            messages.warning(request, 'Você não é o aprovador designado para esta aprovação.')
+            messages.warning(
+                request, 'Você não é o aprovador designado para esta aprovação.')
             return redirect('aprovacoes')
 
         # Se houver asset
@@ -589,7 +602,8 @@ def reprova_movimentacao(request, aprovacao_id):
         # Pega da tabela asset o ativo pelo id
         aprovacao = get_object_or_404(Approval, id=aprovacao_id)
         if request.user != aprovacao.aprovador:
-            messages.warning(request, 'Você não é o aprovador designado para esta aprovação.')
+            messages.warning(
+                request, 'Você não é o aprovador designado para esta aprovação.')
             return redirect('aprovacoes')
 
         # Se houver asset

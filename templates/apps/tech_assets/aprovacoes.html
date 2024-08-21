@@ -5,12 +5,22 @@
             <h1 style="text-align: center;" name="assets">Aprovações</h1>
         </div>
         <div class="row">
+            <div class="container-fluid" style="justify-content: center; display: flex; margin: 10px;">
+                <p class="d-inline-flex gap-1">
+                    <button id="btn-aprovado" type="button" class="btn"
+                        onclick="toggleFilter('aprovado', this)">Aprovadas</button>
+                    <button id="btn-reprovado" type="button" class="btn"
+                        onclick="toggleFilter('reprovado', this)">Reprovadas</button>
+                    <button id="btn-pendente" type="button" class="btn"
+                        onclick="toggleFilter('pendente', this)">Pendentes</button>
+                </p>
+            </div>
             {% for approvall in page_obj %}
             <div class="col-sm-3">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h5 class="card-title"><a
-                                href="{% url 'aprovacao' approvall.id %}">Aprovação Número: {{approvall.id}}</a></h5>
+                        <h5 class="card-title"><a href="{% url 'aprovacao' approvall.id %}">Aprovação Número:
+                                {{approvall.id}}</a></h5>
                     </div>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">{{ approvall.movimentacao }}</li>
@@ -72,6 +82,46 @@
         </div>
     </footer>
     -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Inicializa os botões com base nos parâmetros da URL
+        const params = new URLSearchParams(window.location.search);
+        const status = params.getAll('status');
 
+        status.forEach(s => {
+            const btn = document.querySelector(`#btn-${s}`);
+            if (btn) {
+                btn.classList.add('active');
+            }
+        });
+    });
+
+    function toggleFilter(status, button) {
+        let currentUrl = new URL(window.location.href);
+        let params = currentUrl.searchParams;
+
+        // Obter todos os status ativos atualmente
+        let statusList = params.getAll('status');
+
+        // Verificar se o status já está nos parâmetros
+        if (statusList.includes(status)) {
+            // Se o status já está na lista, removê-lo (toggle off)
+            statusList = statusList.filter(s => s !== status);
+            params.delete('status');
+            statusList.forEach(s => params.append('status', s));
+            button.classList.remove('active');
+        } else {
+            // Se o status não está na lista, adicioná-lo (toggle on)
+            statusList.push(status);
+            params.append('status', status);
+            button.classList.add('active');
+        }
+
+        // Atualizar a URL sem recarregar a página
+        window.history.replaceState({}, '', `${currentUrl.pathname}?${params}`);
+
+        window.location.reload();
+    }
+</script>
 
 {% endblock %}
