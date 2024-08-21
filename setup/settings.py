@@ -119,7 +119,7 @@ DATABASES = {
         # o número da porta, se não for o padrão
         'PORT': str(os.getenv('POSTGRES_PORT')),
         # conexão permanece aberta por 10 minutos
-        'CONN_MAX_AGE': 600,  
+        # 'CONN_MAX_AGE': 600,  
     }
 }
 

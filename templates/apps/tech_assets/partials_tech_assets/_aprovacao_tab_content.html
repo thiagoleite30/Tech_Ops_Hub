@@ -1,28 +1,37 @@
 {% load static %}
 <div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
-    <h5 class="card-title">{{aprovall.movimentacao}}</h5>
+    <h5 class="card-title">{{approval.movimentacao}}</h5>
     <div class="card" style="margin-top: 10px; margin-bottom: 10px;">
         <ul class="list-group list-group-flush">
-            <li class="list-group-item">ID Movimentação: {{aprovall.movimentacao.id}}</li>
-            <li class="list-group-item">Data Inclusão: {{aprovall.data_criacao}}</li>
-            <li class="list-group-item">Data Aprovação: {{aprovall.data_conclusao}}</li>
-            <li class="list-group-item">Aprovador: {{aprovall.aprovador}}</li>
-            <li class="list-group-item">Status: {{aprovall.get_status_aprovacao_display}}</li>
+            <li class="list-group-item">ID Movimentação: {{approval.movimentacao.id}}</li>
+            <li class="list-group-item">Data Inclusão: {{approval.data_criacao}}</li>
+            <li class="list-group-item">{% if approval.status_aprovacao == 'aprovado' %}Data Aprovação: {% else %}Data
+                Reprovação: {% endif %}{{approval.data_conclusao}}</li>
+            <li class="list-group-item">Aprovador: {{approval.aprovador}}</li>
+            <li class="list-group-item" style="font-size: 15pt;">Status:
+                <b>{{approval.get_status_aprovacao_display}}</b>
+            </li>
         </ul>
+
+        <div class="card-body">
+            {% if approval.status_aprovacao == 'pendente' %}
+            <div class="end-template container-fluid"
+                style="display: flex; align-items: center; justify-content: center; padding: 20px;">
+                <a href="{% url 'aprova_movimentacao' approval.id %}"
+                    class="btn btn-success btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}"
+                    style="margin-right: 10px;">Aprovar</a>
+                <a href="{% url 'reprova_movimentacao' approval.id %}"
+                    class="btn btn-danger btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}">Reprovar</a>
+            </div>
+            {%else%}
+            <div class="end-template container-fluid"
+                style="display: flex; align-items: center; justify-content: center; padding: 20px;">
+                <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aprovar {{approval.id}}</a>
+                <a href="#" class="btn btn-danger btn-lg disabled">Reprovar</a>
+            </div>
+            {%endif%}
+        </div>
     </div>
-    {% if is_aprovadores_user %}
-    <div class="end-template container-fluid"
-        style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-        <a href="#" class="btn btn-success btn-lg" style="margin-right: 10px;">Aprovar</a>
-        <a href="#" class="btn btn-danger btn-lg">Reprovar</a>
-    </div>
-    {% else %}
-    <div class="end-template container-fluid"
-        style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-        <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aprovar</a>
-        <a href="#" class="btn btn-danger btn-lg disabled">Reprovar</a>
-    </div>
-    {% endif %}
 </div>
 <div class="tab-pane fade" id="info" role="tabpanel" aria-labelledby="info-tab">
     <h5 class="card-title">{{movement.get_tipo_display}} ID {{movement.id}}</h5>

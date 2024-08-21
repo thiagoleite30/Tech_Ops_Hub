@@ -6,8 +6,9 @@
             <li class="list-group-item">ID Movimentação: {{aprovall.movimentacao.id}}</li>
             <li class="list-group-item">Data Inclusão: {{aprovall.data_criacao}}</li>
             <li class="list-group-item">Data Aprovação: {{aprovall.data_conclusao}}</li>
-            <li class="list-group-item">Aprovador: {{aprovall.aprovador}}</li>
-            <li class="list-group-item">Status: {{aprovall.get_status_aprovacao_display}}</li>
+            <li class="list-group-item">Aprovador de TI: {{aprovall.aprovador.first_name}} {{aprovall.aprovador.last_name}} ({{aprovall.aprovador}})</li>
+            <li class="list-group-item" style="font-size: 15pt;">Status: <b>{{aprovall.get_status_aprovacao_display}}</b></li>
+            <li class="list-group-item">Aceite de termo: </li>
         </ul>
     </div>
     <div class="card-body">

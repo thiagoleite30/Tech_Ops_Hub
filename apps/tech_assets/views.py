@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from apps.tech_assets.models import Approval, Asset, AssetCart, AssetInfo, AssetModel, AssetType, Cart, Movement, MovementAsset, Maintenance, Manufacturer
+from apps.tech_assets.models import Approval, Asset, AssetCart, AssetInfo, AssetModel, AssetType, Cart, Movement, MovementAsset, Maintenance, Manufacturer, TermRes
 from apps.tech_assets.services import register_logentry, upload_assets, concluir_manutencao_service, get_maintenance_asset, get_movement_asset
 from django.contrib.admin.models import CHANGE, DELETION, ADDITION
 from django.shortcuts import get_object_or_404, render, redirect
@@ -248,9 +248,9 @@ def novo_movimento(request):
             if 'save' in request.POST:
                 return redirect('index')
             elif 'save_and_add' in request.POST:
-                return redirect('novo_movimento')
+                return redirect('carrinho')
 
-    return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
+    return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name, 'texto': 'Cancelar'})
 
 
 @login_required
@@ -396,7 +396,7 @@ def carrinho(request):
             Q(patrimonio__icontains=query)
         )
 
-    paginator = Paginator(assets, 15)
+    paginator = Paginator(assets, 16)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -527,7 +527,7 @@ def aprovacoes(request):
                     
             aprovacoes = aprovacoes.filter(status_query)
 
-            paginator = Paginator(aprovacoes, 15)
+            paginator = Paginator(aprovacoes, 16)
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
 
@@ -563,7 +563,7 @@ def aprovacao(request, aprovacao_id):
         ativos_na_movimentacao = Asset.objects.filter(id__in=ativos_id)
 
     context = {
-        'aprovall': aprovacao,
+        'approval': aprovacao,
         'movement': movimentacao if movimentacao else None,
         'assets': ativos_na_movimentacao if ativos_na_movimentacao else None,
     }
@@ -614,14 +614,95 @@ def reprova_movimentacao(request, aprovacao_id):
 
     return redirect('aprovacoes')
 
-
 @login_required
-@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
-def aprova_termo(request, aprovacao_id):
+@group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='forbidden_url')
+def termos(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    aprovacao = get_object_or_404(Approval, pk=aprovacao_id)
+    user_instance = get_object_or_404(User, username=request.user)
+
+    # Se houver usuario
+    if user_instance:
+        try:
+            query = request.GET.get('q', '')
+            termos = TermRes.objects.all()
+            status_termos = request.GET.getlist('status')
+
+            # Query pode ser alterada dependendo de como queremos consultar
+            if query:
+                aprovacoes = aprovacoes.filter(
+                    # Q(aprovador__icontains=query) |
+                    Q(status_aprovacao__icontains=query)
+                )
+            
+            status_query = Q()
+            if status_termos:
+                
+                if 'aceito' in status_termos:
+                    status_query |= Q(aceite_usuario='aceito')
+                if 'recusado' in status_termos:
+                    status_query |= Q(aceite_usuario='recusado')
+                if 'pendente' in status_termos:
+                    status_query |= Q(aceite_usuario='pendente')
+                    
+            termos = termos.filter(status_query)
+
+            paginator = Paginator(termos, 15)
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+
+            context = {
+                'termos': termos,
+                'url_form': resolve(request.path_info).url_name,
+                'page_obj': page_obj,
+                'query': query,
+            }
+
+            return render(request, 'apps/tech_assets/termos.html', context)
+        except Exception as e:
+            print(f'ERROR :: TERMOS :: {e}')
+
+    return redirect('index')
+
+    # Uma instancia paginator definida para o máximo de 15 ativos por pagina \
+        # E já captura dos assets os 15 primeiros da consulta
+    paginator = Paginator(assets, 15)
+
+    # Obtém o número da página atual
+    page_number = request.GET.get('page')
+
+    # Obtém os objetos de acordo com a página presente no URL
+    page_obj = paginator.get_page(page_number)
+
+    # Verifica se tem manutenção ativa pro asset
+    # Se houver, muda status
+    for asset in assets:
+        if get_maintenance_asset(asset.id)['status']:
+            asset = get_object_or_404(Asset, pk=asset.id)
+            asset.status = 'em_manutencao'
+            asset.save()
+
+    modelo = Asset
+    cabecalhos = [fiel.name for fiel in modelo._meta.fields]
+
+    context = {
+        'assets_in_cart': assets_in_cart,
+        'cabecalhos': cabecalhos,
+        'page_obj': page_obj,
+        'query': query,
+        'assets_unavailable': assets_unavailable,
+    }
+    return render(request, 'apps/tech_assets/ativos.html', context)
+
+@login_required
+@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+def termo(request, termo_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    term_res = get_object_or_404(TermRes, pk=termo_id)
+    aprovacao = get_object_or_404(Approval, id=term_res.aprovacao_id)
 
     if MovementAsset.objects.filter(movimento=aprovacao.movimentacao).exists():
         ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(

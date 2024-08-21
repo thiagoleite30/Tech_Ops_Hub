@@ -14,11 +14,14 @@
 {% endfor %}
 <div class="form-group-new">
     <div class="col-sm-20">
-        {% if not asset_id %}
+        {% if not asset_id and url_form != 'novo_movimento' %}
         <button name="save" type="submit" class="btn btn-secondary btn-lg ">Salvar</button>
         <button name="save_and_add" type="submit" class="btn btn-outline-secondary btn-lg">Salvar e cadastrar outro(a)</button>
         {% else %}
-        <button name="save" type="submit" class="btn btn-secondary btn-lg btn-block">Salvar</button>
+        <button name="save" type="submit" class="btn btn-secondary btn-lg">Salvar</button>
+        {% if url_form == 'novo_movimento' %}
+        <a href="{% url 'carrinho' %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+        {% endif %}
         {% endif %}
     </div>
 </div>

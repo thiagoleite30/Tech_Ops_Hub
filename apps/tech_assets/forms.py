@@ -317,7 +317,17 @@ class AssetForms(forms.ModelForm):
             raise forms.ValidationError()
 
         return instance
+    
 
+    def clean_nome(self):
+        nome = self.cleaned_data.get('nome')
+        if nome:
+            nome_exist = [asset.nome for asset in Asset.objects.filter(nome__iexact=nome)]
+            if nome_exist:
+                raise forms.ValidationError(
+                    f'O nome "{nome}" já está em uso com "{nome_exist[0]}".')
+
+        return nome
 
 class MovementForms(forms.ModelForm):
     form_name = 'Nova Movimentação'
@@ -339,9 +349,9 @@ class MovementForms(forms.ModelForm):
 
     class Meta:
         model = Movement
-        exclude = ['status']
+        exclude = ['status', 'data_devolucao_real']
         fields = ['tipo', 'usuario', 'centro_de_custo', 'aprovador', 'data_movimento',
-                  'data_devolucao_prevista', 'data_devolucao_real',
+                  'data_devolucao_prevista',
                   'chamado_top_desk',  'observacoes', 'ativos']
         labels = {
             'tipo': 'Tipo de Movimentação',
@@ -397,23 +407,26 @@ class MovementForms(forms.ModelForm):
             raise forms.ValidationError(
                 f'Nenhum ativo selecionado. Verifique o carrinho!')
 
+    def clean_data_devolucao_prevista(self):
+        data_movimento = self.cleaned_data.get('data_movimento')
+        data_devolucao_prevista = self.cleaned_data.get('data_devolucao_prevista')
+        
+        if data_devolucao_prevista:
+            if data_movimento > data_devolucao_prevista:
+                raise forms.ValidationError(message=f'A data prevista para devolução não pode ser inferior a data de inicio!')
+        
+        return data_devolucao_prevista
+
     def save(self, commit=True):
         instance = super().save(commit=False)
         ativos = self.cleaned_data['ativos']
         aprovador = self.cleaned_data['aprovador']
         if commit:
             instance.save(ativos=ativos, aprovador=aprovador)
-            #self.save_movement_asset(instance)
         else:
             raise forms.ValidationError()
 
         return instance
-
-    def save_movement_asset(self, instance):
-        ativos = self.cleaned_data['ativos']
-        for asset in ativos:
-            MovementAsset.objects.create(ativo=asset, movimento=instance)
-    
 
 
 class CSVUploadForm(forms.Form):

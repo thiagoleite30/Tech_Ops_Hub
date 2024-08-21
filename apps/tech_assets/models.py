@@ -353,6 +353,8 @@ class Approval(models.Model):
         self.mudar_status_ativos('separado')
         self.mudar_status_movimentacao('aprovar')
         self.save()
+        if self.movimentacao.tipo == 'emprestimo':
+            TermRes.objects.create(movimentacao=self.movimentacao, aprovacao=self)
 
     def reprovar_movimentacao(self):
         self.status_aprovacao = 'reprovado'
@@ -398,30 +400,40 @@ class Approval(models.Model):
 
 class TermRes(models.Model):
 
+    status_aceite = [
+        ('aceito', 'Aceito'),
+        ('pendente', 'Pendente'),
+        ('recusado', 'Recusado')
+    ]
     
     movimentacao = models.ForeignKey(Movement, on_delete=models.CASCADE, related_name='resp')
     aprovacao = models.ForeignKey(Approval,on_delete=models.CASCADE, related_name='approval')
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_resposta = models.DateTimeField(null=True, blank=True)
-    status = models.BooleanField(default=False)
+    status_resposta = models.BooleanField(default=False)
+    aceite_usuario = models.CharField(max_length=100, choices=status_aceite, default='pendente')
     
     
     def marcar_como_aceito(self):
-        self.status = True
+        self.status_resposta = True
         self.data_resposta = datetime.now()
+        self.aceite_usuario = 'aceito'
         self.save()
-        #movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
-        self.movimentacao.status = 'em_andamento'
-        self.movimentacao.save()
+        movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
+        movimentacao.status = 'em_andamento'
+        movimentacao.save()
         Approval.mudar_status_ativos(self.aprovacao, 'em_uso')
     
     def marcar_como_recusa(self):
+        self.status_resposta = True
         self.data_resposta = datetime.now()
+        self.aceite_usuario = 'recusado'
         self.save()
-        #movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
-        self.movimentacao.status = 'concluido'
-        self.movimentacao.save()
+        movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
+        movimentacao.status = 'concluido'
+        movimentacao.save()
         Approval.mudar_status_ativos(self.aprovacao, 'em_estoque')
+        Approval.mudar_status_movimentacao(self.movimentacao, 'reprovar')
 
 class ReturnTerm(models.Model):
     movimentacao = models.ForeignKey(Movement, on_delete=models.CASCADE, related_name='returned')

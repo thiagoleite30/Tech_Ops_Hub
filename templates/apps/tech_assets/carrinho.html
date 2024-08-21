@@ -19,7 +19,11 @@
                     <div class="card-body">
                         <a style="pointer-events: stroke;" href="#">
                             <div class="cart-icon-container">
-                                <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
+                                <a style="pointer-events: stroke;" href="{% url 'ativo' asset.id %}">
+                                    <div class="cart-icon-container">
+                                        <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
+                                    </div>
+                                </a>
                             </div>
                         </a>
                         <a style="pointer-events: stroke; color: red;" href="{% url 'remove_do_carrinho' asset.id %}">

@@ -5,7 +5,7 @@ from apps.tech_assets.views import forbidden_url, index, login, cadastro_fabrica
     carrinho, add_carrinho, remove_do_carrinho, cadastro_modelo, \
     deleta_carrinho, aprovacoes, aprovacao, ativo, concluir_manutencao, \
     cadastro_ativos_csv, aprova_movimentacao, reprova_movimentacao, \
-    aprova_termo
+    termos, termo
 
 
 # Lista de endpoints:
@@ -38,6 +38,7 @@ urlpatterns = [
          aprova_movimentacao, name='aprova_movimentacao'),
     path('reprova_movimentacao/<int:aprovacao_id>/',
          reprova_movimentacao, name='reprova_movimentacao'),
-    path('aprova_termo/<int:aprovacao_id>/', aprova_termo, name='aprova_termo'),
+    path('termos/', termos, name='termos'),
+    path('termo/<int:termo_id>/', termo, name='termo'),
     path('upload_csv/', cadastro_ativos_csv, name='upload_csv')
 ]
