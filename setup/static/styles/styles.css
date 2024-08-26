@@ -175,3 +175,28 @@ td:nth-last-child(2) {
   font-weight: bold;
 }
 
+.btn-circle-red {
+  width: 25px; /* Ajuste o tamanho conforme necessário */
+  height: 25px; /* Ajuste o tamanho conforme necessário */
+  background-color: red; /* Cor de fundo do botão */
+  border: none;
+  border-radius: 50%; /* Torna o botão circular */
+  color: white; /* Cor do texto */
+  font-size: 24px; /* Tamanho do texto */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15pt;
+  cursor: pointer;
+  outline: none; /* Remove o contorno ao focar */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adiciona uma sombra sutil */
+  transition: background-color 0.3s ease; /* Transição suave na cor do fundo */
+}
+
+.btn-circle-red:hover {
+  background-color: darkred; /* Cor do fundo quando o botão é hovered */
+}
+
+.btn-icon {
+  font-weight: bold;
+}

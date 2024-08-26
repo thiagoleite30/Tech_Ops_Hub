@@ -372,9 +372,20 @@ class DynamicAccessoryForm(forms.Form):
     )
 
     quantidade = forms.IntegerField(
+        initial=1,
         widget=forms.NumberInput(attrs={'class': 'form-control'}),
         required=False
     )
+    
+    def clean_quantidade(self):
+        quantidade = self.cleaned_data['quantidade']
+        
+        if quantidade:
+            print(f'DEBUG :: CLEAN QUANTIDADE :: ENTROU NO IF QUANTIDADE')
+            if quantidade <= 0:
+                print(f'DEBUG :: CLEAN QUANTIDADE :: ENTROU NO IF <= 0')
+                raise forms.ValidationError(message="A quantidade informada tem que ser maior que 0 (zero)!")
+        return quantidade
 
 
 DynamicAccessoryFormSet = forms.formset_factory(
@@ -474,6 +485,19 @@ class MovementForms(forms.ModelForm):
                     message=f'A data prevista para devolução não pode ser inferior a data de inicio!')
 
         return data_devolucao_prevista
+    
+    def clean_accessories_data(self):
+        # Supondo que você está coletando os dados diretamente dos campos do formset
+        quantidades = self.data.getlist('form-quantidade')
+
+        for quantity in quantidades:
+            try:
+                if int(quantity) <= 0:
+                    raise forms.ValidationError("A quantidade informada tem que ser maior que 0 (zero)!")
+            except ValueError:
+                raise forms.ValidationError("Quantidade inválida.")
+
+        return self.cleaned_data.get('accessories_data')
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -487,6 +511,7 @@ class MovementForms(forms.ModelForm):
         if len(acessorios_id) != len(quantidades):
             raise ValueError(
                 "O número de IDs de acessórios e quantidades não coincide.")
+
 
         # Agrupe IDs e some as quantidades
         accessory_quantity_map = {}
