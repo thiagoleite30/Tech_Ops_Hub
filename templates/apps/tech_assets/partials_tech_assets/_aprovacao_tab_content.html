@@ -26,7 +26,8 @@
             {%else%}
             <div class="end-template container-fluid"
                 style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-                <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aprovar {{approval.id}}</a>
+                <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aprovar
+                    {{approval.id}}</a>
                 <a href="#" class="btn btn-danger btn-lg disabled">Reprovar</a>
             </div>
             {%endif%}
@@ -78,5 +79,35 @@
 
         </div>
         {% endfor %}
+    </div>
+</div>
+<div class="tab-pane fade" id="acessorios" role="tabpanel" aria-labelledby="acessorios-tab">
+    <div class="row">
+        {% if accessorys %}
+        {% for accessory, quantity in accessorys %}
+        <div class="col-sm-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{accessory.get_tipo_display}}</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Ativo: {{accessory.nome}}</li>
+                    <li class="list-group-item">Modelo: {{accessory.modelo}}</li>
+                    <li class="list-group-item">Quantidade: {{quantity}}</li>
+                </ul>
+                <div class="card-body">
+                    <a style="pointer-events: stroke;" href="#">
+                        <div class="cart-icon-container">
+                            <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+        {%else%}
+        <h5>Movimentação não possui acessórios!</h5>
+        {%endif%}
     </div>
 </div>

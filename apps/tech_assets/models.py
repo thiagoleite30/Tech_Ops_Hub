@@ -78,6 +78,27 @@ class Location(models.Model):
         verbose_name_plural = 'Localizações'
 
 
+class Accessory(models.Model):
+
+    TIPO_CHOICES = [
+        ('perifericos', 'Periférico(s) (E/S)'),
+        ('mochilas', 'Mochila(s)'),
+        ('carregadores', 'Carregador(es)'),
+        ('cabos', 'Cabo(s)'),
+        ('outros', 'Outro(s)')
+    ]
+
+    nome = models.CharField(max_length=100)
+    modelo = models.CharField(max_length=100, blank=True, null=True)
+    tipo = models.CharField(
+        max_length=50, choices=TIPO_CHOICES, blank=False, null=False)
+    fabricante = models.ForeignKey(
+        Manufacturer, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.tipo} - {self.nome} | {self.modelo} | {self.fabricante}'
+
+
 class Asset(models.Model):
     STATUS_CHOICES = [
         ('em_uso', 'Em Uso'),
@@ -145,6 +166,8 @@ class Movement(models.Model):
     ]
 
     ativos = models.ManyToManyField(Asset, through='MovementAsset')
+    acessorios = models.ManyToManyField(
+        Accessory, blank=True, through='MovementAccessory')
     tipo = models.CharField(
         max_length=50, choices=TIPOS, default='emprestimo')
     usuario = models.ForeignKey(
@@ -167,16 +190,28 @@ class Movement(models.Model):
         is_new = self.pk is None  # Verifica se é uma nova instância
         ativos = kwargs.pop('ativos', None)
         aprovador = kwargs.pop('aprovador', None)
+        acessorios = kwargs.pop('acessorios', None)
         super(Movement, self).save(*args, **kwargs)
 
         if is_new:
-            print(f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: IS NEW!')
             if ativos:
-                print(f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: EXISTEM OS ATIVOS!')
                 for ativo in ativos:
                     MovementAsset.objects.create(ativo=ativo, movimento=self)
-                print(
-                    f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: CRIOU OS MOVEMENT ASSETS!')
+
+            if acessorios:  # Verifica se foi passado alguma lista de acessórios no form da movimentação
+                # Se entrar aqui irá criar e salvar as instâncias de MovementAccessory
+                # Onde tera a relação de acessório e movimento com valor de quantidade
+                for acessorio_id, total_quantidade in acessorios.items():
+                    try:
+                        acessorio = Accessory.objects.get(id=acessorio_id)
+                        MovementAccessory.objects.create(
+                            movimento=self,
+                            acessorio=acessorio,
+                            quantidade=total_quantidade
+                        )
+                    except Accessory.DoesNotExist as error:
+                        print(f'ERROR :: {error}')
+
             # Cria uma nova aprovação automaticamente
             print(
                 f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: CHAMANDO A CRIACAO DE APPROVAL!')
@@ -209,6 +244,15 @@ class MovementAsset(models.Model):
 
     def __str__(self):
         return self.id
+
+
+class MovementAccessory(models.Model):
+    acessorio = models.ForeignKey(Accessory,  on_delete=models.CASCADE)
+    movimento = models.ForeignKey(Movement, on_delete=models.CASCADE)
+    quantidade = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.quantidade} x {self.acessorio.nome}"
 
 
 class Cart(models.Model):
@@ -354,7 +398,8 @@ class Approval(models.Model):
         self.mudar_status_movimentacao('aprovar')
         self.save()
         if self.movimentacao.tipo == 'emprestimo':
-            TermRes.objects.create(movimentacao=self.movimentacao, aprovacao=self)
+            TermRes.objects.create(
+                movimentacao=self.movimentacao, aprovacao=self)
 
     def reprovar_movimentacao(self):
         self.status_aprovacao = 'reprovado'
@@ -405,15 +450,17 @@ class TermRes(models.Model):
         ('pendente', 'Pendente'),
         ('recusado', 'Recusado')
     ]
-    
-    movimentacao = models.ForeignKey(Movement, on_delete=models.CASCADE, related_name='resp')
-    aprovacao = models.ForeignKey(Approval,on_delete=models.CASCADE, related_name='approval')
+
+    movimentacao = models.ForeignKey(
+        Movement, on_delete=models.CASCADE, related_name='resp')
+    aprovacao = models.ForeignKey(
+        Approval, on_delete=models.CASCADE, related_name='approval')
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_resposta = models.DateTimeField(null=True, blank=True)
     status_resposta = models.BooleanField(default=False)
-    aceite_usuario = models.CharField(max_length=100, choices=status_aceite, default='pendente')
-    
-    
+    aceite_usuario = models.CharField(
+        max_length=100, choices=status_aceite, default='pendente')
+
     def marcar_como_aceito(self):
         self.status_resposta = True
         self.data_resposta = datetime.now()
@@ -423,7 +470,7 @@ class TermRes(models.Model):
         movimentacao.status = 'em_andamento'
         movimentacao.save()
         Approval.mudar_status_ativos(self.aprovacao, 'em_uso')
-    
+
     def marcar_como_recusa(self):
         self.status_resposta = True
         self.data_resposta = datetime.now()
@@ -435,21 +482,19 @@ class TermRes(models.Model):
         Approval.mudar_status_ativos(self.aprovacao, 'em_estoque')
         Approval.mudar_status_movimentacao(self.movimentacao, 'reprovar')
 
+
 class ReturnTerm(models.Model):
-    movimentacao = models.ForeignKey(Movement, on_delete=models.CASCADE, related_name='returned')
+    movimentacao = models.ForeignKey(
+        Movement, on_delete=models.CASCADE, related_name='returned')
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_devolucao = models.DateTimeField(null=True, blank=True)
     status = models.BooleanField(default=False)
-    
+
     def marcar_como_devolvido(self):
         self.status = True
         self.data_aceite = datetime.now()
         self.save()
-        #movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
+        # movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
         self.movimentacao.status = 'concluido'
         self.movimentacao.save()
         Approval.mudar_status_ativos(self.aprovacao, 'em_estoque')
-
-        
-    
-    

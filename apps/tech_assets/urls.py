@@ -5,7 +5,7 @@ from apps.tech_assets.views import forbidden_url, index, login, cadastro_fabrica
     carrinho, add_carrinho, remove_do_carrinho, cadastro_modelo, \
     deleta_carrinho, aprovacoes, aprovacao, ativo, concluir_manutencao, \
     cadastro_ativos_csv, aprova_movimentacao, reprova_movimentacao, \
-    termos, termo
+    termos, termo, cadastro_acessorio, get_accessory_options
 
 
 # Lista de endpoints:
@@ -21,6 +21,7 @@ urlpatterns = [
     path('cadastro_local/', cadastro_local, name='cadastro_local'),
     path('cadastro_manutencao/<int:asset_id>/',
          cadastro_manutencao, name='cadastro_manutencao'),
+    path('cadastro_acessorio/', cadastro_acessorio, name='cadastro_acessorio'),
     path('concluir_manutencao/<int:asset_id>/',
          concluir_manutencao, name='concluir_manutencao'),
     path('cadastro_ativo/', cadastro_ativo, name='cadastro_ativo'),
@@ -40,5 +41,6 @@ urlpatterns = [
          reprova_movimentacao, name='reprova_movimentacao'),
     path('termos/', termos, name='termos'),
     path('termo/<int:termo_id>/', termo, name='termo'),
-    path('upload_csv/', cadastro_ativos_csv, name='upload_csv')
+    path('upload_csv/', cadastro_ativos_csv, name='upload_csv'),
+    path('get-accessory-options/', get_accessory_options, name='get_accessory_options'),
 ]

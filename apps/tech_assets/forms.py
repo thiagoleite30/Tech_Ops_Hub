@@ -1,13 +1,28 @@
 from django import forms
-from django.db import connection
+from django.db import connection, transaction
 from django.shortcuts import get_object_or_404
-from apps.tech_assets.models import Asset, AssetCart, AssetModel, Cart, Manufacturer, CostCenter, \
-    AssetType, Location, Maintenance, Movement, MovementAsset
+from apps.tech_assets.models import Accessory, Asset, AssetCart, AssetModel, Cart, Manufacturer, CostCenter, \
+    AssetType, Location, Maintenance, Movement, MovementAccessory, MovementAsset
 from datetime import datetime
 from django.contrib.auth.models import User, Group
 from django.contrib.admin.models import CHANGE, DELETION, ADDITION
 
+
 from apps.tech_assets.services import register_logentry
+
+
+class MovementAccessoryForm(forms.ModelForm):
+    class Meta:
+        model = MovementAccessory
+        fields = ['acessorio', 'quantidade']
+        labels = {
+            'acessorio': 'Acessório',
+            'quantidade': 'Quantidade'
+        }
+        widgets = {
+            'acessorio': forms.Select(attrs={'class': 'form-control'}),
+            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': 1})
+        }
 
 
 class ManufacturerForms(forms.ModelForm):
@@ -177,6 +192,26 @@ class LocationForms(forms.ModelForm):
         return instance
 
 
+class AccessoryForms(forms.ModelForm):
+    form_name = 'Novo Acessório'
+
+    class Meta:
+        model = Accessory
+        exclude = []
+        labels = {
+            'nome': 'Nome',
+            'modelo': 'Modelo',
+            'tipo': 'Tipo',
+            'fabricante': 'Fabricante',
+        }
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'modelo': forms.TextInput(attrs={'class': 'form-control'}),
+            'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'fabricante': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+
 class MaintenanceForms(forms.ModelForm):
     form_name = 'Registro de Manutenção'
 
@@ -186,9 +221,6 @@ class MaintenanceForms(forms.ModelForm):
             attrs={'class': 'form-control'}),
         required=True
     )
-
-    if 'tipo' == 'interna':
-        print(f'Manutenção interna!!!')
 
     class Meta:
         model = Maintenance
@@ -222,27 +254,29 @@ class MaintenanceForms(forms.ModelForm):
         if not operador:
             raise forms.ValidationError()
         return operador
-    
+
     def clean_data_prevista_fim(self):
         data_inicio = self.cleaned_data.get('data_inicio')
         data_prevista_fim = self.cleaned_data.get('data_prevista_fim')
 
         if not data_prevista_fim:
-            raise forms.ValidationError(message=f'Uma previsão de fim de manutenção dever ser passada!')
+            raise forms.ValidationError(
+                message=f'Uma previsão de fim de manutenção dever ser passada!')
         if data_inicio > data_prevista_fim:
-            raise forms.ValidationError(message=f'A data prevista para conclusão não pode ser inferior a data de inicio!')
-        
+            raise forms.ValidationError(
+                message=f'A data prevista para conclusão não pode ser inferior a data de inicio!')
+
         return data_prevista_fim
-    
+
     def clean_chamado_externo(self):
         chamado_externo = self.cleaned_data.get('chamado_externo')
         tipo_manutencao = self.cleaned_data.get('tipo_manutencao')
-        
+
         if tipo_manutencao == 'externa' and not chamado_externo:
-            raise forms.ValidationError(message=f'Um número de chamado externo deve ser informado para manutenções Externas!')
-        
+            raise forms.ValidationError(
+                message=f'Um número de chamado externo deve ser informado para manutenções Externas!')
+
         return chamado_externo
-            
 
     def __init__(self, *args, **kwargs):
         # Receber a lista de ativos a ser preenchida
@@ -305,8 +339,6 @@ class AssetForms(forms.ModelForm):
             'centro_de_custo': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
         }
-        
-            
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -317,17 +349,37 @@ class AssetForms(forms.ModelForm):
             raise forms.ValidationError()
 
         return instance
-    
 
     def clean_nome(self):
         nome = self.cleaned_data.get('nome')
         if nome:
-            nome_exist = [asset.nome for asset in Asset.objects.filter(nome__iexact=nome)]
+            nome_exist = [
+                asset.nome for asset in Asset.objects.filter(nome__iexact=nome)]
             if nome_exist:
                 raise forms.ValidationError(
                     f'O nome "{nome}" já está em uso com "{nome_exist[0]}".')
 
         return nome
+
+
+class DynamicAccessoryForm(forms.Form):
+    acessorio = forms.ModelChoiceField(
+        queryset=Accessory.objects.all(),
+        widget=forms.Select(
+            attrs={'class': 'form-control'}
+        ),
+        required=False
+    )
+
+    quantidade = forms.IntegerField(
+        widget=forms.NumberInput(attrs={'class': 'form-control'}),
+        required=False
+    )
+
+
+DynamicAccessoryFormSet = forms.formset_factory(
+    DynamicAccessoryForm, extra=0, can_delete=True)
+
 
 class MovementForms(forms.ModelForm):
     form_name = 'Nova Movimentação'
@@ -339,13 +391,15 @@ class MovementForms(forms.ModelForm):
         required=False
     )
 
-
     aprovador = forms.ModelChoiceField(
-            queryset=Group.objects.none(),
-            widget=forms.Select(
-                attrs={'class': 'form-control'}),
-            required=True
-        )
+        queryset=Group.objects.none(),
+        widget=forms.Select(
+            attrs={'class': 'form-control'}),
+        required=True
+    )
+
+    accessories_data = forms.CharField(
+        widget=forms.HiddenInput(), required=False)
 
     class Meta:
         model = Movement
@@ -377,10 +431,13 @@ class MovementForms(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         # Receber a lista de ativos a ser preenchida
+        # sub_form_instance = kwargs.pop('sub_form_instance', None)
         ativos = kwargs.pop('ativos', None)
         aprovador = kwargs.pop('aprovador', None)
-        
+        formset = kwargs.pop('formset', None)
+        # Configure o formulário secundário
         super().__init__(*args, **kwargs)
+        self.formset = formset if formset else DynamicAccessoryFormSet()
         if ativos is not None:
             self.fields['ativos'].queryset = Asset.objects.filter(
                 id__in=[a.id for a in ativos])
@@ -392,7 +449,6 @@ class MovementForms(forms.ModelForm):
             self.fields['aprovador'].queryset = users
             self.fields['aprovador'].initial = aprovador
             self.fields['aprovador'].widget.attrs['readonly'] = False
-            
 
     def clean_ativos(self):
         ativos = self.cleaned_data['ativos']
@@ -409,20 +465,47 @@ class MovementForms(forms.ModelForm):
 
     def clean_data_devolucao_prevista(self):
         data_movimento = self.cleaned_data.get('data_movimento')
-        data_devolucao_prevista = self.cleaned_data.get('data_devolucao_prevista')
-        
+        data_devolucao_prevista = self.cleaned_data.get(
+            'data_devolucao_prevista')
+
         if data_devolucao_prevista:
             if data_movimento > data_devolucao_prevista:
-                raise forms.ValidationError(message=f'A data prevista para devolução não pode ser inferior a data de inicio!')
-        
+                raise forms.ValidationError(
+                    message=f'A data prevista para devolução não pode ser inferior a data de inicio!')
+
         return data_devolucao_prevista
 
     def save(self, commit=True):
         instance = super().save(commit=False)
         ativos = self.cleaned_data['ativos']
         aprovador = self.cleaned_data['aprovador']
+        # Capture os acessórios enviados no POST
+        acessorios_id = self.data.getlist('form-acessorio')
+        quantidades = self.data.getlist('form-quantidade')
+
+        # Verifique se as listas têm o mesmo comprimento
+        if len(acessorios_id) != len(quantidades):
+            raise ValueError(
+                "O número de IDs de acessórios e quantidades não coincide.")
+
+        # Agrupe IDs e some as quantidades
+        accessory_quantity_map = {}
+        for accessory_id, quantity in zip(acessorios_id, quantidades):
+            if accessory_id in accessory_quantity_map:
+                accessory_quantity_map[accessory_id] += int(quantity)
+            else:
+                accessory_quantity_map[accessory_id] = int(quantity)
+
         if commit:
-            instance.save(ativos=ativos, aprovador=aprovador)
+
+            instance.save(ativos=ativos, aprovador=aprovador, acessorios=accessory_quantity_map)
+
+            # Processar os dados do formset
+            for form in self.formset:
+                if form.cleaned_data:
+                    # Salvar ou processar os dados dos acessórios
+                    pass
+
         else:
             raise forms.ValidationError()
 

@@ -24,11 +24,15 @@
                     </div>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item"><b>ID Movimentação: </b>{{approval.movimentacao.id}}</li>
-                        <li class="list-group-item"><b>Tipo de Movimentação: </b>{{ approval.movimentacao.get_tipo_display}}</li>
-                        <li class="list-group-item"><b>Status Movimentação: </b>{{ approval.movimentacao.get_status_display }}</li>
-                        <li class="list-group-item"><b>Usuário Responsável: </b>{{ approval.movimentacao.usuario.first_name }} {{ approval.movimentacao.usuario.last_name }} ({{ approval.movimentacao.usuario }})</li>
-                        <li class="list-group-item"><b>Aprovador designado: </b>{{ approval.aprovador}}</li>
-                        <li class="list-group-item"><b>Status: </b>{{ approval.get_status_aprovacao_display }}</li>
+                        <li class="list-group-item"><b>Tipo de Movimentação:
+                            </b>{{approval.movimentacao.get_tipo_display}}</li>
+                        <li class="list-group-item"><b>Status Movimentação:
+                            </b>{{approval.movimentacao.get_status_display}}</li>
+                        <li class="list-group-item"><b>Usuário Responsável:
+                            </b>{{approval.movimentacao.usuario.first_name}} {{approval.movimentacao.usuario.last_name}}
+                            ({{approval.movimentacao.usuario}})</li>
+                        <li class="list-group-item"><b>Aprovador designado: </b>{{approval.aprovador}}</li>
+                        <li class="list-group-item"><b>Status: </b>{{approval.get_status_aprovacao_display}}</li>
                     </ul>
                     <div class="card-body">
                         {% if approval.status_aprovacao == 'pendente' %}
