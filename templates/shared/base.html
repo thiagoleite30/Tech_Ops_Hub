@@ -1,8 +1,9 @@
-{% load static %}
+{% load static %}{% load pwa %}
 <!DOCTYPE html>
 <html lang="pt-br" data-bs-theme="auto">
 
 <head>
+    {% progressive_web_app_meta %}
     <script src="{% static 'assets/js/color-modes.js' %}"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">

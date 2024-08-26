@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'pwa',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -209,3 +210,37 @@ LOGOUT_REDIRECT_URL = f'https://login.microsoftonline.com/common/oauth2/v2.0/log
     LOGIN_URL}'
 
 # LOGOUT_REDIRECT_URL = '/login'
+
+# PWA Settings
+
+PWA_APP_NAME = 'Tech Ops Hub'
+PWA_APP_DESCRIPTION = "Hub de Operações Tecnológicas"
+PWA_APP_THEME_COLOR = '#000'
+PWA_APP_BACKGROUND_COLOR = '#fff'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = '/'
+PWA_APP_ORIENTATION = 'any'
+PWA_APP_START_URL = '/'
+PWA_APP_STATUS_BAR_COLOR = 'default'
+PWA_APP_ICONS = [
+    {
+        'src': '/static/assets/ícones/android-icons/android-launchericon-144-144.png',
+        'sizes': '144x144'
+    }
+]
+PWA_APP_ICONS_APPLE = [
+    {
+        'src': '/static/assets/ícones/ios-icons/144.png',
+        'sizes': '144x144'
+    }
+]
+PWA_APP_SPLASH_SCREEN = [
+    {
+        'src': '/static/assets/ícones/android-icons/android-launchericon-512-512.png',
+        'media': '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)'
+    }
+]
+PWA_APP_DIR = 'ltr'
+PWA_APP_LANG = 'pt-br'
+
+PWA_OFFLINE_URL  = os.path.join(BASE_DIR, 'templates/shared/offline.html')
