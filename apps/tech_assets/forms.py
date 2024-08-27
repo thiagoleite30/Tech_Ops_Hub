@@ -336,7 +336,7 @@ class AssetForms(forms.ModelForm):
             'data_aquisicao': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'valor_aquisicao': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ex.: R$ 1000.00'}),
             'localizacao': forms.Select(attrs={'class': 'form-control'}),
-            'centro_de_custo': forms.Select(attrs={'class': 'form-control'}),
+            'centro_de_custo_recebedor': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
         }
 
@@ -415,24 +415,28 @@ class MovementForms(forms.ModelForm):
     class Meta:
         model = Movement
         exclude = ['status', 'data_devolucao_real']
-        fields = ['tipo', 'usuario', 'centro_de_custo', 'aprovador', 'data_movimento',
+        fields = ['tipo', 'usuario_cedente', 'centro_de_custo_cedente', 'usuario', 'centro_de_custo_recebedor', 'aprovador', 'data_movimento',
                   'data_devolucao_prevista',
                   'chamado_top_desk',  'observacoes', 'ativos']
         labels = {
             'tipo': 'Tipo de Movimentação',
+            'usuario_cedente': 'Usuário Cedente',
+            'centro_de_custo_cedente': 'Centro de Custo Cedente',
             'usuario': 'Usuário Recebedor',
-            'ativos': 'Ativos Selecionados',
-            'centro_de_custo': 'Centro de Custo',
+            'centro_de_custo_recebedor': 'Centro de Custo Cedente',
             'data_movimento': 'Data de Início',
             'data_devolucao_prevista': 'Data de Devolução Prevista',
             'data_devolucao_real': 'Data de Devolução Real',
             'chamado_top_desk': 'Chamado Relacionado',
+            'ativos': 'Ativos Selecionados',
             'observacoes': 'Observação',
         }
         widgets = {
             'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'usuario_cedente': forms.Select(attrs={'class': 'form-control'}),
+            'centro_de_custo_cedente': forms.Select(attrs={'class': 'form-control'}),
             'usuario': forms.Select(attrs={'class': 'form-control'}),
-            'centro_de_custo': forms.Select(attrs={'class': 'form-control'}),
+            'centro_de_custo_recebedor': forms.Select(attrs={'class': 'form-control'}),
             'data_movimento': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'data_devolucao_prevista': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'data_devolucao_real': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
@@ -463,6 +467,7 @@ class MovementForms(forms.ModelForm):
 
     def clean_ativos(self):
         ativos = self.cleaned_data['ativos']
+        quantidades = self.data.getlist('form-quantidade')
         if ativos:
             for asset in ativos:
                 if MovementAsset.objects.filter(ativo=asset, movimento__status__in=['pendente_aprovação', 'em_andamento', 'atrasado']).exists():
@@ -470,9 +475,9 @@ class MovementForms(forms.ModelForm):
                         f'O ativo {asset} já está em uma movimentação de ativos.')
                 else:
                     return ativos
-        else:
+        elif not quantidades:
             raise forms.ValidationError(
-                f'Nenhum ativo selecionado. Verifique o carrinho!')
+                f'Nenhum ativo e/ou acessório esta contido na movimentação.')
 
     def clean_data_devolucao_prevista(self):
         data_movimento = self.cleaned_data.get('data_movimento')
@@ -523,7 +528,11 @@ class MovementForms(forms.ModelForm):
 
         if commit:
 
-            instance.save(ativos=ativos, aprovador=aprovador, acessorios=accessory_quantity_map)
+            print(f'DEBUG :: FORMS :: MOVEMENT FORMS :: ATIVOS {ativos} ')
+            if ativos != None:
+                instance.save(ativos=ativos, aprovador=aprovador, acessorios=accessory_quantity_map)
+            else:
+                instance.save(aprovador=aprovador, acessorios=accessory_quantity_map)
 
             # Processar os dados do formset
             for form in self.formset:

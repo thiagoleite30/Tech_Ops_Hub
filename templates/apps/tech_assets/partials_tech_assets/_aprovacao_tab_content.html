@@ -3,15 +3,16 @@
     <h5 class="card-title">{{approval.movimentacao}}</h5>
     <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
         <ul class="list-group list-group-flush">
-            <li class="list-group-item">ID Movimentação: {{approval.movimentacao.id}}</li>
-            <li class="list-group-item">Data Inclusão: {{approval.data_criacao}}</li>
-            <li class="list-group-item">{% if approval.status_aprovacao == 'aprovado' %}Data Aprovação: {% else %}Data
-                Reprovação: {% endif %}{{approval.data_conclusao}}</li>
-            <li class="list-group-item">Aprovador: {{approval.aprovador}}
+            <li class="list-group-item"><b>ID Movimentação:</b> {{approval.movimentacao.id}}</li>
+            <li class="list-group-item"><b>Data Inclusão:</b> {{approval.data_criacao}}</li>
+            {% if approval.status_aprovacao == 'aprovado' %}
+            <li class="list-group-item"><b>Data Aprovação:</b> {{approval.data_conclusao}}</li>
+            {%endif%}
+            <li class="list-group-item"><b>Aprovador:</b> {{approval.aprovador}}
                  <a type="button" href="{% url 'editar_aprovacao' approval.id %}" class="btn btn-change {% if approval.status_aprovacao != 'pendente' %}disabled{%endif%}" title="Alterar Aprovador" style="border: none;">
                     <i class="fas fa-sync-alt"></i>
                 </a></li>
-            <li class="list-group-item" style="font-size: 15pt;">Status:
+            <li class="list-group-item" style="font-size: 15pt;"><b>Status:</b>
                 <b>{{approval.get_status_aprovacao_display}}</b>
             </li>
         </ul>
@@ -40,20 +41,24 @@
     <h5 class="card-title">{{movement.get_tipo_display}} ID {{movement.id}}</h5>
     <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
         <ul class="list-group list-group-flush">
-            <li class="list-group-item">Nome do Responsável: {{movement.usuario.first_name}}
-                {{movement.usuario.last_name}}</li>
-            <li class="list-group-item">Usuário Responsável: {{movement.usuario}}</li>
-            <li class="list-group-item">Centro de Custo: {{movement.centro_de_custo.nome}}
-                ({{movement.centro_de_custo}})</li>
-            <li class="list-group-item">Data Inicio: {{movement.data_movimento}}</li>
-            <li class="list-group-item">Previsão de Término: {{movement.data_devolucao_prevista}}</li>
-            <li class="list-group-item">Chamado Interno: {{movement.chamado_top_desk}}</li>
-            <li class="list-group-item">Observação: {{movement.observacoes}}</li>
+            <li class="list-group-item"><b>Nome do Responsável:</b> {{movement.usuario.first_name}}
+                {{movement.usuario.last_name}} ({{movement.usuario}})</li>
+            <li class="list-group-item"><b>Unidade Recebedora:</b> {{movement.centro_de_custo_recebedor.nome}}
+                ({{movement.centro_de_custo_recebedor}})</li>
+                <li class="list-group-item"><b>Entregue Por:</b> {{movement.usuario_cedente.first_name}}
+                    {{movement.usuario_cedente.last_name}} ({{movement.usuario_cedente}})</li>
+                <li class="list-group-item"><b>Unidade Cedente:</b> {{movement.centro_de_custo_cedente.nome}}
+                    ({{movement.centro_de_custo_cedente}})</li>
+            <li class="list-group-item"><b>Data Inicio:</b> {{movement.data_movimento}}</li>
+            <li class="list-group-item"><b>Previsão de Término:</b> {{movement.data_devolucao_prevista}}</li>
+            <li class="list-group-item"><b>Chamado Interno:</b> {{movement.chamado_top_desk}}</li>
+            <li class="list-group-item"><b>Observação:</b> {{movement.observacoes}}</li>
         </ul>
     </div>
 </div>
 <div class="tab-pane fade" id="ativos" role="tabpanel" aria-labelledby="ativos-tab">
     <div class="row">
+        {% if assets %}
         {% for asset in assets %}
         <div class="col-sm-3">
             <div class="card h-100 text-center">
@@ -81,6 +86,9 @@
 
         </div>
         {% endfor %}
+        {%else%}
+        <h5>{{movement.get_tipo_display}} não possui ativos</h5>
+        {%endif%}
     </div>
 </div>
 <div class="tab-pane fade" id="acessorios" role="tabpanel" aria-labelledby="acessorios-tab">
@@ -109,7 +117,7 @@
         </div>
         {% endfor %}
         {%else%}
-        <h5>Movimentação não possui acessórios!</h5>
+        <h5>{{movement.get_tipo_display}} não possui acessórios</h5>
         {%endif%}
     </div>
 </div>

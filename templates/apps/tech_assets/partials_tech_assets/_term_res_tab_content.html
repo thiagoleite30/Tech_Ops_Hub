@@ -3,8 +3,10 @@
     <h5 class="card-title">Termo de {{movement.get_tipo_display}} para o responsável "{{movement.usuario.first_name}} {{movement.usuario.last_name}}"</h5>
     <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
         <ul class="list-group list-group-flush">
-            <li class="list-group-item"><b>Centro de Custo Cedente:</b> 020103</li>
-            <li class="list-group-item"><b>Centro de Custo Recebedor:</b> {{movement.centro_de_custo}}</li>
+            <li class="list-group-item"><b>Unidade Recebedora:</b> {{movement.centro_de_custo_recebedor.nome}}
+                ({{movement.centro_de_custo_recebedor}})</li>
+            <li class="list-group-item"><b>Unidade Cedente Cedente:</b> {{movement.centro_de_custo_cedente.nome}}
+                ({{movement.centro_de_custo_cedente}})</li>
             <li class="list-group-item"><b>Data Inclusão:</b> {{term.data_criacao}}</li>
             <li class="list-group-item"><b>Aprovação:</b>
                 Aprovado por {{aprovall.aprovador.first_name}}
@@ -34,20 +36,24 @@
     <h5 class="card-title">{{movement.get_tipo_display}} ID {{movement.id}}</h5>
     <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
         <ul class="list-group list-group-flush">
-            <li class="list-group-item">Nome do Responsável: {{movement.usuario.first_name}}
-                {{movement.usuario.last_name}}</li>
-            <li class="list-group-item">Usuário Responsável: {{movement.usuario}}</li>
-            <li class="list-group-item">Centro de Custo: {{movement.centro_de_custo.nome}}
-                ({{movement.centro_de_custo}})</li>
-            <li class="list-group-item">Data Inicio: {{movement.data_movimento}}</li>
-            <li class="list-group-item">Previsão de Término: {{movement.data_devolucao_prevista}}</li>
-            <li class="list-group-item">Chamado Interno: {{movement.chamado_top_desk}}</li>
-            <li class="list-group-item">Observação: {{movement.observacoes}}</li>
+            <li class="list-group-item"><b>Nome do Responsável:</b> {{movement.usuario.first_name}}
+                {{movement.usuario.last_name}} ({{movement.usuario}})</li>
+            <li class="list-group-item"><b>Unidade Recebedora:</b> {{movement.centro_de_custo_recebedor.nome}}
+                ({{movement.centro_de_custo_recebedor}})</li>
+                <li class="list-group-item"><b>Entregue Por:</b> {{movement.usuario_cedente.first_name}}
+                    {{movement.usuario_cedente.last_name}} ({{movement.usuario_cedente}})</li>
+                <li class="list-group-item"><b>Unidade Cedente:</b> {{movement.centro_de_custo_cedente.nome}}
+                    ({{movement.centro_de_custo_cedente}})</li>
+            <li class="list-group-item"><b>Data Inicio:</b> {{movement.data_movimento}}</li>
+            <li class="list-group-item"><b>Previsão de Término:</b> {{movement.data_devolucao_prevista}}</li>
+            <li class="list-group-item"><b>Chamado Interno:</b> {{movement.chamado_top_desk}}</li>
+            <li class="list-group-item"><b>Observação:</b> {{movement.observacoes}}</li>
         </ul>
     </div>
 </div>
 <div class="tab-pane fade" id="ativos" role="tabpanel" aria-labelledby="ativos-tab">
     <div class="row">
+        {% if assets %}
         {% for asset in assets %}
         <div class="col-sm-3">
             <div class="card h-100 text-center">
@@ -75,6 +81,9 @@
 
         </div>
         {% endfor %}
+        {%else%}
+        <h5>{{movement.get_tipo_display}} não possui ativos</h5>
+        {%endif%}
     </div>
 </div>
 <div class="tab-pane fade" id="acessorios" role="tabpanel" aria-labelledby="acessorios-tab">
@@ -103,7 +112,7 @@
         </div>
         {% endfor %}
         {%else%}
-        <h5>Movimentação não possui acessórios!</h5>
+        <h5>{{movement.get_tipo_display}} não possui acessórios</h5>
         {%endif%}
     </div>
 </div>

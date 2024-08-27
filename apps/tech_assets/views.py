@@ -609,15 +609,16 @@ def aprovacao(request, aprovacao_id):
 
     aprovacao = get_object_or_404(Approval, pk=aprovacao_id)
 
-    if MovementAsset.objects.filter(movimento=aprovacao.movimentacao).exists():
-        ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
-            movimento=aprovacao.movimentacao)]
+    if aprovacao:
         movimentacao = get_object_or_404(
             Movement, pk=aprovacao.movimentacao.id)
-        if ativos_id:
-            ativos_na_movimentacao = Asset.objects.filter(id__in=ativos_id)
-    else:
-        ativos_na_movimentacao = []
+        if MovementAsset.objects.filter(movimento=aprovacao.movimentacao).exists():
+            ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
+                movimento=aprovacao.movimentacao)]
+            if ativos_id:
+                ativos_na_movimentacao = Asset.objects.filter(id__in=ativos_id)
+        else:
+            ativos_na_movimentacao = []
 
     if MovementAccessory.objects.filter(movimento=aprovacao.movimentacao).exists():
         acessorios_id = [acessorio.acessorio_id for acessorio in MovementAccessory.objects.filter(
@@ -652,30 +653,34 @@ def editar_aprovacao(request, aprovacao_id):
         return redirect('login')
 
     aprovacao = get_object_or_404(Approval, pk=aprovacao_id)
-    
+
     if aprovacao.status_aprovacao != 'pendente':
-        messages.warning(request, 'Somente aprovações "Pendentes" podem ser alteradas')
+        messages.warning(
+            request, 'Somente aprovações "Pendentes" podem ser alteradas')
         url = reverse('aprovacao', kwargs={'aprovacao_id': aprovacao_id})
         return redirect(url)
-    
+
     if aprovacao:
         form = ApprovalForms(instance=aprovacao)
-        
+
         if request.method == 'POST':
-            form = ApprovalForms(request.POST, request.FILES, instance=aprovacao)
-            
+            form = ApprovalForms(
+                request.POST, request.FILES, instance=aprovacao)
+
             if form.is_valid():
-                register_logentry(instance=form.save(), action=CHANGE, user=request.user, modificacao='Editada Aprovação')
+                register_logentry(instance=form.save(), action=CHANGE,
+                                  user=request.user, modificacao='Editada Aprovação')
                 messages.success(request, 'Aprovação modificada com sucesso.')
-                url = reverse('aprovacao', kwargs={'aprovacao_id': aprovacao_id})
+                url = reverse('aprovacao', kwargs={
+                              'aprovacao_id': aprovacao_id})
                 return redirect(url)
-    
+
     context = {
         'form': form,
         'id': aprovacao,
         'url_form': resolve(request.path_info).url_name
-        }
-    
+    }
+
     return render(request, 'apps/tech_assets/editar.html', context)
 
 
@@ -687,13 +692,13 @@ def aprova_movimentacao(request, aprovacao_id):
     try:
         # Pega da tabela asset o ativo pelo id
         aprovacao = get_object_or_404(Approval, id=aprovacao_id)
-        if request.user != aprovacao.aprovador:
-            messages.warning(
-                request, 'Você não é o aprovador designado para esta aprovação.')
-            return redirect('aprovacoes')
-
-        # Se houver asset
         if aprovacao:
+            url = reverse('aprovacao', kwargs={'aprovacao_id': aprovacao_id})
+            if request.user != aprovacao.aprovador:
+                messages.warning(
+                    request, 'Você não é o aprovador designado para esta aprovação.')
+                return redirect(url)
+
             Approval.aprovar_movimentacao(aprovacao)
     except Exception as e:
         print(f'ERROR :: APROVA MOVIMENTACAO :: {e}')
@@ -710,13 +715,14 @@ def reprova_movimentacao(request, aprovacao_id):
         # Pega da tabela asset o ativo pelo id
         aprovacao = get_object_or_404(Approval, id=aprovacao_id)
         if aprovacao:
+            url = reverse('aprovacao', kwargs={'aprovacao_id': aprovacao_id})
             if request.user != aprovacao.aprovador:
                 messages.warning(
                     request, 'Você não é o aprovador designado para esta aprovação.')
-                return redirect('aprovacoes')
-            
+                return redirect(url)
+
             Approval.reprovar_movimentacao(aprovacao)
-            
+
     except Exception as e:
         print(f'ERROR :: REPROVA MOVIMENTACAO :: {e}')
 
@@ -785,15 +791,18 @@ def termo(request, termo_id):
 
     term_res = get_object_or_404(TermRes, pk=termo_id)
     aprovacao = get_object_or_404(Approval, id=term_res.aprovacao_id)
-
-    if MovementAsset.objects.filter(movimento=aprovacao.movimentacao).exists():
-        ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
-            movimento=aprovacao.movimentacao)]
-        movimentacao = get_object_or_404(
-            Movement, pk=aprovacao.movimentacao.id)
-
-    if ativos_id:
-        ativos_na_movimentacao = Asset.objects.filter(id__in=ativos_id)
+    movimentacao = get_object_or_404(Movement, pk=aprovacao.movimentacao.id)
+    
+    if aprovacao:
+        if MovementAsset.objects.filter(movimento=aprovacao.movimentacao).exists():
+            ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
+                movimento=aprovacao.movimentacao)]
+            if ativos_id:
+                ativos_na_movimentacao = Asset.objects.filter(id__in=ativos_id)
+        # Caso não haja nenhum ativo atrelado a aprovação então ficará como uma lista vazia
+        # Pode ocorrer em casos de movimentações somente de itens classificados como acessórios        
+        else:
+            ativos_na_movimentacao = []
 
     if MovementAccessory.objects.filter(movimento=aprovacao.movimentacao).exists():
         acessorios_id = [acessorio.acessorio_id for acessorio in MovementAccessory.objects.filter(
@@ -815,11 +824,12 @@ def termo(request, termo_id):
         'term': term_res,
         'aprovall': aprovacao,
         'movement': movimentacao if movimentacao else None,
-        'assets': ativos_na_movimentacao if ativos_na_movimentacao else None,
+        'assets': ativos_na_movimentacao,
         'accessorys': acessorios_com_quantidade
     }
 
     return render(request, 'apps/tech_assets/term_res.html', context)
+
 
 @login_required
 @group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
@@ -834,10 +844,11 @@ def aceita_termo(request, termo_id):
             if term_res.status_resposta != False:
                 messages.warning(request, 'Este termo já foi respondido.')
                 return redirect(url)
-            
+
             # Busca a movimentação ligada ao termo/fluxo
-            movimentacao = get_object_or_404(Movement, id=term_res.movimentacao_id)
-        
+            movimentacao = get_object_or_404(
+                Movement, id=term_res.movimentacao_id)
+
             if movimentacao:
                 if request.user != movimentacao.usuario:
                     messages.warning(
@@ -846,11 +857,13 @@ def aceita_termo(request, termo_id):
                 # Método abaixo já faz tudo que é preciso após o aceito \
                     # como mudança de status de ativos, termos e etc...
                 TermRes.marcar_como_aceito(term_res)
-                register_logentry(instance=term_res.save(), action=CHANGE, user=request.user, modificacao='Aceitou os Termos')
+                register_logentry(instance=term_res.save(
+                ), action=CHANGE, user=request.user, modificacao='Aceitou os Termos')
     except Exception as e:
         print(f'ERROR :: VIEW :: ACEITA TERMO :: {e}')
-        
-    return redirect(url)   
+
+    return redirect(url)
+
 
 @login_required
 @group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
@@ -865,10 +878,11 @@ def recusa_termo(request, termo_id):
             if term_res.status_resposta != False:
                 messages.warning(request, 'Este termo já foi respondido.')
                 return redirect(url)
-            
+
             # Busca a movimentação ligada ao termo/fluxo
-            movimentacao = get_object_or_404(Movement, id=term_res.movimentacao_id)
-        
+            movimentacao = get_object_or_404(
+                Movement, id=term_res.movimentacao_id)
+
             if movimentacao:
                 if request.user != movimentacao.usuario:
                     messages.warning(
@@ -877,12 +891,13 @@ def recusa_termo(request, termo_id):
                 # Método abaixo já faz tudo que é preciso após o aceito \
                     # como mudança de status de ativos, termos e etc...
                 TermRes.marcar_como_recusa(term_res)
-                register_logentry(instance=term_res.save(), action=CHANGE, user=request.user, modificacao='Recusou os Termos')
+                register_logentry(instance=term_res.save(
+                ), action=CHANGE, user=request.user, modificacao='Recusou os Termos')
     except Exception as e:
         print(f'ERROR :: VIEW :: RECUSA TERMO :: {e}')
-        
-    return redirect(url)   
-        
+
+    return redirect(url)
+
 
 @login_required
 def zona_restrita(request):

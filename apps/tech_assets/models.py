@@ -165,15 +165,19 @@ class Movement(models.Model):
         ('baixa', 'Baixa')
     ]
 
-    ativos = models.ManyToManyField(Asset, through='MovementAsset')
+    ativos = models.ManyToManyField(Asset, blank=True, through='MovementAsset')
     acessorios = models.ManyToManyField(
         Accessory, blank=True, through='MovementAccessory')
     tipo = models.CharField(
         max_length=50, choices=TIPOS, default='emprestimo')
+    usuario_cedente = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='user_send')
+    centro_de_custo_cedente = models.ForeignKey(
+        CostCenter, on_delete=models.CASCADE, related_name='cc_send')
     usuario = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='allocated_asset')
-    centro_de_custo = models.ForeignKey(
-        CostCenter, on_delete=models.CASCADE, related_name='allocated_asset')
+        User, on_delete=models.CASCADE, related_name='user_recept')
+    centro_de_custo_recebedor = models.ForeignKey(
+        CostCenter, on_delete=models.CASCADE, related_name='cc_recept')
     data_movimento = models.DateTimeField(default=datetime.now)
     data_devolucao_prevista = models.DateTimeField(null=True, blank=True)
     data_devolucao_real = models.DateTimeField(null=True, blank=True)
@@ -184,7 +188,7 @@ class Movement(models.Model):
     observacoes = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f'Movimento Tipo: {self.tipo} ID: {self.id} para o usuário {self.usuario} no centro de custo {self.centro_de_custo}'
+        return f'Movimento Tipo: {self.tipo} ID: {self.id} para o usuário {self.usuario} no centro de custo {self.centro_de_custo_recebedor}'
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Verifica se é uma nova instância
@@ -414,17 +418,17 @@ class Approval(models.Model):
             ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
                 movimento=self.movimentacao)]
 
-        if ativos_id:
-            ativos = Asset.objects.filter(id__in=ativos_id)
+            if ativos_id:
+                ativos = Asset.objects.filter(id__in=ativos_id)
 
-        for ativo in ativos:
-            if Maintenance.objects.filter(ativo=ativo, status=True).exists():
-                ativo.status = 'em_manutencao'
-                ativo.save()
+            for ativo in ativos:
+                if Maintenance.objects.filter(ativo=ativo, status=True).exists():
+                    ativo.status = 'em_manutencao'
+                    ativo.save()
 
-            else:
-                ativo.status = status
-                ativo.save()
+                else:
+                    ativo.status = status
+                    ativo.save()
 
     def mudar_status_movimentacao(self, status):
         movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
