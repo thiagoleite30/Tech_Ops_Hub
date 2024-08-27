@@ -120,7 +120,7 @@ DATABASES = {
         # o número da porta, se não for o padrão
         'PORT': str(os.getenv('POSTGRES_PORT')),
         # conexão permanece aberta por 10 minutos
-        # 'CONN_MAX_AGE': 600,  
+        # 'CONN_MAX_AGE': 600,
     }
 }
 
@@ -206,8 +206,7 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 ACCOUNT_LOGOUT_ON_GET = True
 
 # ou a URL para onde deseja redirecionar após o logout - aqui tá indo pra index
-LOGOUT_REDIRECT_URL = f'https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={
-    LOGIN_URL}'
+LOGOUT_REDIRECT_URL = f'https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={LOGIN_URL}'
 
 # LOGOUT_REDIRECT_URL = '/login'
 
@@ -243,4 +242,4 @@ PWA_APP_SPLASH_SCREEN = [
 PWA_APP_DIR = 'ltr'
 PWA_APP_LANG = 'pt-br'
 
-PWA_OFFLINE_URL  = os.path.join(BASE_DIR, 'templates/shared/offline.html')
+PWA_OFFLINE_URL = os.path.join(BASE_DIR, 'templates/shared/offline.html')

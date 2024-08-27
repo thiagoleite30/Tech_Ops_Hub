@@ -1,7 +1,7 @@
 {% load static %}
 <div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
     <h5 class="card-title">{{aprovall.movimentacao}}</h5>
-    <div class="card" style="margin-top: 10px; margin-bottom: 10px;">
+    <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
         <ul class="list-group list-group-flush">
             <li class="list-group-item">ID Movimentação: {{aprovall.movimentacao.id}}</li>
             <li class="list-group-item">Data Inclusão: {{aprovall.data_criacao}}</li>
@@ -30,7 +30,7 @@
 
 <div class="tab-pane fade" id="info" role="tabpanel" aria-labelledby="info-tab">
     <h5 class="card-title">{{movement.get_tipo_display}} ID {{movement.id}}</h5>
-    <div class="card" style="margin-top: 10px; margin-bottom: 10px;">
+    <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
         <ul class="list-group list-group-flush">
             <li class="list-group-item">Nome do Responsável: {{movement.usuario.first_name}}
                 {{movement.usuario.last_name}}</li>
@@ -48,7 +48,7 @@
     <div class="row">
         {% for asset in assets %}
         <div class="col-sm-3">
-            <div class="card text-center">
+            <div class="card h-100 text-center">
                 <div class="card-body">
                     <h5 class="card-title">{{asset.tipo}}</h5>
                 </div>
@@ -80,7 +80,7 @@
         {% if accessorys %}
         {% for accessory, quantity in accessorys %}
         <div class="col-sm-3">
-            <div class="card text-center">
+            <div class="card h-100 text-center">
                 <div class="card-body">
                     <h5 class="card-title">{{accessory.get_tipo_display}}</h5>
                 </div>

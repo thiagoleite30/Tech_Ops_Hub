@@ -3,12 +3,12 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from apps.tech_assets.models import Accessory, Approval, Asset, AssetCart, AssetInfo, Cart, Movement, MovementAccessory, MovementAsset, Maintenance, TermRes
 from apps.tech_assets.services import register_logentry, upload_assets, concluir_manutencao_service, get_maintenance_asset
-from django.contrib.admin.models import ADDITION
+from django.contrib.admin.models import ADDITION, CHANGE
 from django.shortcuts import get_object_or_404, render, redirect
-from apps.tech_assets.forms import AccessoryForms, AssetModelForms, CSVUploadForm, DynamicAccessoryFormSet, MovementForms, AssetForms, MaintenanceForms, \
+from apps.tech_assets.forms import AccessoryForms, ApprovalForms, AssetModelForms, CSVUploadForm, DynamicAccessoryFormSet, MovementForms, AssetForms, MaintenanceForms, \
     LocationForms, ManufacturerForms, CostCenterForms, \
     AssetTypeForms
-from django.urls import resolve
+from django.urls import resolve, reverse
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q, Case, When, Value, IntegerField
@@ -239,6 +239,7 @@ def cadastro_ativo(request):
 
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
+
 @login_required
 @group_required(['Suporte'], redirect_url='forbidden_url')
 def get_accessory_options(request):
@@ -248,6 +249,7 @@ def get_accessory_options(request):
         accessory = Accessory.objects.get(id=option['id'])
         option['str'] = str(accessory)
     return JsonResponse(options, safe=False)
+
 
 @login_required
 @group_required(['Suporte'], redirect_url='forbidden_url')
@@ -266,13 +268,13 @@ def novo_movimento(request):
 
     # Busca na tabela asset todos os ids na lista acima
     assets = Asset.objects.filter(id__in=ids_assets_in_cart)
-    
+
     # Inicialize os formulários
     form = MovementForms(ativos=assets, formset=DynamicAccessoryFormSet)
 
-
     if request.method == 'POST':
-        form = MovementForms(request.POST, request.FILES, ativos=assets, formset=DynamicAccessoryFormSet(request.POST))
+        form = MovementForms(request.POST, request.FILES, ativos=assets,
+                             formset=DynamicAccessoryFormSet(request.POST))
 
         if form.is_valid():
             print(request.POST.getlist('form-acessorio'))
@@ -570,7 +572,7 @@ def aprovacoes(request):
                     status_query |= Q(status_aprovacao='pendente')
 
             aprovacoes = aprovacoes.filter(status_query)
-            
+
             # Ordenar por status_aprovacao com 'pendente' primeiro
             aprovacoes = aprovacoes.order_by(
                 Case(
@@ -580,7 +582,7 @@ def aprovacoes(request):
                 ),
                 'status_aprovacao'
             )
-            
+
             paginator = Paginator(aprovacoes, 16)
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
@@ -617,7 +619,6 @@ def aprovacao(request, aprovacao_id):
     else:
         ativos_na_movimentacao = []
 
-
     if MovementAccessory.objects.filter(movimento=aprovacao.movimentacao).exists():
         acessorios_id = [acessorio.acessorio_id for acessorio in MovementAccessory.objects.filter(
             movimento=aprovacao.movimentacao)]
@@ -627,10 +628,11 @@ def aprovacao(request, aprovacao_id):
             # Criar uma lista de tuplas contendo o acessório e a quantidade
             # Fica assim (acessorio instance, quantidade)
             acessorios_com_quantidade = [
-                (acessorio, MovementAccessory.objects.get(movimento=aprovacao.movimentacao, acessorio=acessorio).quantidade)
+                (acessorio, MovementAccessory.objects.get(
+                    movimento=aprovacao.movimentacao, acessorio=acessorio).quantidade)
                 for acessorio in acessorios_na_movimentacao
             ]
-    else: 
+    else:
         acessorios_com_quantidade = []
 
     context = {
@@ -641,6 +643,40 @@ def aprovacao(request, aprovacao_id):
     }
 
     return render(request, 'apps/tech_assets/aprovacao.html', context)
+
+
+@login_required
+@group_required(['Suporte', 'Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+def editar_aprovacao(request, aprovacao_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    aprovacao = get_object_or_404(Approval, pk=aprovacao_id)
+    
+    if aprovacao.status_aprovacao != 'pendente':
+        messages.warning(request, 'Somente aprovações "Pendentes" podem ser alteradas')
+        url = reverse('aprovacao', kwargs={'aprovacao_id': aprovacao_id})
+        return redirect(url)
+    
+    if aprovacao:
+        form = ApprovalForms(instance=aprovacao)
+        
+        if request.method == 'POST':
+            form = ApprovalForms(request.POST, request.FILES, instance=aprovacao)
+            
+            if form.is_valid():
+                register_logentry(instance=form.save(), action=CHANGE, user=request.user, modificacao='Editada Aprovação')
+                messages.success(request, 'Aprovação modificada com sucesso.')
+                url = reverse('aprovacao', kwargs={'aprovacao_id': aprovacao_id})
+                return redirect(url)
+    
+    context = {
+        'form': form,
+        'id': aprovacao,
+        'url_form': resolve(request.path_info).url_name
+        }
+    
+    return render(request, 'apps/tech_assets/editar.html', context)
 
 
 @login_required
@@ -756,7 +792,7 @@ def termo(request, termo_id):
 
     if ativos_id:
         ativos_na_movimentacao = Asset.objects.filter(id__in=ativos_id)
-        
+
     if MovementAccessory.objects.filter(movimento=aprovacao.movimentacao).exists():
         acessorios_id = [acessorio.acessorio_id for acessorio in MovementAccessory.objects.filter(
             movimento=aprovacao.movimentacao)]
@@ -766,10 +802,11 @@ def termo(request, termo_id):
             # Criar uma lista de tuplas contendo o acessório e a quantidade
             # Fica assim (acessorio instance, quantidade)
             acessorios_com_quantidade = [
-                (acessorio, MovementAccessory.objects.get(movimento=aprovacao.movimentacao, acessorio=acessorio).quantidade)
+                (acessorio, MovementAccessory.objects.get(
+                    movimento=aprovacao.movimentacao, acessorio=acessorio).quantidade)
                 for acessorio in acessorios_na_movimentacao
             ]
-    else: 
+    else:
         acessorios_com_quantidade = []
 
     context = {
@@ -783,8 +820,8 @@ def termo(request, termo_id):
 
 
 @login_required
-def forbidden_url(request):
-    return render(request, 'shared/forbidden_page.html')
+def zona_restrita(request):
+    return render(request, 'shared/zona_restrita.html')
 
 
 @login_required

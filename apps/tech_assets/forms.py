@@ -1,7 +1,7 @@
 from django import forms
 from django.db import connection, transaction
 from django.shortcuts import get_object_or_404
-from apps.tech_assets.models import Accessory, Asset, AssetCart, AssetModel, Cart, Manufacturer, CostCenter, \
+from apps.tech_assets.models import Accessory, Approval, Asset, AssetCart, AssetModel, Cart, Manufacturer, CostCenter, \
     AssetType, Location, Maintenance, Movement, MovementAccessory, MovementAsset
 from datetime import datetime
 from django.contrib.auth.models import User, Group
@@ -536,6 +536,45 @@ class MovementForms(forms.ModelForm):
 
         return instance
 
+
+class ApprovalForms(forms.ModelForm):
+    form_name = 'Aprovação'
+
+    aprovador = forms.ModelChoiceField(
+        queryset=Group.objects.none(),
+        widget=forms.Select(
+            attrs={'class': 'form-control'}),
+        required=True
+    )
+
+    class Meta:
+        model = Approval
+        exclude = ['ultima_modificacao','status_aprovacao','movimentacao']
+        fields = ['aprovador','status_aprovacao', 'movimentacao',]
+        labels = {
+            'aprovador': 'Aprovador Designado',
+        }
+        widgets = {
+
+            'status_aprovacao': forms.Select(attrs={'class': 'form-control'}),
+            }
+        
+    def __init__(self, *args, **kwargs):
+        aprovador = kwargs.pop('aprovador', None)
+        super().__init__(*args, **kwargs)
+        
+        if 'auth_group' in connection.introspection.table_names():
+            grupo = get_object_or_404(Group, name='Aprovadores TI')
+            users = grupo.user_set.all()
+            self.fields['aprovador'].queryset = users
+            self.fields['aprovador'].initial = aprovador
+            self.fields['aprovador'].widget.attrs['readonly'] = False
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        return instance
 
 class CSVUploadForm(forms.Form):
     csv_file = forms.FileField()

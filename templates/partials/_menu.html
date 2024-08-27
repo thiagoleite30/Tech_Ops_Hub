@@ -1,6 +1,6 @@
 {% load static %}
 <header>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-lg">
         <div
             style="border-style: double; border-color: rgb(0, 0, 0); padding: 2px; margin-left: 0; margin-right: 15px;">
             <img src="{% static 'assets/marcaDaguaAviva.png' %}" style="width: 60px;" />
@@ -12,15 +12,6 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <a class="navbar-brand" href="#">
-                {% if request.user.is_authenticated %}
-                <img class="profile-image" src="data:image/jpeg;base64,{{ profile_photo }}" style="width: 60px;" />
-                <p style="margin-bottom: 0; font-size: 8pt; color: white;">{{ request.user.first_name }}</p>
-                {% else %}
-                <img class="profile-image" src="{% static 'assets/perfil.png' %}" style="width: 60px;" />
-                <p style="margin-bottom: 0; font-size: 8pt; color: white;">user_name</p>
-                {% endif %}
-            </a>
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'index' %}">Home <span class="sr-only">(current)</span></a>
@@ -93,10 +84,39 @@
                     {% endif %}
                     <input class="form-control" type="text" name="q" id="filterInput" value="{{ query }}"
                         placeholder="Pesquisar...">
-                    <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
-                    <a href="{{ URL_LOGOUT }}" class=" btn btn-outline-secondary my-2 my-sm-0
-                        ml-3">Sair</a>
+                    <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-search" viewBox="0 0 16 16">
+                            <path
+                                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                        </svg></button>
                 </form>
+            </div>
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    {% if request.user.is_authenticated %}
+                    <img alt="" width="32" height="32" class="rounded-circle me-2"
+                        src="data:image/jpeg;base64,{{ profile_photo }}" />
+
+                    <strong>{{ request.user.first_name }}</strong>
+                    {% else %}
+                    <img alt="" width="32" height="32" class="rounded-circle me-2"
+                        src="{% static 'assets/perfil.png' %}" />
+                    <strong>{{ request.user.first_name }}</strong>
+                    {% endif %}
+
+                </a>
+                <ul class="dropdown-menu dropdown-menu-light text-small shadow">
+                    <!--
+                    <li><a class="dropdown-item" href="#">New project...</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>-->
+                    <li><a class="dropdown-item" href="#">Perfil</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="{{ URL_LOGOUT }}">Sair</a></li>
+                </ul>
             </div>
         </div>
     </nav>

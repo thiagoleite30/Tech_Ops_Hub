@@ -18,36 +18,39 @@
 <div id="accessory-formset">
     {% for form in form.formset %}
     <div class="form-group row">
-        <label for="id_acessorio_{{ forloop.counter0 }}" class="col-sm-2 col-form-label">{{form.acessorio.label_tag}}</label>
+        <label for="id_acessorio_{{ forloop.counter0 }}"
+            class="col-sm-2 col-form-label">{{form.acessorio.label_tag}}</label>
         <div class="col-sm-4">
-            <select name="form-acessorio" id="id_acessorio_{{ forloop.counter0 }}"
-                class="form-control">
+            <select name="form-acessorio" id="id_acessorio_{{forloop.counter0}}" class="form-control">
                 {% for option in form.acessorio.field.queryset %}
-                <option value="{{ option.id }}" {% if option.id == form.acessorio.value %}selected{% endif %}>{{ option }}
+                <option value="{{option.id}}" {% if option.id == form.acessorio.value %}selected{% endif %}>{{option}}
                 </option>
                 {% endfor %}
             </select>
         </div>
-        <label for="id_quantidade_{{ forloop.counter0 }}" class="col-sm-2 col-form-label">{{form.quantidade.label_tag}}</label>
+        <label for="id_quantidade_{{ forloop.counter0 }}"
+            class="col-sm-2 col-form-label">{{form.quantidade.label_tag}}</label>
         <div class="col-sm-2">
-            <input type="number" name="form-quantidade" id="id_quantidade_{{ forloop.counter0 }}"
-                class="form-control" value="{{ form.quantidade.value | default:1 }}">
+            <input type="number" name="form-quantidade" id="id_quantidade_{{ forloop.counter0 }}" class="form-control"
+                value="{{ form.quantidade.value | default:1 }}">
         </div>
         <div class="col-sm-2">
-            <button type="button" class="btn btn-outline-danger"  onclick="removeForm(this)"><b>Remover</b> <span class="btn-icon fa fa-remove"></span></button>
+            <button type="button" class="btn btn-outline-danger" onclick="removeForm(this)"><b>Remover</b> <span
+                    class="btn-icon fa fa-remove"></span></button>
         </div>
     </div>
     {% endfor %}
 </div>
 <div class="form-group row">
-<button type="button" id="add-form" class="form-control btn btn-outline-secondary"><span class="fa fa-plus"></span> Adicionar Acessório</button>
+    <button type="button" id="add-form" class="form-control btn btn-outline-secondary"><span class="fa fa-plus"></span>
+        Adicionar Acessório</button>
 </div>
 
 {%endif%}
 
 <div class="form-group-new">
     <div class="col-sm-20">
-        {% if not asset_id and url_form != 'novo_movimento' %}
+        {% if not asset_id and not id and url_form != 'novo_movimento' %}
         <button name="save" type="submit" class="btn btn-secondary btn-lg ">Salvar</button>
         <button name="save_and_add" type="submit" class="btn btn-outline-secondary btn-lg">Salvar e cadastrar
             outro(a)</button>
@@ -93,7 +96,7 @@
 
     // Função para popular as opções do select com dados do servidor
     function populateSelectOptions(index) {
-        fetch('/get-accessory-options/')  // URL para obter as opções
+        fetch('/get_accessory_options/')  // URL para obter as opções
             .then(response => response.json())
             .then(data => {
                 const select = document.getElementById(`id_acessorio_${index}`);

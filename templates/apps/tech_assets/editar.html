@@ -1,0 +1,38 @@
+{% extends 'shared/base.html' %} {% load static %} {% block content %}
+<main role="main" class="container">
+    <div class="container-fluid" style="padding-top: 20px;">
+        <div class="starter-template" style="justify-content: center; align-items: center;">
+            <h1 style="text-align: center;" name="asset_form">{{form.form_name}}</h1>
+        </div>
+
+        <div class="container"
+            style="border: 2px; border-style: solid; border-color: rgb(56, 54, 54); padding: 20px; border-radius: 10px;">
+            {% if id %}
+            <form action="{%    url url_form id %}" method="POST" enctype="multipart/form-data">
+                {% include 'apps/tech_assets/partials_tech_assets/_fields_form.html' %}
+            </form>
+            {% else %}
+            <form action="{%    url url_form %}" method="POST" enctype="multipart/form-data">
+                {% include 'apps/tech_assets/partials_tech_assets/_fields_form.html' %}
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<!--
+    <footer>
+        <div class="container">
+            <span class="navbar-text">
+                &copy; 2024 Aviva. Todos os direitos reservados.
+            </span>
+            <div class="ml-auto">
+                <img src="{% static '/assets/marcaDaguaAviva.png' %}" class="rodape__image" alt="Icon" />
+            </div>
+        </div>
+    </footer>
+    -->
+
+
+
+{% endblock %}
