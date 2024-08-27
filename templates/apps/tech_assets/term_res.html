@@ -50,12 +50,16 @@
                     </div>
                     <div class="modal-footer">
                         <div class="form-check">
+                            {% if term.aceite_usuario == 'aceito'%}
+                            <input class="form-check-input" type="checkbox" value="" id="defaultCheck2" checked disabled>
+                            {%else%}
                             <input class="form-check-input" type="checkbox" value="" id="defaultCheck2">
+                            {%endif%}
                             <label class="form-check-label" for="defaultCheck2">
                                 Declaro-me de acordo com os termos impostos
                             </label>
                         </div>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                         <!--<button type="button" class="btn btn-primary">Understood</button>-->
                     </div>
                 </div>

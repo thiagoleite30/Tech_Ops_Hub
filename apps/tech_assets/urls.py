@@ -6,7 +6,7 @@ from apps.tech_assets.views import zona_restrita, index, login, cadastro_fabrica
     deleta_carrinho, aprovacoes, aprovacao, ativo, concluir_manutencao, \
     cadastro_ativos_csv, aprova_movimentacao, reprova_movimentacao, \
     termos, termo, cadastro_acessorio, get_accessory_options, \
-    editar_aprovacao
+    editar_aprovacao, aceita_termo, recusa_termo
 
 
 # Lista de endpoints:
@@ -44,6 +44,8 @@ urlpatterns = [
          reprova_movimentacao, name='reprova_movimentacao'),
     path('termos/', termos, name='termos'),
     path('termo/<int:termo_id>/', termo, name='termo'),
+    path('aceita_termo/<int:termo_id>/', aceita_termo, name='aceita_termo'),
+    path('recusa_termo/<int:termo_id>/', recusa_termo, name='recusa_termo'),
     path('upload_csv/', cadastro_ativos_csv, name='upload_csv'),
     path('get_accessory_options/', get_accessory_options,
          name='get_accessory_options'),

@@ -709,14 +709,14 @@ def reprova_movimentacao(request, aprovacao_id):
     try:
         # Pega da tabela asset o ativo pelo id
         aprovacao = get_object_or_404(Approval, id=aprovacao_id)
-        if request.user != aprovacao.aprovador:
-            messages.warning(
-                request, 'Você não é o aprovador designado para esta aprovação.')
-            return redirect('aprovacoes')
-
-        # Se houver asset
         if aprovacao:
+            if request.user != aprovacao.aprovador:
+                messages.warning(
+                    request, 'Você não é o aprovador designado para esta aprovação.')
+                return redirect('aprovacoes')
+            
             Approval.reprovar_movimentacao(aprovacao)
+            
     except Exception as e:
         print(f'ERROR :: REPROVA MOVIMENTACAO :: {e}')
 
@@ -740,9 +740,11 @@ def termos(request):
 
             # Query pode ser alterada dependendo de como queremos consultar
             if query:
-                aprovacoes = aprovacoes.filter(
-                    # Q(aprovador__icontains=query) |
-                    Q(status_aprovacao__icontains=query)
+                termos = termos.filter(
+                    Q(movimentacao__id__icontains=query) |
+                    Q(movimentacao__tipo__icontains=query) |
+                    Q(movimentacao__usuario__username__icontains=query) |
+                    Q(movimentacao__usuario__first_name__icontains=query)
                 )
 
             status_query = Q()
@@ -810,6 +812,7 @@ def termo(request, termo_id):
         acessorios_com_quantidade = []
 
     context = {
+        'term': term_res,
         'aprovall': aprovacao,
         'movement': movimentacao if movimentacao else None,
         'assets': ativos_na_movimentacao if ativos_na_movimentacao else None,
@@ -818,6 +821,68 @@ def termo(request, termo_id):
 
     return render(request, 'apps/tech_assets/term_res.html', context)
 
+@login_required
+@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+def aceita_termo(request, termo_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    try:
+        term_res = get_object_or_404(TermRes, pk=termo_id)
+        url = reverse('termo', kwargs={'termo_id': termo_id})
+        if term_res:
+            if term_res.status_resposta != False:
+                messages.warning(request, 'Este termo já foi respondido.')
+                return redirect(url)
+            
+            # Busca a movimentação ligada ao termo/fluxo
+            movimentacao = get_object_or_404(Movement, id=term_res.movimentacao_id)
+        
+            if movimentacao:
+                if request.user != movimentacao.usuario:
+                    messages.warning(
+                        request, 'Você não é o usuário referido neste termo.')
+                    return redirect(url)
+                # Método abaixo já faz tudo que é preciso após o aceito \
+                    # como mudança de status de ativos, termos e etc...
+                TermRes.marcar_como_aceito(term_res)
+                register_logentry(instance=term_res.save(), action=CHANGE, user=request.user, modificacao='Aceitou os Termos')
+    except Exception as e:
+        print(f'ERROR :: VIEW :: ACEITA TERMO :: {e}')
+        
+    return redirect(url)   
+
+@login_required
+@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+def recusa_termo(request, termo_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    try:
+        term_res = get_object_or_404(TermRes, pk=termo_id)
+        url = reverse('termo', kwargs={'termo_id': termo_id})
+        if term_res:
+            if term_res.status_resposta != False:
+                messages.warning(request, 'Este termo já foi respondido.')
+                return redirect(url)
+            
+            # Busca a movimentação ligada ao termo/fluxo
+            movimentacao = get_object_or_404(Movement, id=term_res.movimentacao_id)
+        
+            if movimentacao:
+                if request.user != movimentacao.usuario:
+                    messages.warning(
+                        request, 'Você não é o usuário referido neste termo.')
+                    return redirect(url)
+                # Método abaixo já faz tudo que é preciso após o aceito \
+                    # como mudança de status de ativos, termos e etc...
+                TermRes.marcar_como_recusa(term_res)
+                register_logentry(instance=term_res.save(), action=CHANGE, user=request.user, modificacao='Recusou os Termos')
+    except Exception as e:
+        print(f'ERROR :: VIEW :: RECUSA TERMO :: {e}')
+        
+    return redirect(url)   
+        
 
 @login_required
 def zona_restrita(request):

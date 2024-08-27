@@ -1,16 +1,15 @@
 {% load static %}
 <div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
-    <h5 class="card-title">{{aprovall.movimentacao}}</h5>
+    <h5 class="card-title">Termo de {{movement.get_tipo_display}} para o responsável "{{movement.usuario.first_name}} {{movement.usuario.last_name}}"</h5>
     <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
         <ul class="list-group list-group-flush">
-            <li class="list-group-item">ID Movimentação: {{aprovall.movimentacao.id}}</li>
-            <li class="list-group-item">Data Inclusão: {{aprovall.data_criacao}}</li>
-            <li class="list-group-item">Data Aprovação: {{aprovall.data_conclusao}}</li>
-            <li class="list-group-item">Aprovador de TI: {{aprovall.aprovador.first_name}}
-                {{aprovall.aprovador.last_name}} ({{aprovall.aprovador}})</li>
-            <li class="list-group-item" style="font-size: 15pt;">Status:
-                <b>{{aprovall.get_status_aprovacao_display}}</b></li>
-            <li class="list-group-item">Aceite de termo: </li>
+            <li class="list-group-item"><b>Centro de Custo Cedente:</b> 020103</li>
+            <li class="list-group-item"><b>Centro de Custo Recebedor:</b> {{movement.centro_de_custo}}</li>
+            <li class="list-group-item"><b>Data Inclusão:</b> {{term.data_criacao}}</li>
+            <li class="list-group-item"><b>Aprovação:</b>
+                Aprovado por {{aprovall.aprovador.first_name}}
+                {{aprovall.aprovador.last_name}} em {{aprovall.data_conclusao}}</li>
+            <li class="list-group-item"><b>Aceite de termo:</b> {% if term.aceite_usuario == 'aceito' %} Aceito por {{movement.usuario.first_name}} {{movement.usuario.last_name}} em {{term.data_resposta}}{% else %} Pendente {%endif%}</li>
         </ul>
     </div>
     <div class="card-body">
@@ -18,13 +17,16 @@
         <a type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
             Termos e Condições de Aceite da movimentação
         </a>
-
-
     </div>
     <div class="end-template container-fluid"
         style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-        <a href="#" id="acceptLink" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aceitar</a>
-        <a href="#" class="btn btn-danger btn-lg">Recusar</a>
+        {% if not term.status_resposta %}
+        <a href="{% url 'aceita_termo' term.id %}" id="acceptLink" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aceitar</a>
+        <a href="{% url 'recusa_termo' term.id %}" class="btn btn-danger btn-lg">Recusar</a>
+        {%else%}
+        <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aceitar</a>
+        <a href="#" class="btn btn-danger btn-lg disabled">Recusar</a>
+        {%endif%}
     </div>
 </div>
 
