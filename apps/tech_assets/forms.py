@@ -1,12 +1,12 @@
 from django import forms
-from django.db import connection, transaction
+from django.db import connection
 from django.shortcuts import get_object_or_404
 from apps.tech_assets.models import Accessory, Approval, Asset, AssetCart, AssetModel, Cart, Manufacturer, CostCenter, \
-    AssetType, Location, Maintenance, Movement, MovementAccessory, MovementAsset
+    AssetType, Location, Maintenance, Movement, MovementAccessory, MovementAsset, ReturnTerm
 from datetime import datetime
 from django.contrib.auth.models import User, Group
 from django.contrib.admin.models import CHANGE, DELETION, ADDITION
-
+from django.db.models import Q
 
 from apps.tech_assets.services import register_logentry
 
@@ -376,13 +376,14 @@ class DynamicAccessoryForm(forms.Form):
         widget=forms.NumberInput(attrs={'class': 'form-control'}),
         required=False
     )
-    
+
     def clean_quantidade(self):
         quantidade = self.cleaned_data['quantidade']
-        
+
         if quantidade:
             if quantidade <= 0:
-                raise forms.ValidationError(message="A quantidade informada tem que ser maior que 0 (zero)!")
+                raise forms.ValidationError(
+                    message="A quantidade informada tem que ser maior que 0 (zero)!")
         return quantidade
 
 
@@ -488,7 +489,7 @@ class MovementForms(forms.ModelForm):
                     message=f'A data prevista para devolução não pode ser inferior a data de inicio!')
 
         return data_devolucao_prevista
-    
+
     def clean_accessories_data(self):
         # Supondo que você está coletando os dados diretamente dos campos do formset
         quantidades = self.data.getlist('form-quantidade')
@@ -496,7 +497,8 @@ class MovementForms(forms.ModelForm):
         for quantity in quantidades:
             try:
                 if int(quantity) <= 0:
-                    raise forms.ValidationError("A quantidade informada tem que ser maior que 0 (zero)!")
+                    raise forms.ValidationError(
+                        "A quantidade informada tem que ser maior que 0 (zero)!")
             except ValueError:
                 raise forms.ValidationError("Quantidade inválida.")
 
@@ -515,7 +517,6 @@ class MovementForms(forms.ModelForm):
             raise ValueError(
                 "O número de IDs de acessórios e quantidades não coincide.")
 
-
         # Agrupe IDs e some as quantidades
         accessory_quantity_map = {}
         for accessory_id, quantity in zip(acessorios_id, quantidades):
@@ -526,9 +527,11 @@ class MovementForms(forms.ModelForm):
 
         if commit:
             if ativos != None:
-                instance.save(ativos=ativos, aprovador=aprovador, acessorios=accessory_quantity_map)
+                instance.save(ativos=ativos, aprovador=aprovador,
+                              acessorios=accessory_quantity_map)
             else:
-                instance.save(aprovador=aprovador, acessorios=accessory_quantity_map)
+                instance.save(aprovador=aprovador,
+                              acessorios=accessory_quantity_map)
 
             # Processar os dados do formset
             for form in self.formset:
@@ -554,20 +557,20 @@ class ApprovalForms(forms.ModelForm):
 
     class Meta:
         model = Approval
-        exclude = ['ultima_modificacao','status_aprovacao','movimentacao']
-        fields = ['aprovador','status_aprovacao', 'movimentacao',]
+        exclude = ['ultima_modificacao', 'status_aprovacao', 'movimentacao']
+        fields = ['aprovador', 'status_aprovacao', 'movimentacao',]
         labels = {
             'aprovador': 'Aprovador Designado',
         }
         widgets = {
 
             'status_aprovacao': forms.Select(attrs={'class': 'form-control'}),
-            }
-        
+        }
+
     def __init__(self, *args, **kwargs):
         aprovador = kwargs.pop('aprovador', None)
         super().__init__(*args, **kwargs)
-        
+
         if 'auth_group' in connection.introspection.table_names():
             grupo = get_object_or_404(Group, name='Aprovadores TI')
             users = grupo.user_set.all()
@@ -577,6 +580,31 @@ class ApprovalForms(forms.ModelForm):
 
     def save(self, commit=True):
         instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        return instance
+
+
+class ReturnTermForms(forms.ModelForm):
+    form_name = 'Termo de Devolução'
+
+    class Meta:
+        model = ReturnTerm
+        exclude = ['movimentacao', 'data_retorno', 'status', 'usuario_recebedor']
+        fields = ['observacao',]
+        labels = {
+            'observacao': 'Observações de entrega',
+        }
+        widgets = {
+            'observacao': forms.Textarea(attrs={'class': 'form-control'}),
+        }
+    
+    def save(self, commit=True, *args, **kwargs):
+        usuario_recebedor = kwargs.pop('user', None)
+        instance = super().save(commit=False)
+        if usuario_recebedor:
+            instance.usuario_recebedor = usuario_recebedor
+
         if commit:
             instance.save()
         return instance

@@ -7,7 +7,7 @@ from django.contrib.admin.models import ADDITION, CHANGE
 from django.shortcuts import get_object_or_404, render, redirect
 from apps.tech_assets.forms import AccessoryForms, ApprovalForms, AssetModelForms, CSVUploadForm, DynamicAccessoryFormSet, MovementForms, AssetForms, MaintenanceForms, \
     LocationForms, ManufacturerForms, CostCenterForms, \
-    AssetTypeForms
+    AssetTypeForms, ReturnTermForms
 from django.urls import resolve, reverse
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -24,13 +24,13 @@ def login(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def index(request):
     return render(request, 'apps/tech_assets/index.html')
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_fabricante(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -54,7 +54,7 @@ def cadastro_fabricante(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_modelo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -78,7 +78,7 @@ def cadastro_modelo(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_acessorio(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -102,7 +102,7 @@ def cadastro_acessorio(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_centro_custo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -126,7 +126,7 @@ def cadastro_centro_custo(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_tipo_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -150,8 +150,8 @@ def cadastro_tipo_ativo(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
-# @group_required('Admin', redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
+# @group_required('Admin', redirect_url='zona_restrita')
 def cadastro_local(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -175,7 +175,7 @@ def cadastro_local(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_manutencao(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -206,7 +206,7 @@ def cadastro_manutencao(request, asset_id):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def concluir_manutencao(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -217,7 +217,7 @@ def concluir_manutencao(request, asset_id):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -241,7 +241,7 @@ def cadastro_ativo(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def get_accessory_options(request):
     options = list(Accessory.objects.all().values('id'))
     for option in options:
@@ -252,7 +252,7 @@ def get_accessory_options(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def novo_movimento(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -299,7 +299,7 @@ def novo_movimento(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def ativos(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -378,7 +378,7 @@ def ativos(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def ativo(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -415,7 +415,7 @@ def ativo(request, asset_id):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def carrinho(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -456,7 +456,7 @@ def carrinho(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def add_carrinho(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -487,7 +487,7 @@ def add_carrinho(request, asset_id):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def remove_do_carrinho(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -515,7 +515,7 @@ def remove_do_carrinho(request, asset_id):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='forbidden_url')
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def deleta_carrinho(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -539,7 +539,7 @@ def deleta_carrinho(request):
 
 
 @login_required
-@group_required(['Aprovadores TI', 'Administradores'], redirect_url='forbidden_url')
+@group_required(['Aprovadores TI', 'Administradores'], redirect_url='zona_restrita')
 def aprovacoes(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -602,7 +602,7 @@ def aprovacoes(request):
 
 
 @login_required
-@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+@group_required(['Administradores', 'Aprovadores TI'], redirect_url='zona_restrita')
 def aprovacao(request, aprovacao_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -647,7 +647,7 @@ def aprovacao(request, aprovacao_id):
 
 
 @login_required
-@group_required(['Suporte', 'Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+@group_required(['Suporte', 'Administradores', 'Aprovadores TI'], redirect_url='zona_restrita')
 def editar_aprovacao(request, aprovacao_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -685,7 +685,7 @@ def editar_aprovacao(request, aprovacao_id):
 
 
 @login_required
-@group_required(['Aprovadores TI'], redirect_url='forbidden_url')
+@group_required(['Aprovadores TI'], redirect_url='zona_restrita')
 def aprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -707,7 +707,7 @@ def aprova_movimentacao(request, aprovacao_id):
 
 
 @login_required
-@group_required(['Aprovadores TI'], redirect_url='forbidden_url')
+@group_required(['Aprovadores TI'], redirect_url='zona_restrita')
 def reprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -730,7 +730,7 @@ def reprova_movimentacao(request, aprovacao_id):
 
 
 @login_required
-@group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='forbidden_url')
+@group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='zona_restrita')
 def termos(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -784,7 +784,7 @@ def termos(request):
 
 
 @login_required
-@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+@group_required(['Administradores', 'Suporte', 'TH', 'Basico'], redirect_url='zona_restrita')
 def termo(request, termo_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -832,7 +832,7 @@ def termo(request, termo_id):
 
 
 @login_required
-@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+@group_required(['Administradores', 'Aprovadores TI'], redirect_url='zona_restrita')
 def aceita_termo(request, termo_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -866,7 +866,7 @@ def aceita_termo(request, termo_id):
 
 
 @login_required
-@group_required(['Administradores', 'Aprovadores TI'], redirect_url='forbidden_url')
+@group_required(['Administradores', 'Aprovadores TI'], redirect_url='zona_restrita')
 def recusa_termo(request, termo_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -900,12 +900,45 @@ def recusa_termo(request, termo_id):
 
 
 @login_required
+@group_required(['Administradores', 'Suporte', 'TH'], redirect_url='zona_restrita')
+def devolucao(request, termo_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    try:
+        termo = get_object_or_404(Termo, pk=termo_id) 
+        form = ReturnTermForms()
+        if termo:
+            movimentacao = get_object_or_404(Movement, pk=termo.movimentacao_id)
+            if movimentacao:
+                if request.method == 'POST':
+                    form = ReturnTermForms(request.POST, request.FILES)
+                    
+                    if form.is_valid():
+                        #register_logentry(instance=form.save(user=request.user), action=CHANGE,
+                        #          user=request.user, modificacao='Editada Aprovação')
+                        messages.success(request, 'Aprovação modificada com sucesso.')
+
+        context = {
+            'form': form,
+            'id': termo_id,
+            'url_form': resolve(request.path_info).url_name
+        }
+        
+        return render(request, 'apps/tech_assets/devolucao.html', context)
+    except Exception as erro:
+        print(f'ERROR :: VIEWS :: DEVOLUCAO :: {erro}')
+        
+        
+
+
+@login_required
 def zona_restrita(request):
     return render(request, 'shared/zona_restrita.html')
 
 
 @login_required
-@group_required(['Administradores'], redirect_url='forbidden_url')
+@group_required(['Administradores'], redirect_url='zona_restrita')
 def cadastro_ativos_csv(request):
     form = CSVUploadForm()
     if request.method == 'POST':

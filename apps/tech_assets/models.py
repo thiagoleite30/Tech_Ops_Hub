@@ -499,15 +499,17 @@ class Termo(models.Model):
 class ReturnTerm(models.Model):
     movimentacao = models.ForeignKey(
         Movement, on_delete=models.CASCADE, related_name='returned')
-    data_criacao = models.DateTimeField(auto_now_add=True)
-    data_devolucao = models.DateTimeField(null=True, blank=True)
+    usuario_recebedor = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='user_recept_return')
+    data_retorno = models.DateTimeField(auto_now_add=True)
     status = models.BooleanField(default=False)
+    observacao = models.TextField(max_length=400, blank=True, null=True)
 
-    def marcar_como_devolvido(self):
+    def save(self, *args, **kwargs):
+        super(Approval, self).save(*args, **kwargs)
+
+    def marcar_como_devolvido(self, usuario):
         self.status = True
-        self.data_aceite = datetime.now()
+        self.data_retorno = datetime.now()
+        self.usuario_recebedor = usuario
         self.save()
-        # movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
-        self.movimentacao.status = 'concluido'
-        self.movimentacao.save()
-        Approval.mudar_status_ativos(self.aprovacao, 'em_estoque')
