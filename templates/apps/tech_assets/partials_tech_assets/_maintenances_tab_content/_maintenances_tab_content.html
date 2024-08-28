@@ -1,0 +1,84 @@
+{% load static %}
+<div class="tab-pane fade" id="manutencoes" role="tabpanel" aria-labelledby="manutencoes-tab">
+    <div class="row">
+        {% for maintenance in page_obj_maintenances %}
+        <div class="col-sm-3">
+            <div class="card h-100 text-center">
+                {% if maintenance.dias_atraso > 0 %}
+                <div class="card-body">
+                    {% if maintenance.status %}
+                    <h5 class="card-title" style="color: red;">Atrasada!</h5>
+                    {% else %}
+                    <h5 class="card-title">Finalizada com Atraso</h5>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="card-body">
+                    {% if maintenance.status %}
+                    <h5 class="card-title">Em Andamento</h5>
+                    {% else %}
+                    <h5 class="card-title">Finalizada</h5>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Ativo: {{maintenance.ativo}}</li>
+                    <li class="list-group-item">Operador Responsável: {{maintenance.operador}}
+                    </li>
+                    <li class="list-group-item">Chamado Interno: {{maintenance.chamado_top_desk}}
+                    </li>
+                    {% if maintenance.chamado_externo %}
+                    <li class="list-group-item">Chamado Externo: {{maintenance.chamado_externo}}
+                    </li>
+                    {% endif %}
+                    <li class="list-group-item">Data de Entrada: {{maintenance.data_inicio}}
+                    </li>
+                    {% if maintenance.data_prevista_fim != None %}
+                    <li class="list-group-item">Previsão de conclusão:
+                        {{maintenance.data_prevista_fim}}
+                    </li>
+                    {% endif %}
+                    {% if maintenance.dias_atraso > 0 %}
+                    <li class="list-group-item">Manutenção atrasada em {{maintenance.dias_atraso}}
+                        dias!</li>
+                    {% else %}
+                    <li class="list-group-item">Manutenção Dentro do Prazo</li>
+                    {% endif %}
+                </ul>
+                <div class="card-body">
+                    <a style="pointer-events: stroke;" href="#">
+                        <div class="cart-icon-container">
+                            <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
+                        </div>
+                    </a>
+                    <a style="pointer-events: stroke; color: red;" href="{% url 'remove_do_carrinho' asset.id %}">
+                        <div class="cart-icon-container">
+                            <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 25px;"></i>
+                            <span class="cart-remove">X</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <!-- Controles de Paginação -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj_maintenances.has_previous %}
+            <a href="?page=1">&laquo; primeira</a>
+            <a href="?page={{ page_obj_maintenances.previous_page_number }}">anterior</a>
+            {% endif %}
+
+            <span class="current">
+                Página {{page_obj_maintenances.number}} de
+                {{page_obj_maintenances.paginator.num_pages}}.
+            </span>
+
+            {% if page_obj_maintenances.has_next %}
+            <a href="?page={{ page_obj_maintenances.next_page_number }}">próxima</a>
+            <a href="?page={{ page_obj_maintenances.paginator.num_pages }}">última &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>

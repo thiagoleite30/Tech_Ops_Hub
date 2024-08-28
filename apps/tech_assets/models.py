@@ -102,9 +102,10 @@ class Accessory(models.Model):
 class Asset(models.Model):
     STATUS_CHOICES = [
         ('em_uso', 'Em Uso'),
+        ('transferido', 'Transferido'),
         ('em_manutencao', 'Em Manutenção'),
         ('em_estoque', 'Em Estoque'),
-        ('descartado', 'Descartado'),
+        ('baixado', 'Baixado'),
         ('separado', 'Separado'),
     ]
 
@@ -154,6 +155,7 @@ class AssetInfo(models.Model):
 class Movement(models.Model):
     STATUS_CHOICES = [
         ('pendente_aprovacao', 'Aprovação Pendente'),
+        ('pendente_entrega', 'Pendente Entrega'),
         ('em_andamento', 'Em Andamento'),
         ('concluido', 'Concluído'),
         ('atrasado', 'Atrasado'),
@@ -244,6 +246,7 @@ class Movement(models.Model):
 class MovementAsset(models.Model):
     ativo = models.ForeignKey(Asset,  on_delete=models.CASCADE)
     movimento = models.ForeignKey(Movement, on_delete=models.CASCADE)
+    devolvido = models.BooleanField(default=False)
     return_condition = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
@@ -398,12 +401,11 @@ class Approval(models.Model):
     def aprovar_movimentacao(self):
         self.status_aprovacao = 'aprovado'
         self.data_conclusao = datetime.now()
-        self.mudar_status_ativos('separado')
+        #self.mudar_status_ativos('separado')
         self.mudar_status_movimentacao('aprovar')
         self.save()
-        if self.movimentacao.tipo == 'emprestimo':
-            TermRes.objects.create(
-                movimentacao=self.movimentacao, aprovacao=self)
+        
+        Termo.objects.create(movimentacao=self.movimentacao, aprovacao=self)
 
     def reprovar_movimentacao(self):
         self.status_aprovacao = 'reprovado'
@@ -412,7 +414,8 @@ class Approval(models.Model):
         self.mudar_status_movimentacao('reprovar')
         self.save()
 
-    def mudar_status_ativos(self, status):
+    def mudar_status_ativos(self, status, *args, **kwargs):
+        origin_model_term = kwargs.pop('origin_model_term', False)
         # Muda status do ativo de separado para pendente_aprovacao
         if MovementAsset.objects.filter(movimento=self.movimentacao).exists():
             ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
@@ -425,29 +428,32 @@ class Approval(models.Model):
                 if Maintenance.objects.filter(ativo=ativo, status=True).exists():
                     ativo.status = 'em_manutencao'
                     ativo.save()
-
+                elif Movement.objects.filter(ativos=ativo, tipo='transferencia').exists() and origin_model_term:
+                    ativo.status = 'transferido'
+                    ativo.save()
+                elif Movement.objects.filter(ativos=ativo, tipo='baixa').exists() and origin_model_term:
+                    ativo.status = 'baixado'
+                    ativo.save()
                 else:
                     ativo.status = status
                     ativo.save()
 
     def mudar_status_movimentacao(self, status):
         movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
-
+        
         if movimentacao:
-            if movimentacao.tipo == 'emprestimo':
-                if status == 'aprovar':
-                    movimentacao.status = 'em_andamento'
-                else:
-                    movimentacao.status = 'concluido'
-            elif movimentacao.tipo == 'transferencia':
+            if status == 'aprovar':
+                movimentacao.status = 'pendente_entrega'
+            elif status == 'reprovar':
+                for item in MovementAsset.objects.filter(movimento=movimentacao):
+                    item.devolvido = True
+                    item.save()
                 movimentacao.status = 'concluido'
-            elif movimentacao.tipo == 'baixa':
-                movimentacao.status = 'concluido'
-            movimentacao.data_devolucao_real = timezone.now()
+                movimentacao.data_devolucao_real = timezone.now()
             movimentacao.save()
-
-
-class TermRes(models.Model):
+            
+            
+class Termo(models.Model):
 
     status_aceite = [
         ('aceito', 'Aceito'),
@@ -471,9 +477,12 @@ class TermRes(models.Model):
         self.aceite_usuario = 'aceito'
         self.save()
         movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
-        movimentacao.status = 'em_andamento'
+        if movimentacao.tipo == 'emprestimo':
+            movimentacao.status = 'em_andamento'
+        elif movimentacao.tipo == 'transferencia':
+            movimentacao.status = 'concluido'
         movimentacao.save()
-        Approval.mudar_status_ativos(self.aprovacao, 'em_uso')
+        Approval.mudar_status_ativos(self.aprovacao, 'em_uso', origin_model_term=True)
 
     def marcar_como_recusa(self):
         self.status_resposta = True

@@ -23,14 +23,16 @@
                             aria-controls="manutencoes" aria-selected="false">Manutenções</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="emprestimos-tab" data-toggle="tab" href="#emprestimos" role="tab"
-                            aria-controls="emprestimos" aria-selected="false">Movimentações</a>
+                        <a class="nav-link" id="movement-tab" data-toggle="tab" href="#movement" role="tab"
+                            aria-controls="movement" aria-selected="false">Movimentações</a>
                     </li>
                 </ul>
             </div>
             <div class="card-body">
                 <div class="tab-content" id="myTabContent">
-                    {% include 'apps/tech_assets/partials_tech_assets/_ativo_tab_content.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/asset_view_tab_content/asset_view_tab_content.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/_maintenances_tab_content/_maintenances_tab_content.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/_movement_tab_content/_movement_tab_content.html' %}
                 </div>
             </div>
         </div>

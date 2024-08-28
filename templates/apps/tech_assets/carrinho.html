@@ -12,9 +12,9 @@
                         <h5 class="card-title">{{ asset.tipo }}</h5>
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Nome: {{ asset.nome }}</li>
-                        <li class="list-group-item">Patrimônio: {{ asset.patrimonio }}</li>
-                        <li class="list-group-item">Número de Série: {{ asset.numero_serie }}</li>
+                        <li class="list-group-item"><b>Nome:</b> {{ asset.nome }}</li>
+                        <li class="list-group-item"><b>Patrimônio:</b> {{ asset.patrimonio }}</li>
+                        <li class="list-group-item"><b>Número de Série:</b> {{ asset.numero_serie }}</li>
                     </ul>
                     <div class="card-body">
                         <a style="pointer-events: stroke;" href="#">
@@ -57,7 +57,7 @@
         </div>
         <div class="end-template container-fluid"
             style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-            <a href="{% url 'novo_movimento' %}" class="btn btn-success btn-lg {% if cart_item_count <= 0 %}disabled{% endif %}" style="margin-right: 10px;">Finalizar Empréstimo Carirho</a>
+            <a href="{% url 'novo_movimento' %}" class="btn btn-success btn-lg {% if cart_item_count <= 0 %}disabled{% endif %}" style="margin-right: 10px;">Finalizar Movimentação</a>
             <a href="{% url 'deleta_carrinho' %}" class="btn btn-danger btn-lg {% if cart_item_count <= 0 %}disabled{% endif %}">Apagar Carrinho</a>
         </div>
     </div>

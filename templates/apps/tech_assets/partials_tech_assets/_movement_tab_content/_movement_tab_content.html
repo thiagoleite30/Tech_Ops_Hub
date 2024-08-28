@@ -1,0 +1,49 @@
+{% load static %}
+<div class="tab-pane fade" id="movement" role="tabpanel" aria-labelledby="movement-tab">
+    <div class="row">
+        {% for movement in page_obj_movements %}
+        <div class="col-sm-3">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{movement.get_tipo_display}} ID {{movement.id}}</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><b>Nome do Responsável:</b> {{movement.usuario.first_name}}
+                        {{movement.usuario.last_name}} ({{movement.usuario}})</li>
+                    <li class="list-group-item"><b>Unidade Recebedora:</b>
+                        {{movement.centro_de_custo_recebedor.nome}}
+                        ({{movement.centro_de_custo_recebedor}})</li>
+                    <li class="list-group-item"><b>Entregue Por:</b> {{movement.usuario_cedente.first_name}}
+                        {{movement.usuario_cedente.last_name}} ({{movement.usuario_cedente}})</li>
+                    <li class="list-group-item"><b>Unidade Cedente:</b> {{movement.centro_de_custo_cedente.nome}}
+                        ({{movement.centro_de_custo_cedente}})</li>
+                    <li class="list-group-item"><b>Data Inicio:</b> {{movement.data_movimento}}</li>
+                    <li class="list-group-item"><b>Previsão de Término:</b> {{movement.data_devolucao_prevista}}
+                    </li>
+                    <li class="list-group-item"><b>Chamado Interno:</b> {{movement.chamado_top_desk}}</li>
+                    <li class="list-group-item"><b>Observação:</b> {{movement.observacoes}}</li>
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <!-- Controles de Paginação -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj_movements.has_previous %}
+            <a href="?page=1">&laquo; primeira</a>
+            <a href="?page={{ page_obj_movements.previous_page_number }}">anterior</a>
+            {% endif %}
+
+            <span class="current">
+                Página {{page_obj_movements.number}} de
+                {{page_obj_movements.paginator.num_pages}}.
+            </span>
+
+            {% if page_obj_movements.has_next %}
+            <a href="?page={{ page_obj_movements.next_page_number }}">próxima</a>
+            <a href="?page={{ page_obj_movements.paginator.num_pages }}">última &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>

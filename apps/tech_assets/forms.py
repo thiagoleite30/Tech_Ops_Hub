@@ -381,9 +381,7 @@ class DynamicAccessoryForm(forms.Form):
         quantidade = self.cleaned_data['quantidade']
         
         if quantidade:
-            print(f'DEBUG :: CLEAN QUANTIDADE :: ENTROU NO IF QUANTIDADE')
             if quantidade <= 0:
-                print(f'DEBUG :: CLEAN QUANTIDADE :: ENTROU NO IF <= 0')
                 raise forms.ValidationError(message="A quantidade informada tem que ser maior que 0 (zero)!")
         return quantidade
 
@@ -527,8 +525,6 @@ class MovementForms(forms.ModelForm):
                 accessory_quantity_map[accessory_id] = int(quantity)
 
         if commit:
-
-            print(f'DEBUG :: FORMS :: MOVEMENT FORMS :: ATIVOS {ativos} ')
             if ativos != None:
                 instance.save(ativos=ativos, aprovador=aprovador, acessorios=accessory_quantity_map)
             else:

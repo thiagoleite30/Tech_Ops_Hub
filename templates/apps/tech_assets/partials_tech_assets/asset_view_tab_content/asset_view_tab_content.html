@@ -1,0 +1,41 @@
+{% load static %}
+<div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
+    <h5 class="card-title">{{asset.tipo}}</h5>
+    <div class="card" style="margin-top: 10px; margin-bottom: 10px;">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><b>Nome:</b> {{asset.nome}}</li>
+            <li class="list-group-item"><b>Patrimônio:</b> {{asset.patrimonio}}</li>
+            <li class="list-group-item"><b>Número de série:</b> {{ asset.numero_serie }}</li>
+            <li class="list-group-item"><b>Status:</b> {{ asset.get_status_display }}</li>
+        </ul>
+    </div>
+    <a href="#" class="btn btn-primary">Editar Ativo</a>
+    {% if asset.get_status_display == 'Em Manutenção' %}
+    <a href="{% url 'concluir_manutencao' asset.id %}" class="btn btn-primary">Concluir
+        Manutenção</a>
+    {% else %}
+    <a href="{% url 'cadastro_manutencao' asset.id %}" class="btn btn-primary">Iniciar
+        Manutenção</a>
+    {% endif %}
+</div>
+<div class="tab-pane fade" id="info" role="tabpanel" aria-labelledby="info-tab">
+    <h5 class="card-title">{{asset_infos}}</h5>
+    <div class="card" style="margin-top: 10px; margin-bottom: 10px;">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><b>Fabricante:</b> {{asset_infos.fabricante}}</li>
+            <li class="list-group-item"><b>MAC:</b> {{asset_infos.endereco_mac}}</li>
+            <li class="list-group-item"><b>Memória:</b> {{asset_infos.memoria}}</li>
+            <li class="list-group-item"><b>HD:</b> {{asset_infos.armazenamento}}</li>
+            <li class="list-group-item"><b>Processador:</b> {{ asset_infos.processador }}</li>
+            <li class="list-group-item"><b>Sistema Operacional:</b> {{ asset_infos.so }}</li>
+            <li class="list-group-item"><b>Versão SO:</b> {{ asset_infos.versao_so }}</li>
+            <li class="list-group-item"><b>Licenciamento SO:</b> {{ asset_infos.licenca_so }}</li>
+
+            <li class="list-group-item"><b>Data de Instalação do SO:</b> {{asset_infos.data_instalacao_so}}
+            </li>
+            <li class="list-group-item"><b>Fim de Garantia:</b> {{ asset_infos.data_garantia }}</li>
+            <li class="list-group-item"><b>Último Logon:</b> {{ asset_infos.ultimo_logon }}</li>
+            <li class="list-group-item"><b>Último Scan Lansweeper:</b> {{asset_infos.ultimo_scan}}</li>
+        </ul>
+    </div>
+</div>

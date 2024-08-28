@@ -1,0 +1,36 @@
+{% load static %}
+<div class="tab-pane fade" id="ativos" role="tabpanel" aria-labelledby="ativos-tab">
+    <div class="row">
+        {% if assets %}
+        {% for asset in assets %}
+        <div class="col-sm-3">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <h5 class="card-title">{{asset.tipo}}</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Ativo: {{asset.nome}}</li>
+
+                    <li class="list-group-item">Modelo: {{asset.modelo}}
+                    </li>
+                    <li class="list-group-item">Patrimonio: {{asset.patrimonio}}
+                    </li>
+                    <li class="list-group-item">Número de Série: {{asset.numero_serie}}
+                    </li>
+                </ul>
+                <div class="card-body">
+                    <a style="pointer-events: stroke;" href="{% url 'ativo' asset.id %}">
+                        <div class="cart-icon-container">
+                            <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+        {%else%}
+        <h5>{{movement.get_tipo_display}} não possui ativos</h5>
+        {%endif%}
+    </div>
+</div>

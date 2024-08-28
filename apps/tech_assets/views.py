@@ -1,7 +1,7 @@
 from django.forms import modelformset_factory
 from django.http import JsonResponse
 from django.shortcuts import render
-from apps.tech_assets.models import Accessory, Approval, Asset, AssetCart, AssetInfo, Cart, Movement, MovementAccessory, MovementAsset, Maintenance, TermRes
+from apps.tech_assets.models import Accessory, Approval, Asset, AssetCart, AssetInfo, Cart, Movement, MovementAccessory, MovementAsset, Maintenance, Termo
 from apps.tech_assets.services import register_logentry, upload_assets, concluir_manutencao_service, get_maintenance_asset
 from django.contrib.admin.models import ADDITION, CHANGE
 from django.shortcuts import get_object_or_404, render, redirect
@@ -327,7 +327,7 @@ def ativos(request):
         ('em_uso', 'Em Uso'),
         ('em_manutencao', 'Em Manutenção'),
         ('em_estoque', 'Em Estoque'),
-        ('descartado', 'Descartado'),
+        ('baixado', 'Baixado'),
         ('separado', 'Separado'),
     ]
     STATUS_MAP = dict((v, k) for k, v in STATUS_CHOICES)
@@ -741,7 +741,7 @@ def termos(request):
     if user_instance:
         try:
             query = request.GET.get('q', '')
-            termos = TermRes.objects.all()
+            termos = Termo.objects.all()
             status_termos = request.GET.getlist('status')
 
             # Query pode ser alterada dependendo de como queremos consultar
@@ -789,7 +789,7 @@ def termo(request, termo_id):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    term_res = get_object_or_404(TermRes, pk=termo_id)
+    term_res = get_object_or_404(Termo, pk=termo_id)
     aprovacao = get_object_or_404(Approval, id=term_res.aprovacao_id)
     movimentacao = get_object_or_404(Movement, pk=aprovacao.movimentacao.id)
     
@@ -838,7 +838,7 @@ def aceita_termo(request, termo_id):
         return redirect('login')
 
     try:
-        term_res = get_object_or_404(TermRes, pk=termo_id)
+        term_res = get_object_or_404(Termo, pk=termo_id)
         url = reverse('termo', kwargs={'termo_id': termo_id})
         if term_res:
             if term_res.status_resposta != False:
@@ -856,7 +856,7 @@ def aceita_termo(request, termo_id):
                     return redirect(url)
                 # Método abaixo já faz tudo que é preciso após o aceito \
                     # como mudança de status de ativos, termos e etc...
-                TermRes.marcar_como_aceito(term_res)
+                Termo.marcar_como_aceito(term_res)
                 register_logentry(instance=term_res.save(
                 ), action=CHANGE, user=request.user, modificacao='Aceitou os Termos')
     except Exception as e:
@@ -872,7 +872,7 @@ def recusa_termo(request, termo_id):
         return redirect('login')
 
     try:
-        term_res = get_object_or_404(TermRes, pk=termo_id)
+        term_res = get_object_or_404(Termo, pk=termo_id)
         url = reverse('termo', kwargs={'termo_id': termo_id})
         if term_res:
             if term_res.status_resposta != False:
@@ -890,7 +890,7 @@ def recusa_termo(request, termo_id):
                     return redirect(url)
                 # Método abaixo já faz tudo que é preciso após o aceito \
                     # como mudança de status de ativos, termos e etc...
-                TermRes.marcar_como_recusa(term_res)
+                Termo.marcar_como_recusa(term_res)
                 register_logentry(instance=term_res.save(
                 ), action=CHANGE, user=request.user, modificacao='Recusou os Termos')
     except Exception as e:

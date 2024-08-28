@@ -2,7 +2,7 @@
 <main role="main" class="container-fluid">
     <div class="container-fluid" style="padding-top: 20px;">
         <div class="starter-template" style="justify-content: center; align-items: center;">
-            <h1 style="text-align: center;" name="assets">Termo de Responsabilidade</h1>
+            <h1 style="text-align: center;" name="assets">Termo de Movimentação</h1>
         </div>
         <div style="margin-bottom: 10px; display: flex; justify-content: flex-end;">
         </div>
@@ -12,10 +12,10 @@
                 <ul class="nav nav-tabs" id="myTab" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link active" id="perfil-tab" data-toggle="tab" href="#perfil" role="tab"
-                            aria-controls="perfil" aria-selected="true">Aprovação</a>
+                            aria-controls="perfil" aria-selected="true">Termo</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info"
+                        <a class="nav-link" id="movement-tab" data-toggle="tab" href="#movement" role="tab" aria-controls="movement"
                             aria-selected="false">Informações da Movimentação</a>
                     </li>
                     <li class="nav-item">
@@ -30,41 +30,14 @@
             </div>
             <div class="card-body">
                 <div class="tab-content" id="myTabContent">
-                    {% include 'apps/tech_assets/partials_tech_assets/_term_res_tab_content.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/_term_tab_content/_term_tab_content.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/_movement_tab_content/_movement_tab_content_list/_movement_tab_content_list.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/_assets_tab_content/_assets_tab_content.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/_accessorys_tab_content/_accessorys_tab_content.html' %}
                 </div>
             </div>
         </div>
-        <!-- Modal -->
-        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-scrollable modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Termo de Consentimento para Empréstimo de
-                            Ativos
-                            de Tecnologia</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        {% include 'apps/tech_assets/partials_tech_assets/_term_res_text.html' %}
-                    </div>
-                    <div class="modal-footer">
-                        <div class="form-check">
-                            {% if term.aceite_usuario == 'aceito'%}
-                            <input class="form-check-input" type="checkbox" value="" id="defaultCheck2" checked disabled>
-                            {%else%}
-                            <input class="form-check-input" type="checkbox" value="" id="defaultCheck2">
-                            {%endif%}
-                            <label class="form-check-label" for="defaultCheck2">
-                                Declaro-me de acordo com os termos impostos
-                            </label>
-                        </div>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                        <!--<button type="button" class="btn btn-primary">Understood</button>-->
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% include 'apps/tech_assets/partials_tech_assets/_term_modal/_term_modal.html' %}
     </div>
 </main>
 
@@ -73,26 +46,7 @@
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <!--<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>-->
-<script>
-    // Seleciona o checkbox e o link "Aceitar"
-    const checkbox = document.getElementById('defaultCheck2');
-    const acceptLink = document.getElementById('acceptLink');
 
-    // Função para verificar o estado do checkbox e adicionar/remover a classe 'disabled'
-    function toggleLinkState() {
-        if (checkbox.checked) {
-            acceptLink.classList.remove('disabled');
-        } else {
-            acceptLink.classList.add('disabled');
-        }
-    }
-
-    // Adiciona um event listener ao checkbox para verificar quando o estado mudar
-    checkbox.addEventListener('change', toggleLinkState);
-
-    // Chama a função inicialmente para garantir que o link esteja no estado correto
-    toggleLinkState();
-</script>
 <!--
     <footer>
         <div class="container">

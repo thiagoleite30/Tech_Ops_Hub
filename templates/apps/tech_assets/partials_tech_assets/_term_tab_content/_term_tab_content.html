@@ -1,0 +1,42 @@
+{% load static %}
+<div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
+    <h5 class="card-title">Termo de {{movement.get_tipo_display}} para o responsável "{{movement.usuario.first_name}}
+        {{movement.usuario.last_name}}"</h5>
+    <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><b>Unidade Recebedora:</b> {{movement.centro_de_custo_recebedor.nome}}
+                ({{movement.centro_de_custo_recebedor}})</li>
+            <li class="list-group-item"><b>Unidade Cedente Cedente:</b> {{movement.centro_de_custo_cedente.nome}}
+                ({{movement.centro_de_custo_cedente}})</li>
+            <li class="list-group-item"><b>Data Inclusão:</b> {{term.data_criacao}}</li>
+            <li class="list-group-item"><b>Aprovação:</b>
+                Aprovado por {{aprovall.aprovador.first_name}}
+                {{aprovall.aprovador.last_name}} em {{aprovall.data_conclusao}}</li>
+            <li class="list-group-item"><b>Aceite de termo:</b> {% if term.aceite_usuario == 'aceito' %} Aceito por
+                {{movement.usuario.first_name}} {{movement.usuario.last_name}} em {{term.data_resposta}}{% else %}
+                Pendente {%endif%}</li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <!-- Button trigger modal -->
+        <a type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="width: 30%;">
+            Termos e Condições de Aceite da movimentação
+        </a>
+    </div>
+    <div class="end-template container-fluid"
+        style="display: flex; align-items: center; justify-content: center; padding: 20px;">
+        {% if not term.status_resposta %}
+        <a href="{% url 'aceita_termo' term.id %}" id="acceptLink" class="btn btn-success btn-lg disabled"
+            style="margin-right: 10px;">Aceitar</a>
+        <a href="{% url 'recusa_termo' term.id %}" class="btn btn-danger btn-lg">Recusar</a>
+        {%else%}
+        <!--
+        <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aceitar</a>
+        <a href="#" class="btn btn-danger btn-lg disabled">Recusar</a>
+        -->
+        {% if is_aprovadores_ti_user and movement.tipo == 'emprestimo' %}
+        <a href="#" class="btn btn-outline-secondary" style="width: 30%;">Iniciar Devolução</a>
+        {%endif%}
+        {%endif%}
+    </div>
+</div>

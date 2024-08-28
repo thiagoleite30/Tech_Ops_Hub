@@ -15,7 +15,7 @@
                             aria-controls="perfil" aria-selected="true">Aprovação</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info"
+                        <a class="nav-link" id="movement-tab" data-toggle="tab" href="#movement" role="tab" aria-controls="movement"
                             aria-selected="false">Informações da Movimentação</a>
                     </li>
                     <li class="nav-item">
@@ -30,7 +30,10 @@
             </div>
             <div class="card-body">
                 <div class="tab-content" id="myTabContent">
-                    {% include 'apps/tech_assets/partials_tech_assets/_aprovacao_tab_content.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/_approval_tab_content/_approval_tab_content.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/_movement_tab_content/_movement_tab_content_list/_movement_tab_content_list.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/_assets_tab_content/_assets_tab_content.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/_accessorys_tab_content/_accessorys_tab_content.html' %}
                 </div>
             </div>
         </div>
