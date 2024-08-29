@@ -250,13 +250,27 @@ class MovementAsset(models.Model):
     return_condition = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
-        return self.id
+        return self.ativo.nome
+    
+    def marcar_como_devolvido(self):
+        self.devolvido = True
+        ativo = get_object_or_404(Asset, pk=self.ativo_id)
+        if ativo:
+            if Maintenance.objects.filter(ativo=ativo, status=True).exists():
+                ativo.status = 'em_manutencao'
+                ativo.save()
+            else:
+                ativo.status = 'em_estoque'
+                ativo.save()
+        self.save()
+        
 
 
 class MovementAccessory(models.Model):
     acessorio = models.ForeignKey(Accessory,  on_delete=models.CASCADE)
     movimento = models.ForeignKey(Movement, on_delete=models.CASCADE)
     quantidade = models.PositiveIntegerField()
+    quantidade_devolvida = models.PositiveIntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.quantidade} x {self.acessorio.nome}"
@@ -500,16 +514,14 @@ class ReturnTerm(models.Model):
     movimentacao = models.ForeignKey(
         Movement, on_delete=models.CASCADE, related_name='returned')
     usuario_recebedor = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='user_recept_return')
+        User, on_delete=models.CASCADE, null=True, related_name='user_recept_return')
     data_retorno = models.DateTimeField(auto_now_add=True)
-    status = models.BooleanField(default=False)
+    status = models.BooleanField(default=True)
     observacao = models.TextField(max_length=400, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        super(Approval, self).save(*args, **kwargs)
+        is_new = self.pk is None  # Verifica se é uma nova instância
+        super(ReturnTerm, self).save(*args, **kwargs)
 
-    def marcar_como_devolvido(self, usuario):
-        self.status = True
-        self.data_retorno = datetime.now()
-        self.usuario_recebedor = usuario
-        self.save()
+        if is_new:
+            self.movimentacao.marcar_como_concluido()

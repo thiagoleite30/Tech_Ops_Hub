@@ -34,8 +34,12 @@
         <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aceitar</a>
         <a href="#" class="btn btn-danger btn-lg disabled">Recusar</a>
         -->
+        {% if not ReturnTerm %}
         {% if is_aprovadores_ti_user and movement.tipo == 'emprestimo' %}
-        <a href="#" class="btn btn-outline-secondary" style="width: 30%;">Iniciar Devolução</a>
+        <a href="{% url 'devolucao' term.id %}" class="btn btn-outline-secondary" style="width: 30%;">Iniciar Devolução</a>
+        {%endif%}
+        {% else %}
+        <a href="{% url 'devolucao' term.id %}"  class="btn btn-outline-success disabled" style="width: 30%;">Termo de devolução gerado!</a>
         {%endif%}
         {%endif%}
     </div>

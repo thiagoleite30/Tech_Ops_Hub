@@ -1,118 +1,12 @@
-{% load static %}
-{% csrf_token %}
-{% for field in form.visible_fields %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<div class="form-group row">
-    <label for="inputEmail3" class="col-sm-2 col-form-label" for="{{ field.id_for_label }}">{{field.label }}</label>
-    <div class="col-sm-10">
-        {{ field }}
-    </div>
-</div>
-{% for error in field.errors %}
-<div class="alert alert-danger" role="alert">{{error}}</div>
-{% endfor %}
-{% endfor %}
+{% extends 'shared/base_form.html' %} {% load static %} {% block content %}
 
 {% if url_form == 'novo_movimento' %}
-<!-- Campos do formset -->
-<div id="accessory-formset">
-    {% for form in form.formset %}
-    <div class="form-group row">
-        <label for="id_acessorio_{{ forloop.counter0 }}"
-            class="col-sm-2 col-form-label">{{form.acessorio.label_tag}}</label>
-        <div class="col-sm-4">
-            <select name="form-acessorio" id="id_acessorio_{{forloop.counter0}}" class="form-control">
-                {% for option in form.acessorio.field.queryset %}
-                <option value="{{option.id}}" {% if option.id == form.acessorio.value %}selected{% endif %}>{{option}}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-        <label for="id_quantidade_{{ forloop.counter0 }}"
-            class="col-sm-2 col-form-label">{{form.quantidade.label_tag}}</label>
-        <div class="col-sm-2">
-            <input type="number" name="form-quantidade" id="id_quantidade_{{ forloop.counter0 }}" class="form-control"
-                value="{{ form.quantidade.value | default:1 }}">
-        </div>
-        <div class="col-sm-2">
-            <button type="button" class="btn btn-outline-danger" onclick="removeForm(this)"><b>Remover</b> <span
-                    class="btn-icon fa fa-remove"></span></button>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-<div class="form-group row">
-    <button type="button" id="add-form" class="form-control btn btn-outline-secondary"><span class="fa fa-plus"></span>
-        Adicionar Acessório</button>
-</div>
-
+{% include 'apps/tech_assets/partials_tech_assets/_partials_fields_form/_fields_form_novo_movimento/_fields_form_novo_movimento.html' %}
 {%endif%}
 
-<div class="form-group-new">
-    <div class="col-sm-20">
-        {% if not asset_id and not id and url_form != 'novo_movimento' %}
-        <button name="save" type="submit" class="btn btn-secondary btn-lg ">Salvar</button>
-        <button name="save_and_add" type="submit" class="btn btn-outline-secondary btn-lg">Salvar e cadastrar
-            outro(a)</button>
-        {% else %}
-        <button name="save" type="submit" class="btn btn-secondary btn-lg">Salvar</button>
-        {% if url_form == 'novo_movimento' %}
-        <a href="{% url 'carrinho' %}" class="btn btn-outline-secondary btn-lg" style="padding: auto;">Cancelar</a>
-        {% endif %}
-        {% endif %}
-    </div>
-</div>
+{% if url_form == 'devolucao' %}
+{% include 'apps/tech_assets/partials_tech_assets/_partials_fields_form/_fields_form_devolucao/_fields_form_devolucao.html' %}
+{%endif%}
 
 
-<script>
-    // Adiciona um novo formulário quando o botão é clicado
-    document.getElementById('add-form').addEventListener('click', function () {
-        const container = document.getElementById('accessory-formset');
-        const index = container.children.length;  // Obtém o índice do novo formulário
-        const newForm = `
-            <div class="form-group row">
-                <label for="id_acessorio_${index}" class="col-sm-2 col-form-label">Acessório:</label>
-                <div class="col-sm-5">
-                    <select name="form-acessorio" id="id_acessorio_${index}" class="form-control" required>
-                    </select>
-                </div>
-                <label for="id_quantidade_${index}" class="col-sm-1 col-form-label">Quantidade:</label>
-                <div class="col-sm-2">
-                    <input type="number" name="form-quantidade" id="id_quantidade_${index}" class="form-control" min="1" required/>
-                </div>
-                <div class="col-sm-2">
-                    <button type="button" class="form-control btn btn-outline-danger"  onclick="removeForm(this)"><b>Remover</b> <span class="btn-icon fa fa-remove"></span></button>
-                </div>
-            </div>
-            <div class="form-group row"></div>
-        `;
-
-        // Adiciona o novo formulário ao container
-        container.insertAdjacentHTML('beforeend', newForm);
-
-        // Popula as opções do select
-        populateSelectOptions(index);
-    });
-
-    // Função para popular as opções do select com dados do servidor
-    function populateSelectOptions(index) {
-        fetch('/get_accessory_options/')  // URL para obter as opções
-            .then(response => response.json())
-            .then(data => {
-                const select = document.getElementById(`id_acessorio_${index}`);
-                select.innerHTML = ''; // Limpa opções existentes
-                data.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.id;
-                    option.text = item.str; // Assume que o campo 'str' é o texto para exibir
-                    select.add(option);
-                });
-            })
-            .catch(error => console.error('Erro ao buscar opções:', error));
-    }
-
-    // Função para remover um formulário
-    function removeForm(button) {
-        button.closest('.form-group.row').remove();  // Remove o formulário mais próximo
-    }
-</script>
+{% endblock %}

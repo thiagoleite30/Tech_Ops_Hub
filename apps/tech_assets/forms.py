@@ -11,18 +11,7 @@ from django.db.models import Q
 from apps.tech_assets.services import register_logentry
 
 
-class MovementAccessoryForm(forms.ModelForm):
-    class Meta:
-        model = MovementAccessory
-        fields = ['acessorio', 'quantidade']
-        labels = {
-            'acessorio': 'Acessório',
-            'quantidade': 'Quantidade'
-        }
-        widgets = {
-            'acessorio': forms.Select(attrs={'class': 'form-control'}),
-            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': 1})
-        }
+
 
 
 class ManufacturerForms(forms.ModelForm):
@@ -408,8 +397,8 @@ class MovementForms(forms.ModelForm):
         required=True
     )
 
-    accessories_data = forms.CharField(
-        widget=forms.HiddenInput(), required=False)
+    #accessories_data = forms.CharField(
+    #    widget=forms.HiddenInput(), required=False)
 
     class Meta:
         model = Movement
@@ -587,6 +576,9 @@ class ApprovalForms(forms.ModelForm):
 
 class ReturnTermForms(forms.ModelForm):
     form_name = 'Termo de Devolução'
+    
+    #assets_data = forms.CharField(
+    #    widget=forms.HiddenInput(), required=False)
 
     class Meta:
         model = ReturnTerm
@@ -599,9 +591,12 @@ class ReturnTermForms(forms.ModelForm):
             'observacao': forms.Textarea(attrs={'class': 'form-control'}),
         }
     
+        
     def save(self, commit=True, *args, **kwargs):
         usuario_recebedor = kwargs.pop('user', None)
         instance = super().save(commit=False)
+        
+    
         if usuario_recebedor:
             instance.usuario_recebedor = usuario_recebedor
 
@@ -609,5 +604,7 @@ class ReturnTermForms(forms.ModelForm):
             instance.save()
         return instance
 
+
 class CSVUploadForm(forms.Form):
     csv_file = forms.FileField()
+

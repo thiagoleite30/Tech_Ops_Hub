@@ -6,7 +6,8 @@ from apps.tech_assets.views import zona_restrita, index, login, cadastro_fabrica
     deleta_carrinho, aprovacoes, aprovacao, ativo, concluir_manutencao, \
     cadastro_ativos_csv, aprova_movimentacao, reprova_movimentacao, \
     termos, termo, cadastro_acessorio, get_accessory_options, \
-    editar_aprovacao, aceita_termo, recusa_termo, devolucao
+    editar_aprovacao, aceita_termo, recusa_termo, devolucao, \
+    get_assets_return_options
 
 
 # Lista de endpoints:
@@ -50,4 +51,6 @@ urlpatterns = [
     path('upload_csv/', cadastro_ativos_csv, name='upload_csv'),
     path('get_accessory_options/', get_accessory_options,
          name='get_accessory_options'),
+    path('get_assets_return_options/', get_assets_return_options,
+         name='get_assets_return_options')
 ]

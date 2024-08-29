@@ -1,0 +1,42 @@
+<div id="assets-return-formset">
+    {% if movement_assets %}
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Ativo(s) devolvido(s):</label>
+        <div class="col-sm-10">
+            <select class="form-select" name="assets" multiple aria-label="multiple select example">
+                {% for asset in movement_assets %}
+                <option value="{{ asset.id }}">{{ asset }}</option>
+                {%endfor%}
+            </select>
+        </div>
+    </div>
+    {%else%}
+    <div class="form-group row" style="justify-content: center; display: flex; text-align: center;">
+        <label class="col-sm-12 col-form-label">Não possui Ativos</label>
+    </div>
+    {%endif%}
+</div>
+<div id="accessorys-return-formset">
+    {% if accessorys %}
+    {% for accessory_form in accessorys %}
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Acessório devolvido:</label>
+        <div class="col-sm-6">
+            <input class="form-control" disabled
+                value="{{accessory_form.quantidade}} x {{accessory_form.acessorio.nome}}"></input>
+            <input type="hidden" name="movement_accessory_ids" value="{{ accessory_form.id }}">
+        </div>
+        <label class="col-sm-2 col-form-label">Quantidade Devolvida:</label>
+        <div class="col-sm-2">
+            <input type="number" class="form-control" name="quantities_{{ accessory_form.id }}"
+                value="{{accessory_form.quantidade}}">
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="form-group row" style="justify-content: center; display: flex; text-align: center;">
+        <label class="col-sm-12 col-form-label">Não possui acessórios e/ou consumíveis</label>
+    </div>
+    {% endif %}
+
+</div>

@@ -1,10 +1,12 @@
 from django.forms import modelformset_factory
 from django.http import JsonResponse
 from django.shortcuts import render
-from apps.tech_assets.models import Accessory, Approval, Asset, AssetCart, AssetInfo, Cart, Movement, MovementAccessory, MovementAsset, Maintenance, Termo
+from apps.tech_assets.models import Accessory, Approval, Asset, AssetCart, AssetInfo, Cart, Movement, MovementAccessory, MovementAsset, Maintenance, ReturnTerm, Termo
+from django.shortcuts import get_object_or_404, render, redirect
+
 from apps.tech_assets.services import register_logentry, upload_assets, concluir_manutencao_service, get_maintenance_asset
 from django.contrib.admin.models import ADDITION, CHANGE
-from django.shortcuts import get_object_or_404, render, redirect
+
 from apps.tech_assets.forms import AccessoryForms, ApprovalForms, AssetModelForms, CSVUploadForm, DynamicAccessoryFormSet, MovementForms, AssetForms, MaintenanceForms, \
     LocationForms, ManufacturerForms, CostCenterForms, \
     AssetTypeForms, ReturnTermForms
@@ -346,9 +348,11 @@ def ativos(request):
             Q(tipo__nome__icontains=query)
         )
 
+    assets_list = assets.order_by('id')
+
     # Uma instancia paginator definida para o máximo de 15 ativos por pagina \
-        # E já captura dos assets os 15 primeiros da consulta
-    paginator = Paginator(assets, 15)
+    # E já captura dos assets os 15 primeiros da consulta
+    paginator = Paginator(assets_list, 15)
 
     # Obtém o número da página atual
     page_number = request.GET.get('page')
@@ -763,7 +767,14 @@ def termos(request):
                 if 'pendente' in status_termos:
                     status_query |= Q(aceite_usuario='pendente')
 
-            termos = termos.filter(status_query)
+            termos = termos.filter(status_query).order_by(
+                Case(
+                    When(aceite_usuario='pendente', then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField()
+                ),
+                'aceite_usuario'
+            )
 
             paginator = Paginator(termos, 15)
             page_number = request.GET.get('page')
@@ -792,7 +803,7 @@ def termo(request, termo_id):
     term_res = get_object_or_404(Termo, pk=termo_id)
     aprovacao = get_object_or_404(Approval, id=term_res.aprovacao_id)
     movimentacao = get_object_or_404(Movement, pk=aprovacao.movimentacao.id)
-    
+
     if aprovacao:
         if MovementAsset.objects.filter(movimento=aprovacao.movimentacao).exists():
             ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
@@ -800,7 +811,7 @@ def termo(request, termo_id):
             if ativos_id:
                 ativos_na_movimentacao = Asset.objects.filter(id__in=ativos_id)
         # Caso não haja nenhum ativo atrelado a aprovação então ficará como uma lista vazia
-        # Pode ocorrer em casos de movimentações somente de itens classificados como acessórios        
+        # Pode ocorrer em casos de movimentações somente de itens classificados como acessórios
         else:
             ativos_na_movimentacao = []
 
@@ -825,7 +836,8 @@ def termo(request, termo_id):
         'aprovall': aprovacao,
         'movement': movimentacao if movimentacao else None,
         'assets': ativos_na_movimentacao,
-        'accessorys': acessorios_com_quantidade
+        'accessorys': acessorios_com_quantidade,
+        'ReturnTerm': ReturnTerm.objects.filter(movimentacao=movimentacao).exists()
     }
 
     return render(request, 'apps/tech_assets/term_res.html', context)
@@ -900,36 +912,78 @@ def recusa_termo(request, termo_id):
 
 
 @login_required
+@group_required(['Suporte'], redirect_url='zona_restrita')
+def get_assets_return_options(request):
+    options = list(MovementAsset.objects.all().values('id'))
+    for option in options:
+        # Adiciona o valor retornado por __str__ para cada item
+        accessory = MovementAsset.objects.get(id=option['id'])
+        option['str'] = str(accessory)
+    return JsonResponse(options, safe=False)
+
+
+@login_required
 @group_required(['Administradores', 'Suporte', 'TH'], redirect_url='zona_restrita')
 def devolucao(request, termo_id):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    try:
-        termo = get_object_or_404(Termo, pk=termo_id) 
-        form = ReturnTermForms()
-        if termo:
-            movimentacao = get_object_or_404(Movement, pk=termo.movimentacao_id)
-            if movimentacao:
-                if request.method == 'POST':
-                    form = ReturnTermForms(request.POST, request.FILES)
-                    
-                    if form.is_valid():
-                        #register_logentry(instance=form.save(user=request.user), action=CHANGE,
-                        #          user=request.user, modificacao='Editada Aprovação')
-                        messages.success(request, 'Aprovação modificada com sucesso.')
+    termo = get_object_or_404(Termo, pk=termo_id)
+    movimentacao = get_object_or_404(Movement, pk=termo.movimentacao_id)
+    accessory_queryset = MovementAccessory.objects.filter(
+        movimento=movimentacao)
+    movement_assets = MovementAsset.objects.filter(movimento=movimentacao)
+    form = ReturnTermForms()
 
-        context = {
-            'form': form,
-            'id': termo_id,
-            'url_form': resolve(request.path_info).url_name
-        }
+    if request.method == 'POST':
+        form = ReturnTermForms(request.POST)
         
-        return render(request, 'apps/tech_assets/devolucao.html', context)
-    except Exception as erro:
-        print(f'ERROR :: VIEWS :: DEVOLUCAO :: {erro}')
+        selected_assets = request.POST.getlist('assets')
+        print(f'DEBUG :: VIEW :: DEVOLUCAO :: ASSETS SELECIONADOS :: {selected_assets}')
+        # Convertendo os IDs para instâncias de MovementAsset
+        movement_assets = MovementAsset.objects.filter(id__in=selected_assets)
         
-        
+        movement_accessory_ids = request.POST.getlist('movement_accessory_ids')
+        quantities = {}
+        for movement_accessory_id in movement_accessory_ids:
+            quantity = request.POST.get(f'quantities_{movement_accessory_id}')
+            if quantity:
+                quantities[movement_accessory_id] = int(quantity)
+
+        if form.is_valid():
+            # Salvar o termo de devolução
+            instance = form.save(commit=False)
+            instance.usuario_recebedor = request.user
+            instance.movimentacao = movimentacao
+            instance.save()
+            
+            for asset in movement_assets:
+                asset.marcar_como_devolvido()
+
+            for movement_accessory_id, quantity in quantities.items():
+                moviment_accessory = MovementAccessory.objects.get(
+                    id=movement_accessory_id)
+                moviment_accessory.quantidade_devolvida = quantity
+                moviment_accessory.save()
+            
+            register_logentry(instance=instance, action=ADDITION,
+                              user=request.user, detalhe='Devolução Inserida')
+            
+            messages.success(request, 'Devolução inserida com sucesso.')
+            
+            url = reverse('devolucao', kwargs={'termo_id': termo_id})
+            return redirect(url)
+
+    context = {
+        'form': form,
+        'id': termo_id,
+        'movement': movimentacao,
+        'url_form': resolve(request.path_info).url_name,
+        'accessorys': accessory_queryset,
+        'movement_assets': movement_assets,
+    }
+
+    return render(request, 'apps/tech_assets/devolucao.html', context)
 
 
 @login_required
