@@ -1,22 +1,17 @@
 from django import forms
 from django.db import connection
-from django.shortcuts import get_object_or_404
-from apps.tech_assets.models import Accessory, Approval, Asset, AssetCart, AssetModel, Cart, Manufacturer, CostCenter, \
-    AssetType, Location, Maintenance, Movement, MovementAccessory, MovementAsset, ReturnTerm
-from datetime import datetime
 from django.contrib.auth.models import User, Group
-from django.contrib.admin.models import CHANGE, DELETION, ADDITION
-from django.db.models import Q
-
-from apps.tech_assets.services import register_logentry
-
-
+from django.shortcuts import get_object_or_404
+from apps.tech_assets.models import Accessory, Approval, Asset, \
+    AssetModel, Manufacturer, CostCenter, \
+    AssetType, Location, Maintenance, \
+    Movement, MovementAsset, ReturnTerm
 
 
 
 class ManufacturerForms(forms.ModelForm):
     form_name = 'Novo Fabricante'
-
+    
     class Meta:
         model = Manufacturer
         exclude = []
@@ -397,7 +392,7 @@ class MovementForms(forms.ModelForm):
         required=True
     )
 
-    #accessories_data = forms.CharField(
+    # accessories_data = forms.CharField(
     #    widget=forms.HiddenInput(), required=False)
 
     class Meta:
@@ -576,13 +571,14 @@ class ApprovalForms(forms.ModelForm):
 
 class ReturnTermForms(forms.ModelForm):
     form_name = 'Termo de Devolução'
-    
-    #assets_data = forms.CharField(
+
+    # assets_data = forms.CharField(
     #    widget=forms.HiddenInput(), required=False)
 
     class Meta:
         model = ReturnTerm
-        exclude = ['movimentacao', 'data_retorno', 'status', 'usuario_recebedor']
+        exclude = ['movimentacao', 'data_retorno',
+                   'status', 'usuario_recebedor']
         fields = ['observacao',]
         labels = {
             'observacao': 'Observações de entrega',
@@ -590,13 +586,11 @@ class ReturnTermForms(forms.ModelForm):
         widgets = {
             'observacao': forms.Textarea(attrs={'class': 'form-control'}),
         }
-    
-        
+
     def save(self, commit=True, *args, **kwargs):
         usuario_recebedor = kwargs.pop('user', None)
         instance = super().save(commit=False)
-        
-    
+
         if usuario_recebedor:
             instance.usuario_recebedor = usuario_recebedor
 
@@ -606,5 +600,12 @@ class ReturnTermForms(forms.ModelForm):
 
 
 class CSVUploadForm(forms.Form):
-    csv_file = forms.FileField()
+    csv_file = forms.FileField(label='CSV File')
 
+    csv_file = forms.FileField(
+        label='',
+        widget=forms.FileInput(
+            attrs={'class':'form-control', 'type':'File'}
+        ),
+        required=False
+    )

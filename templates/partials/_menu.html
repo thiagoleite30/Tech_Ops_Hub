@@ -4,7 +4,7 @@
         <div
             style="border-style: double; border-color: rgb(0, 0, 0); padding: 2px; margin-left: 0; margin-right: 15px;">
             <img src="{% static 'assets/marcaDaguaAviva.png' %}" style="width: 60px;" />
-            <a class="navbar-brand" href="#">TechOps Hub</a>
+            <a class="navbar-brand" href="#">Tech Ops Hub</a>
         </div>
 
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -16,9 +16,6 @@
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'index' %}">Home <span class="sr-only">(current)</span></a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'ativos' %}">Ativos</a>
-                </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -26,29 +23,38 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{% url 'cadastro_ativo' %}">Novo Ativo</a>
+                        <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="{% url 'novo_movimento' %}">Nova Movimentação</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{% url 'cadastro_tipo_ativo' %}">Novo Tipo de Ativo</a>
-                        <a class="dropdown-item" href="{% url 'cadastro_modelo' %}">Novo Modelo</a>
                         <a class="dropdown-item" href="{% url 'cadastro_acessorio' %}">Novo Acessório</a>
                         <a class="dropdown-item" href="{% url 'cadastro_centro_custo' %}">Novo Centro de Custo</a>
-                        <a class="dropdown-item" href="{% url 'cadastro_local' %}">Novo Local</a>
                         <a class="dropdown-item" href="{% url 'cadastro_fabricante' %}">Novo Fabricante</a>
-
+                        <a class="dropdown-item" href="{% url 'cadastro_local' %}">Novo Local</a>
+                        <a class="dropdown-item" href="{% url 'cadastro_modelo' %}">Novo Modelo</a>
+                        <a class="dropdown-item" href="{% url 'cadastro_tipo_ativo' %}">Novo Tipo de Ativo</a>
                     </div>
                 </li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'termos' %}">Termos</a></li>
-                {% if not is_aprovadores_ti_user %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'aprovacoes' %}">Aprovações</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Ver
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{% url 'ativos' %}">Ativos</a>
+                        <div class="dropdown-divider"></div>
+                        {% if not is_aprovadores_ti_user or not aprovacoes_pendentes %}
+                        <a class="dropdown-item" href="{% url 'aprovacoes' %}">Aprovações</a>
+                        {% endif %}
+                        <a class="dropdown-item" href="{% url 'termos' %}">Termos</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'acessorios' %}">Acessórios</a>
+                        <a class="dropdown-item" href="{% url 'centros_custo' %}">Centros de Custo</a>
+                        <a class="dropdown-item" href="{% url 'fabricantes' %}">Fabricantes</a>
+                        <a class="dropdown-item" href="{% url 'locais' %}">Locais</a>
+                        <a class="dropdown-item" href="{% url 'modelos_ativo' %}">Modelos de Ativo</a>
+                        <a class="dropdown-item" href="{% url 'tipos_ativo' %}">Tipos de Ativo</a>
+                    </div>
                 </li>
-                {% else %}
-                {% if not aprovacoes_pendentes %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'aprovacoes' %}">Aprovações</a>
-                </li>
-                {% endif %}
-                {% endif %}
             </ul>
             {% include 'partials/_alerts.html' %}
             <div style="padding: 0.3rem; container-type: inline;">

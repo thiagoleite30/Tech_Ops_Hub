@@ -1,7 +1,7 @@
 from django.forms import modelformset_factory
 from django.http import JsonResponse
 from django.shortcuts import render
-from apps.tech_assets.models import Accessory, Approval, Asset, AssetCart, AssetInfo, Cart, Movement, MovementAccessory, MovementAsset, Maintenance, ReturnTerm, Termo
+from apps.tech_assets.models import Accessory, Approval, Asset, AssetCart, AssetInfo, AssetModel, AssetType, Cart, CostCenter, Location, Manufacturer, Movement, MovementAccessory, MovementAsset, Maintenance, ReturnTerm, Termo
 from django.shortcuts import get_object_or_404, render, redirect
 
 from apps.tech_assets.services import register_logentry, upload_assets, concluir_manutencao_service, get_maintenance_asset
@@ -23,6 +23,11 @@ from django.contrib import messages
 
 def login(request):
     return render(request, 'shared/login.html')
+
+
+@login_required
+def zona_restrita(request):
+    return render(request, 'shared/zona_restrita.html')
 
 
 @login_required
@@ -370,12 +375,8 @@ def ativos(request):
             asset.status = 'em_manutencao'
             asset.save()
 
-    modelo = Asset
-    cabecalhos = [fiel.name for fiel in modelo._meta.fields]
-
     context = {
         'assets_in_cart': assets_in_cart,
-        'cabecalhos': cabecalhos,
         'page_obj': page_obj,
         'query': query,
         'assets_unavailable': assets_unavailable,
@@ -933,15 +934,17 @@ def devolucao(request, termo_id):
     termo = get_object_or_404(Termo, pk=termo_id)
     movimentacao = get_object_or_404(Movement, pk=termo.movimentacao_id)
     url = reverse('termo', kwargs={'termo_id': termo_id})
-    
+
     if not termo.status_resposta:
-        messages.warning(request, 'Termo de aceite pendente de resposta do usuário recebedor.')
+        messages.warning(
+            request, 'Termo de aceite pendente de resposta do usuário recebedor.')
         return redirect(url)
 
     if termo.aceite_usuario == 'recusado':
-        messages.warning(request, 'Este termo não é mais valido.\n Motivo: Recusado pelo usuário.')
+        messages.warning(
+            request, 'Este termo não é mais valido.\n Motivo: Recusado pelo usuário.')
         return redirect(url)
-    
+
     if ReturnTerm.objects.filter(movimentacao=movimentacao).exists():
         messages.warning(request, 'Devolução já registrada anteriormente.')
         return redirect(url)
@@ -956,7 +959,7 @@ def devolucao(request, termo_id):
         form = ReturnTermForms(request.POST)
 
         selected_assets = request.POST.getlist('assets')
-        
+
         # Convertendo os IDs para instâncias de MovementAsset
         movement_assets = MovementAsset.objects.filter(id__in=selected_assets)
 
@@ -1006,13 +1009,10 @@ def devolucao(request, termo_id):
 
 
 @login_required
-def zona_restrita(request):
-    return render(request, 'shared/zona_restrita.html')
-
-
-@login_required
 @group_required(['Administradores'], redirect_url='zona_restrita')
 def cadastro_ativos_csv(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     form = CSVUploadForm()
     if request.method == 'POST':
         form = CSVUploadForm(request.POST, request.FILES)
@@ -1020,4 +1020,352 @@ def cadastro_ativos_csv(request):
             csv_file = request.FILES['csv_file']
             upload_assets(csv_file, request.user)
 
-    return render(request, 'apps/tech_assets/upload_csv.html', {'form': form})
+    context = {
+        'form': form,
+        'url_form': resolve(request.path_info).url_name
+    }
+
+    return render(request, 'apps/tech_assets/cadastro.html', context)
+
+
+@login_required
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
+def acessorios(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    acessorios = Accessory.objects.all()
+
+    query = request.GET.get('q', '')
+    if query:
+        acessorios = acessorios.filter(
+            Q(nome__icontains=query) |
+            Q(modelo__icontains=query) |
+            Q(tipo__icontains=query) |
+            Q(fabricante__nome__icontains=query)
+        )
+
+    acessorios_lista = acessorios.order_by('id')
+
+    paginator = Paginator(acessorios_lista, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+    }
+    return render(request, 'apps/tech_assets/acessorios.html', context)
+
+
+@login_required
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
+def editar_acessorio(request, id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    acessorio = get_object_or_404(Accessory, pk=id)
+    form = AccessoryForms(instance=acessorio)
+    if acessorio:
+        if request.method == 'POST':
+            form = AccessoryForms(request.POST, request.FILES, instance=acessorio)
+            
+            if form.is_valid():
+                register_logentry(instance=form.save(), action=CHANGE,
+                                  user=request.user, modificacao='Editado Acessório')
+                messages.success(request, 'Acessório Salvo')
+                
+                return redirect('acessorios')
+            
+    context = {
+        'form': form,
+        'id': id,
+        'url_form': resolve(request.path_info).url_name
+    }
+
+    return render(request, 'apps/tech_assets/editar.html', context)
+
+@login_required
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
+def fabricantes(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    fabricantes = Manufacturer.objects.all()
+
+    query = request.GET.get('q', '')
+    if query:
+        fabricantes = fabricantes.filter(
+            Q(nome__icontains=query) |
+            Q(telefone__icontains=query) |
+            Q(email__icontains=query) 
+        )
+
+    fabricantes_lista = fabricantes.order_by('id')
+
+    paginator = Paginator(fabricantes_lista, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+    }
+    return render(request, 'apps/tech_assets/fabricantes.html', context)
+
+
+@login_required
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
+def editar_fabricante(request, id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    fabricante = get_object_or_404(Manufacturer, pk=id)
+    form = ManufacturerForms(instance=fabricante)
+    if fabricante:
+        if request.method == 'POST':
+            form = ManufacturerForms(request.POST, request.FILES, instance=fabricante)
+            
+            if form.is_valid():
+                register_logentry(instance=form.save(), action=CHANGE,
+                                  user=request.user, modificacao='Editado Registro do Fabricante')
+                messages.success(request, 'Fabricante Salvo')
+                
+                return redirect('fabricantes')
+            
+    context = {
+        'form': form,
+        'id': id,
+        'url_form': resolve(request.path_info).url_name
+    }
+
+    return render(request, 'apps/tech_assets/editar.html', context)
+
+@login_required
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
+def centros_custo(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    cc = CostCenter.objects.all()
+
+    query = request.GET.get('q', '')
+    if query:
+        cc = cc.filter(
+            Q(nome__icontains=query) |
+            Q(modelo__icontains=query) |
+            Q(tipo__icontains=query) |
+            Q(fabricante__nome__icontains=query)
+        )
+
+    cc_lista = cc.order_by('id')
+
+    paginator = Paginator(cc_lista, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+    }
+    return render(request, 'apps/tech_assets/centros_custo.html', context)
+
+
+@login_required
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
+def editar_centro_custo(request, id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    cc = get_object_or_404(CostCenter, pk=id)
+    form = CostCenterForms(instance=cc)
+    if cc:
+        if request.method == 'POST':
+            form = AccessoryForms(request.POST, request.FILES, instance=cc)
+            
+            if form.is_valid():
+                register_logentry(instance=form.save(), action=CHANGE,
+                                  user=request.user, modificacao='Editado Registro de Centro de Custo')
+                messages.success(request, 'Centro de Custo Salvo')
+                
+                return redirect('centros_custo')
+            
+    context = {
+        'form': form,
+        'id': id,
+        'url_form': resolve(request.path_info).url_name
+    }
+
+    return render(request, 'apps/tech_assets/editar.html', context)
+
+@login_required
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
+def locais(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    objetos = Location.objects.all()
+
+    query = request.GET.get('q', '')
+    if query:
+        objetos = objetos.filter(
+            Q(nome__icontains=query) |
+            Q(telefone__icontains=query) |
+            Q(email__icontains=query) 
+        )
+
+    objetos_lista = objetos.order_by('id')
+
+    paginator = Paginator(objetos_lista, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+    }
+    return render(request, 'apps/tech_assets/locais.html', context)
+
+
+@login_required
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
+def editar_local(request, id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    objeto = get_object_or_404(Location, pk=id)
+    form = LocationForms(instance=objeto)
+    if objeto:
+        if request.method == 'POST':
+            form = LocationForms(request.POST, request.FILES, instance=objeto)
+            
+            if form.is_valid():
+                register_logentry(instance=form.save(), action=CHANGE,
+                                  user=request.user, modificacao='Editado Registro de Local')
+                messages.success(request, 'Fabricante Salvo')
+                
+                return redirect('fabricantes')
+            
+    context = {
+        'form': form,
+        'id': id,
+        'url_form': resolve(request.path_info).url_name
+    }
+
+    return render(request, 'apps/tech_assets/editar.html', context)
+
+
+@login_required
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
+def modelos_ativo(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    objetos = AssetModel.objects.all()
+
+    query = request.GET.get('q', '')
+    if query:
+        objetos = objetos.filter(
+            Q(nome__icontains=query) |
+            Q(descricao__icontains=query) |
+            Q(tipo__nome__icontains=query) |
+            Q(fabricante__nome__icontains=query)
+        )
+
+    objetos_lista = objetos.order_by('id')
+
+    paginator = Paginator(objetos_lista, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+    }
+    return render(request, 'apps/tech_assets/modelos_ativo.html', context)
+
+
+@login_required
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
+def editar_modelo(request, id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    objeto = get_object_or_404(AssetModel, pk=id)
+    form = AssetModelForms(instance=objeto)
+    if objeto:
+        if request.method == 'POST':
+            form = AssetModelForms(request.POST, request.FILES, instance=objeto)
+            
+            if form.is_valid():
+                register_logentry(instance=form.save(), action=CHANGE,
+                                  user=request.user, modificacao='Editado Registro de Modelo de Ativo')
+                messages.success(request, 'Modelo de Ativo Salvo')
+                
+                return redirect('modelos_ativo')
+            
+    context = {
+        'form': form,
+        'id': id,
+        'url_form': resolve(request.path_info).url_name
+    }
+
+    return render(request, 'apps/tech_assets/editar.html', context)
+
+
+@login_required
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
+def tipos_ativo(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    objetos = AssetType.objects.all()
+
+    query = request.GET.get('q', '')
+    if query:
+        objetos = objetos.filter(
+            Q(nome__icontains=query) |
+            Q(descricao__icontains=query) |
+            Q(tipo__nome__icontains=query) |
+            Q(fabricante__nome__icontains=query)
+        )
+
+    objetos_lista = objetos.order_by('id')
+
+    paginator = Paginator(objetos_lista, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'query': query,
+    }
+    return render(request, 'apps/tech_assets/tipos_ativo.html', context)
+
+
+@login_required
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
+def editar_tipo_ativo(request, id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    objeto = get_object_or_404(AssetType, pk=id)
+    form = AssetTypeForms(instance=objeto)
+    if objeto:
+        if request.method == 'POST':
+            form = AssetTypeForms(request.POST, request.FILES, instance=objeto)
+            
+            if form.is_valid():
+                register_logentry(instance=form.save(), action=CHANGE,
+                                  user=request.user, modificacao='Editado Registro de Tipo de Ativo')
+                messages.success(request, 'Tipo de Ativo Salvo')
+                
+                return redirect('tipos_ativo')
+            
+    context = {
+        'form': form,
+        'id': id,
+        'url_form': resolve(request.path_info).url_name
+    }
+
+    return render(request, 'apps/tech_assets/editar.html', context)

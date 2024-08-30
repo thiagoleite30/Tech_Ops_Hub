@@ -68,6 +68,8 @@ class Location(models.Model):
                                   max_length=100, null=True, blank=True, related_name='sub_locations')
 
     def __str__(self):
+        if self.local_pai:
+            return f'{self.nome} ({self.local_pai.nome})'
         return self.nome
 
     def __unicode__(self):

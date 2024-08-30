@@ -77,6 +77,18 @@ th, td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: left;
+  word-wrap: break-word;
+  overflow: hidden;
+}
+
+td {
+  max-width: 200px;
+}
+
+.scrollable-text {
+  max-height: 50px; /* Define a altura máxima da célula */
+  overflow-y: auto; /* Habilita a rolagem vertical */
+  padding-right: 10px; /* Espaçamento à direita para a barra de rolagem */
 }
 
 /* Estilo para as colunas fixas */

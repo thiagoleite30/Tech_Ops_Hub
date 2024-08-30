@@ -1,0 +1,73 @@
+{% extends 'shared/base.html' %} {% load static %} {% block content %}
+<main role="main" class="container-fluid">
+    <div class="container-fluid" style="padding-top: 20px;">
+        <div class="starter-template" style="justify-content: center; align-items: center;">
+            <h1 style="text-align: center;" name="assets">Locais Cadastrados</h1>
+        </div>
+        <div style="margin-bottom: 10px; display: flex; justify-content: flex-end;">
+        </div>
+        <div class="table-container">
+            <table id="manufacturerTable" class="table table-bordered">
+                <thead class="thead-dark">
+                    <th scope="col">ID</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Local Pai</th>
+                    <th scope="col">Editar</th>
+                </thead>
+                <tbody>
+                    {% for obj in page_obj %}
+                    <tr data-item-id="{{ obj.id }}">
+                        <th scope="row">{{ obj.id }}</th>
+                        <td>{{ obj.nome }}</td>
+                        <td>{{ obj.local_pai }}</td>
+                        <td><a style="pointer-events: stroke;" href="{% url 'editar_local' obj.id %}">
+                                <div>
+                                    <i class="fas fa-edit" style="margin-left: 8px; font-size: 25px;"></i>
+                                </div>
+                            </a></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">Nenhum registro de local encontrado</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Controles de Paginação -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; primeira</a>
+                <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}">anterior</a>
+                {% endif %}
+
+                <span class="current">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&q={{ query }}">próxima</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}">última &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+
+    </div>
+</main>
+
+<!--
+    <footer>
+        <div class="container">
+            <span class="navbar-text">
+                &copy; 2024 Aviva. Todos os direitos reservados.
+            </span>
+            <div class="ml-auto">
+                <img src="{% static '/assets/marcaDaguaAviva.png' %}" class="rodape__image" alt="Icon" />
+            </div>
+        </div>
+    </footer>
+    -->
+
+
+{% endblock %}

@@ -3,8 +3,10 @@
 {% for field in form.visible_fields %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <div class="form-group row">
+    {% if url_form != 'upload_csv' %}
     <label for="inputEmail3" class="col-sm-2 col-form-label" for="{{ field.id_for_label }}">{{field.label }}</label>
-    <div class="col-sm-10">
+    {%endif%}
+    <div class="{% if url_form != 'upload_csv' %}col-sm-10{%else%}col-sm-12{%endif%}">
         {{ field }}
     </div>
 </div>
@@ -19,7 +21,7 @@
 
 <div class="form-group-new">
     <div class="col-sm-20">
-        {% if not asset_id and not id and url_form != 'novo_movimento' %}
+        {% if not asset_id and not id and url_form != 'novo_movimento' and url_form != 'upload_csv' %}
         <button name="save" type="submit" class="btn btn-secondary btn-lg ">Salvar</button>
         <button name="save_and_add" type="submit" class="btn btn-outline-secondary btn-lg">Salvar e cadastrar
             outro(a)</button>
@@ -27,6 +29,12 @@
         <button name="save" type="submit" class="btn btn-secondary btn-lg">Salvar</button>
         {% if url_form == 'novo_movimento' %}
         <a href="{% url 'carrinho' %}" class="btn btn-outline-secondary btn-lg" style="padding: auto;">Cancelar</a>
+        {% endif %}
+        {% if url_form == 'upload_csv' %}
+        <a href="{% url 'index' %}" class="btn btn-outline-secondary btn-lg" style="padding: auto;">Cancelar</a>
+        {% endif %}
+        {% if url_form == 'editar_acessorio' %}
+        <a href="{% url 'acessorios' %}" class="btn btn-outline-secondary btn-lg" style="padding: auto;">Cancelar</a>
         {% endif %}
         {% endif %}
     </div>
