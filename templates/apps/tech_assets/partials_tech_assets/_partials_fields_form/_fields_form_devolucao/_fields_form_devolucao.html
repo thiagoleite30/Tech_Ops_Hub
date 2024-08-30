@@ -1,3 +1,4 @@
+{% load custom_filters %}
 <div id="assets-return-formset">
     {% if movement_assets %}
     <div class="form-group row">
@@ -12,7 +13,7 @@
     </div>
     {%else%}
     <div class="form-group row" style="justify-content: center; display: flex; text-align: center;">
-        <label class="col-sm-12 col-form-label">Não possui Ativos</label>
+        <label class="col-sm-12 col-form-label">Não possui ativos a serem devolvidos</label>
     </div>
     {%endif%}
 </div>
@@ -29,13 +30,14 @@
         <label class="col-sm-2 col-form-label">Quantidade Devolvida:</label>
         <div class="col-sm-2">
             <input type="number" class="form-control" name="quantities_{{ accessory_form.id }}"
-                value="{{accessory_form.quantidade}}">
+                value="{{ accessory_form.quantidade|subtract:accessory_form.quantidade_devolvida }}" min="0"
+                max="{{ accessory_form.quantidade|subtract:accessory_form.quantidade_devolvida }}">
         </div>
     </div>
     {% endfor %}
     {% else %}
     <div class="form-group row" style="justify-content: center; display: flex; text-align: center;">
-        <label class="col-sm-12 col-form-label">Não possui acessórios e/ou consumíveis</label>
+        <label class="col-sm-12 col-form-label">Não possui acessórios e/ou consumíveis a serem devolvidos</label>
     </div>
     {% endif %}
 

@@ -187,8 +187,10 @@ def cadastro_manutencao(request, asset_id):
     asset = get_object_or_404(Asset, id=asset_id)
     if asset:
         if Maintenance.objects.filter(ativo_id=asset_id, status=True).exists():
-            print(f'Já existe uma manutenção em aberto para este ativo')
-            return redirect('ativo', asset_id=asset_id)
+            messages.warning(
+                request, 'Já existe uma manutenção em aberto para este ativo.')
+            url = reverse('ativo', args=[asset_id])
+            return redirect(url)
 
     if request.method == 'POST':
         form = MaintenanceForms(request.POST, request.FILES, ativo=asset_id)
@@ -930,19 +932,34 @@ def devolucao(request, termo_id):
 
     termo = get_object_or_404(Termo, pk=termo_id)
     movimentacao = get_object_or_404(Movement, pk=termo.movimentacao_id)
+    url = reverse('termo', kwargs={'termo_id': termo_id})
+    
+    if not termo.status_resposta:
+        messages.warning(request, 'Termo de aceite pendente de resposta do usuário recebedor.')
+        return redirect(url)
+
+    if termo.aceite_usuario == 'recusado':
+        messages.warning(request, 'Este termo não é mais valido.\n Motivo: Recusado pelo usuário.')
+        return redirect(url)
+    
+    if ReturnTerm.objects.filter(movimentacao=movimentacao).exists():
+        messages.warning(request, 'Devolução já registrada anteriormente.')
+        return redirect(url)
+
     accessory_queryset = MovementAccessory.objects.filter(
         movimento=movimentacao)
-    movement_assets = MovementAsset.objects.filter(movimento=movimentacao)
+    movement_assets = MovementAsset.objects.filter(
+        movimento=movimentacao, devolvido=False)
     form = ReturnTermForms()
 
     if request.method == 'POST':
         form = ReturnTermForms(request.POST)
-        
+
         selected_assets = request.POST.getlist('assets')
-        print(f'DEBUG :: VIEW :: DEVOLUCAO :: ASSETS SELECIONADOS :: {selected_assets}')
+        
         # Convertendo os IDs para instâncias de MovementAsset
         movement_assets = MovementAsset.objects.filter(id__in=selected_assets)
-        
+
         movement_accessory_ids = request.POST.getlist('movement_accessory_ids')
         quantities = {}
         for movement_accessory_id in movement_accessory_ids:
@@ -952,26 +969,28 @@ def devolucao(request, termo_id):
 
         if form.is_valid():
             # Salvar o termo de devolução
-            instance = form.save(commit=False)
+            instance, created = ReturnTerm.objects.get_or_create(
+                movimentacao=movimentacao)
             instance.usuario_recebedor = request.user
-            instance.movimentacao = movimentacao
-            instance.save()
-            
+            instance.observacao = form.cleaned_data.get('observacao', None)
+            if created:
+                instance.save(usuario=request.user)
+            else:
+                instance.save()
+
             for asset in movement_assets:
                 asset.marcar_como_devolvido()
 
             for movement_accessory_id, quantity in quantities.items():
                 moviment_accessory = MovementAccessory.objects.get(
                     id=movement_accessory_id)
-                moviment_accessory.quantidade_devolvida = quantity
-                moviment_accessory.save()
-            
+                moviment_accessory.soma_quantidade_devolvida(quantity)
+
             register_logentry(instance=instance, action=ADDITION,
                               user=request.user, detalhe='Devolução Inserida')
-            
+
             messages.success(request, 'Devolução inserida com sucesso.')
-            
-            url = reverse('devolucao', kwargs={'termo_id': termo_id})
+
             return redirect(url)
 
     context = {

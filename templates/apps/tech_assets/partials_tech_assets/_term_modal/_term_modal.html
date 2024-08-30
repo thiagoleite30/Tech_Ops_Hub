@@ -20,10 +20,14 @@
             </div>
             <div class="modal-footer">
                 <div class="form-check">
-                    {% if term.aceite_usuario == 'aceito'%}
+                    {% if term.aceite_usuario == 'aceito' %}
                     <input class="form-check-input" type="checkbox" value="" id="defaultCheck2" checked disabled>
                     {%else%}
+                    {% if term.aceite_usuario == 'recusado' %}
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck2" disabled>
+                    {%else%}
                     <input class="form-check-input" type="checkbox" value="" id="defaultCheck2">
+                    {%endif%}
                     {%endif%}
                     <label class="form-check-label" for="defaultCheck2">
                         Declaro-me de acordo com os termos impostos

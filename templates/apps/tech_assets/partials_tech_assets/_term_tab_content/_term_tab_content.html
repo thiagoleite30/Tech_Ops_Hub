@@ -9,17 +9,19 @@
             <li class="list-group-item"><b>Unidade Cedente Cedente:</b> {{movement.centro_de_custo_cedente.nome}}
                 ({{movement.centro_de_custo_cedente}})</li>
             <li class="list-group-item"><b>Data Inclusão:</b> {{term.data_criacao}}</li>
-            <li class="list-group-item"><b>Aprovação:</b>
-                Aprovado por {{aprovall.aprovador.first_name}}
+            <li class="list-group-item"><b>Aprovação de TI:</b>
+                {{aprovall.get_status_aprovacao_display}} por {{aprovall.aprovador.first_name}}
                 {{aprovall.aprovador.last_name}} em {{aprovall.data_conclusao}}</li>
-            <li class="list-group-item"><b>Aceite de termo:</b> {% if term.aceite_usuario == 'aceito' %} Aceito por
+            <li class="list-group-item"><b>Aceite do Usuário Responsável:</b> {% if term.aceite_usuario != 'pendente' %}
+                {{term.get_aceite_usuario_display}} por
                 {{movement.usuario.first_name}} {{movement.usuario.last_name}} em {{term.data_resposta}}{% else %}
                 Pendente {%endif%}</li>
         </ul>
     </div>
     <div class="card-body">
         <!-- Button trigger modal -->
-        <a type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="width: 30%;">
+        <a type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop"
+            style="width: 30%;">
             Termos e Condições de Aceite da movimentação
         </a>
     </div>
@@ -36,10 +38,12 @@
         -->
         {% if not ReturnTerm %}
         {% if is_aprovadores_ti_user and movement.tipo == 'emprestimo' %}
-        <a href="{% url 'devolucao' term.id %}" class="btn btn-outline-secondary" style="width: 30%;">Iniciar Devolução</a>
+        <a href="{% url 'devolucao' term.id %}" class="btn btn-outline-secondary" style="width: 30%;">Iniciar
+            Devolução</a>
         {%endif%}
         {% else %}
-        <a href="{% url 'devolucao' term.id %}"  class="btn btn-outline-success disabled" style="width: 30%;">Termo de devolução gerado!</a>
+        <a href="{% url 'devolucao' term.id %}" class="btn btn-outline-success disabled" style="width: 30%;">Termo de
+            devolução gerado!</a>
         {%endif%}
         {%endif%}
     </div>

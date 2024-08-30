@@ -156,6 +156,7 @@ class Movement(models.Model):
     STATUS_CHOICES = [
         ('pendente_aprovacao', 'Aprovação Pendente'),
         ('pendente_entrega', 'Pendente Entrega'),
+        ('em_devolucao', 'Devolução em Andamento'),
         ('em_andamento', 'Em Andamento'),
         ('concluido', 'Concluído'),
         ('atrasado', 'Atrasado'),
@@ -270,10 +271,14 @@ class MovementAccessory(models.Model):
     acessorio = models.ForeignKey(Accessory,  on_delete=models.CASCADE)
     movimento = models.ForeignKey(Movement, on_delete=models.CASCADE)
     quantidade = models.PositiveIntegerField()
-    quantidade_devolvida = models.PositiveIntegerField(null=True, blank=True)
+    quantidade_devolvida = models.PositiveIntegerField(null=True, blank=True, default=0)
 
     def __str__(self):
         return f"{self.quantidade} x {self.acessorio.nome}"
+    
+    def soma_quantidade_devolvida(self, quantidade):
+        self.quantidade_devolvida += quantidade
+        self.save()
 
 
 class Cart(models.Model):
@@ -425,6 +430,8 @@ class Approval(models.Model):
         self.status_aprovacao = 'reprovado'
         self.data_conclusao = datetime.now()
         self.mudar_status_ativos('em_estoque')
+        moviment_accessory = get_object_or_404(MovementAccessory, movimento=self.movimentacao)
+        moviment_accessory.soma_quantidade_devolvida(moviment_accessory.quantidade)
         self.mudar_status_movimentacao('reprovar')
         self.save()
 
@@ -520,8 +527,12 @@ class ReturnTerm(models.Model):
     observacao = models.TextField(max_length=400, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None  # Verifica se é uma nova instância
+        usuario = kwargs.pop('usuario', None)
+        self.movimentacao.marcar_como_concluido()
+        if usuario:
+            self.usuario_recebedor = usuario
         super(ReturnTerm, self).save(*args, **kwargs)
-
-        if is_new:
-            self.movimentacao.marcar_como_concluido()
+        if self._state.adding:
+            
+            super(ReturnTerm, self).save(*args, **kwargs)
+        
