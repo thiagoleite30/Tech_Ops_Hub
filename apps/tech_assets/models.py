@@ -144,11 +144,11 @@ class AssetInfo(models.Model):
     so = models.CharField(max_length=100, null=True, blank=True)
     versao_so = models.CharField(max_length=100, null=True, blank=True)
     licenca_so = models.CharField(max_length=100, null=True, blank=True)
-    data_instalacao_so = models.DateField(null=True, blank=True, default='')
-    data_garantia = models.DateField(null=True, blank=True, default='')
+    data_instalacao_so = models.DateField(null=True, blank=True)
+    data_garantia = models.DateField(null=True, blank=True)
     endereco_mac = models.CharField(max_length=40, null=True, blank=True)
-    ultimo_logon = models.DateField(null=True, blank=True, default='')
-    ultimo_scan = models.DateField(null=True, blank=True, default='')
+    ultimo_logon = models.DateField(null=True, blank=True)
+    ultimo_scan = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.ativo.nome}'

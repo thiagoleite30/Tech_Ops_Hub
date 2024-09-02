@@ -243,3 +243,49 @@ PWA_APP_DIR = 'ltr'
 PWA_APP_LANG = 'pt-br'
 
 PWA_OFFLINE_URL = os.path.join(BASE_DIR, 'templates/shared/offline.html')
+
+
+# Setting DB MV
+
+from sqlalchemy.engine import URL
+
+CONNETION_STRING = f'DRIVER={{{str(os.getenv("DRIVER"))}}};SERVER={str(os.getenv("HOST_DB_MV"))};DATABASE={str(os.getenv("DB_MV"))};Trusted_Connection=yes;'
+
+CONNETION_URL = URL.create(
+    "mssql+pyodbc",
+    query={"odbc_connect": CONNETION_STRING}
+)
+
+SQL_QUERY_POS = """
+SELECT 
+    CO.Id AS Id,
+    CO.Name AS ID_GPOS,
+    SH2.Name AS Loja,
+    SH.Name AS PDV,
+    CO.Description AS Description,
+    CO.MacAddress AS MacAddress,
+    CO.Active AS Active,
+    CO.PosNumber AS PosNumber,
+    CO.OnlyPreSales AS OnlyPreSales,
+    CO.IsDefaultComputer AS PrimaryPDV,
+    CO.CreationDate AS CreationDate,
+    CO.CreatorUser AS CreatorUser,
+    CO.LastUpdateDate AS LastUpdateDate,
+    CO.ComputerType AS ComputerType
+FROM 
+    MultiVendas.dbo.Computers CO
+INNER JOIN 
+    MultiVendas.dbo.Shops SH ON SH.ID = CO.Shop
+INNER JOIN 
+    MultiVendas.dbo.Shops SH2 ON SH2.ID = SH.Parent
+WHERE 
+    CO.ComputerType IN (16)
+"""
+
+# Settings Schedule Celery
+CELERY_BEAT_SCHEDULE = {
+    'rodar-add-periodicamente': {
+        'task': 'apps.move_gpos.tasks.consulta_bd_mv',
+        'schedule': 900.0,  # 900.0 15 minutos em segundos
+    },
+}
