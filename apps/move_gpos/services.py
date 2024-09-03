@@ -64,6 +64,7 @@ def upload_gpos(df):
                     'primary_pdv': row['PrimaryPDV'],
                     'creator_user': row['CreatorUser'],
                     'computer_type': row['ComputerType'],
+                    'is_mac': True if ':' in row['MacAddress'] else False
                 }
             )
             

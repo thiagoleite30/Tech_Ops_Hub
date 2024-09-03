@@ -1,0 +1,139 @@
+{% extends 'shared/base.html' %} {% load static %} {% block content %}
+<main role="main" class="container">
+    <div class="container-fluid" style="padding-top: 20px;">
+        <div class="starter-template" style="justify-content: center; align-items: center;">
+            <h1 style="text-align: center;">MOVE GPOS</h1>
+        </div>
+
+        <div class="container" style="padding: 20px; border-radius: 10px; justify-content: center; display: flex;">
+            <div class="col-sm-4" style="justify-content: center; display: flex;">
+                <div class="card h-100 text-center">
+                    <div class="card-body" style="display: block;">
+                        <a id="nova_solicitacao" href="#" type="button" data-bs-toggle="modal"
+                            data-bs-target="#staticBackdrop">
+                            <img src="{% static 'assets/mais.svg' %}"
+                                alt="icone para realizar autenticação com Microsoft" class="img-fluid" width="100%"
+                                height="100%">
+                            <p>Nova Solicitação</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4" style="justify-content: center; display: flex;">
+                <div class="card h-100 text-center">
+                    <div class="card-body" style="display: block;">
+                        <a href="#" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                            <img src="{% static 'assets/ver.svg' %}"
+                                alt="icone para realizar autenticação com Microsoft" class="img-fluid" width="100%"
+                                height="100%">
+                            <p>Minhas Solicitações</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include 'apps/move_gpos/partials_move_gpos/_request_modal.html' %}
+    </div>
+</main>
+
+<!--
+    <footer>
+        <div class="container">
+            <span class="navbar-text">
+                &copy; 2024 Aviva. Todos os direitos reservados.
+            </span>
+            <div class="ml-auto">
+                <img src="{% static '/assets/marcaDaguaAviva.png' %}" class="rodape__image" alt="Icon" />
+            </div>
+        </div>
+    </footer>
+    -->
+
+<script type="text/javascript">
+
+    document.getElementById('nova_solicitacao').addEventListener('click', function () {
+        const gposId = this.value;
+        console.log("Click Realizado:", gposId);
+
+        fetch(`/get_gpos/`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Opções recebidas:", data);
+                update_gpos_select(data);
+            })
+            .catch(error => console.error('Erro ao buscar PDVs:', error));
+    });
+
+    function update_gpos_select(options) {
+        const pdvSelect = document.getElementById('id_gpos');
+        pdvSelect.innerHTML = '';
+
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        defaultOption.text = 'Selecione uma opção';
+        pdvSelect.add(defaultOption);
+
+        options.forEach(option => {
+            const newOption = document.createElement('option');
+            newOption.value = option.id;
+            newOption.text = option.pos_number;
+            pdvSelect.add(newOption);
+        });
+    }
+
+    document.getElementById('id_gpos').addEventListener('change', function () {
+        const gposId = this.value;
+        console.log("ID selecionado:", gposId);
+
+        fetch(`/get_pdvs/?gpos_id=${gposId}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Opções recebidas:", data);
+                update_antigo_pdv_select(data);
+            })
+            .catch(error => console.error('Erro ao buscar PDVs:', error));
+    });
+
+    function update_antigo_pdv_select(options) {
+        const pdvSelect = document.getElementById('id_antigo_pdv');
+        pdvSelect.innerHTML = '';
+
+        options.forEach(option => {
+            const newOption = document.createElement('option');
+            newOption.value = option.id;
+            newOption.text = option.pdv__nome;
+            pdvSelect.add(newOption);
+        });
+
+    }
+
+
+    document.getElementById('id_nova_loja').addEventListener('change', function () {
+        const lojaId = this.value;
+        console.log("ID loja selecionado:", lojaId);
+
+        fetch(`/get_pdvs/?loja_id=${lojaId}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Opções recebidas:", data);
+                update_novo_pdv_select(data);
+            })
+            .catch(error => console.error('Erro ao buscar PDVs:', error));
+    });
+
+    function update_novo_pdv_select(options) {
+        const pdvSelect = document.getElementById('id_novo_pdv');
+        pdvSelect.innerHTML = '';
+
+        options.forEach(option => {
+            const newOption = document.createElement('option');
+            newOption.value = option.id;
+            newOption.text = option.nome;
+            pdvSelect.add(newOption);
+        });
+    }
+</script>
+
+{% endblock %}

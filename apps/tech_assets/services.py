@@ -204,12 +204,14 @@ def upload_assets(csv_file, user):
         # criando os objetos Asset e AssetInfo, tipos e fabricantes
 
         try:
-            # Primeiro, obtenha ou crie o Asset
-            ativo, created = Asset.objects.get_or_create(
-                nome=row['nome'],
+            # Atualiza ou cria o Asset
+            ativo, created = Asset.objects.update_or_create(
                 numero_serie=row['numero_serie'],
-                tipo=tipo,
-                modelo=modelo,
+                defaults={
+                    'nome':row['nome'],
+                    'tipo':tipo,
+                    'modelo':modelo,
+                }
             )
 
             # Registrar o log
@@ -217,11 +219,11 @@ def upload_assets(csv_file, user):
                 register_logentry(instance=ativo, action=ADDITION,
                                   user=user, modificacao='Usando Import CSV')
 
-            # Atualize ou crie o AssetInfo
+            # Atualiza ou cria o AssetInfo
             ativo_info, created = AssetInfo.objects.update_or_create(
                 ativo=ativo,
-                fabricante=fabricante,
                 defaults={
+                    'fabricante': fabricante,
                     'memoria': row['memoria'],
                     'armazenamento': row['armazenamento'],
                     'processador': row['processador'],

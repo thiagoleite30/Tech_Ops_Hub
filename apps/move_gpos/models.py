@@ -23,7 +23,8 @@ class GPOS(models.Model):
     creator_user = models.CharField(max_length=255, verbose_name="Usuário Criador")  # Usuário que criou o registro
     last_update_date = models.DateTimeField(auto_now=True, verbose_name="Última Atualização")  # Última data de atualização
     computer_type = models.CharField(max_length=100, verbose_name="Tipo de Computador")  # Tipo de Computador
-    blocked = models.BooleanField(default=False)
+    blocked = models.BooleanField(default=False) # Define se o GPOS estará disponível para uma nova troca ou não
+    is_mac = models.BooleanField(default=False) # Define se o GPOS é identificado com Mac ou IMEI
     
     class Meta:
         verbose_name = "GPOS"
@@ -31,4 +32,16 @@ class GPOS(models.Model):
         ordering = ['-creation_date']
 
     def __str__(self):
-        return f'{self.loja} - {self.pdv}'
+        return f'{self.pos_number}'
+    
+class Request(models.Model):
+    
+    gpos = models.ForeignKey(GPOS, on_delete=models.CASCADE)
+    pdv_atual = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='pdv_atual_request', verbose_name="PDV Atual") 
+    loja_nova = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='loja_nova_request', verbose_name="Nova Loja")
+    pdv_novo = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='pdv_novo_request', verbose_name="Novo PDV")
+    chamado = models.CharField(max_length=100, null=True, blank=True)
+    concluida = models.BooleanField(default=False)
+    data_inclusao = models.DateTimeField(auto_now_add=True)
+    data_conclusao = models.DateTimeField(auto_now=True)
+    

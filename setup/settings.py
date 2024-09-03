@@ -283,6 +283,9 @@ WHERE
 """
 
 # Settings Schedule Celery
+
+CELERY_BROKER_URL = 'amqp://toh:boils2020@localhost:5672'
+
 CELERY_BEAT_SCHEDULE = {
     'rodar-add-periodicamente': {
         'task': 'apps.move_gpos.tasks.consulta_bd_mv',

@@ -493,6 +493,7 @@ class Termo(models.Model):
     status_resposta = models.BooleanField(default=False)
     aceite_usuario = models.CharField(
         max_length=100, choices=status_aceite, default='pendente')
+    justificativa = models.TextField(null=True, blank=True)
 
     def marcar_como_aceito(self):
         self.status_resposta = True
