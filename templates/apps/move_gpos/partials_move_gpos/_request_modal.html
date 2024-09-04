@@ -1,20 +1,20 @@
 <!-- Modal -->
 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
     aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header text-center">
-                <h1 class="modal-title fs-5" id="staticBackdropLabel">{{form.form_name}}</h1>
-            </div>
-            <div class="modal-body">
-                {% csrf_token %}
-                <div class="container-fluid">
-                    <form action="{%    url url_form %}" method="POST" enctype="multipart/form-data">
+    <form action="{%    url url_form %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">{{form.form_name}}</h1>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
                         <div class="row">
                             <label class="col-sm-2 col-form-label">Número GPOS</label>
                             <div class="col-md-4">
                                 <select id="id_gpos" name="gpos" class="form-control">
-                                    <option value="" disabled selected>Selecione uma opção</option>
+                                    <option value="" selected>Selecione uma opção</option>
                                     {% for option in form.gpos.field.queryset %}
                                     <option value="{{ option.id }}">{{ option }}</option>
                                     {% endfor %}
@@ -22,8 +22,8 @@
                             </div>
                             <label class="col-sm-2 col-form-label">PDV Atual</label>
                             <div class="col-md-4">
-                                <select id="id_antigo_pdv" name="antigo_pdv" class="form-control">
-                                    <option value="" disabled selected>Selecione uma opção</option>
+                                <select id="id_antigo_pdv" name="pdv_atual" class="form-control">
+                                    <option value="" selected>Selecione uma opção</option>
                                     {% for option in form.pdv_atual.field.queryset %}
                                     <option value="{{ option.id }}">{{ option }}</option>
                                     {% endfor %}
@@ -33,8 +33,8 @@
                         <div class="row" style="margin-top: 20px;">
                             <label class="col-sm-2 col-form-label">Nova Loja</label>
                             <div class="col-md-4">
-                                <select id="id_nova_loja" name="nova_loja" class="form-control">
-                                    <option value="" disabled selected>Selecione uma opção</option>
+                                <select id="id_nova_loja" name="loja_nova" class="form-control">
+                                    <option value="" selected>Selecione uma opção</option>
                                     {% for option in form.loja_nova.field.queryset %}
                                     <option value="{{ option.id }}">{{ option }}</option>
                                     {% endfor %}
@@ -42,26 +42,25 @@
                             </div>
                             <label class="col-sm-2 col-form-label">Novo PDV</label>
                             <div class="col-md-4">
-                                <select id="id_novo_pdv" name="novo_pdv" class="form-control">
-                                    <option value="" disabled selected>Selecione uma opção</option>
+                                <select id="id_novo_pdv" name="pdv_novo" class="form-control">
+                                    <option value="" selected>Selecione uma opção</option>
                                     {% for option in form.pdv_novo.field.queryset %}
                                     <option value="{{ option.id }}">{{ option }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                         </div>
-                    </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary btn-lg" data-bs-target="#exampleModalToggle" data-bs-toggle="modal">Enviar</button>
+                    <a type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</a>
+                    <!--<button type="button" class="btn btn-primary">Understood</button>-->
                 </div>
             </div>
-            <div class="modal-footer">
-                <a type="button" class="btn btn-primary btn-lg" data-bs-target="#exampleModalToggle" data-bs-toggle="modal">Enviar</a>
-                <a type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</a>
-                <!--<button type="button" class="btn btn-primary">Understood</button>-->
-            </div>
+
         </div>
-    </div>
+    </form>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-

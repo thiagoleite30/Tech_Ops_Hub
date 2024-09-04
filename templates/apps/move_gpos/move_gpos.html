@@ -52,6 +52,7 @@
 <script type="text/javascript">
 
     document.getElementById('nova_solicitacao').addEventListener('click', function () {
+        e.preventDefault();
         const gposId = this.value;
         console.log("Click Realizado:", gposId);
 
@@ -100,14 +101,17 @@
         const pdvSelect = document.getElementById('id_antigo_pdv');
         pdvSelect.innerHTML = '';
 
+
         options.forEach(option => {
             const newOption = document.createElement('option');
             newOption.value = option.id;
-            newOption.text = option.pdv__nome;
+            newOption.text = option.nome;
             pdvSelect.add(newOption);
+
         });
 
     }
+
 
 
     document.getElementById('id_nova_loja').addEventListener('change', function () {

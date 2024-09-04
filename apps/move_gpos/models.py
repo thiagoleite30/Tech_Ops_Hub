@@ -41,6 +41,7 @@ class Request(models.Model):
     loja_nova = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='loja_nova_request', verbose_name="Nova Loja")
     pdv_novo = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='pdv_novo_request', verbose_name="Novo PDV")
     chamado = models.CharField(max_length=100, null=True, blank=True)
+    existe_novo_pdv = models.BooleanField(default=False)
     concluida = models.BooleanField(default=False)
     data_inclusao = models.DateTimeField(auto_now_add=True)
     data_conclusao = models.DateTimeField(auto_now=True)

@@ -282,6 +282,19 @@ WHERE
     CO.ComputerType IN (16)
 """
 
+
+# Configuração TopDesk
+
+API_TOPDESK_URL=str(os.getenv('API_TOPDESK_URL'))
+USER_TOPDESK=str(os.getenv('USER_TOPDESK'))
+KEY_TOPDESK=str(os.getenv('KEY_TOPDESK'))
+
+
+# URL FLOW
+
+URL_FLOW=str(os.getenv('URL_FLOW'))
+
+
 # Settings Schedule Celery
 
 CELERY_BROKER_URL = 'amqp://toh:boils2020@localhost:5672'
@@ -292,3 +305,4 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': 900.0,  # 900.0 15 minutos em segundos
     },
 }
+
