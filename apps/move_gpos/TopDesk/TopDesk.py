@@ -58,11 +58,7 @@ class TopDesk:
             print("Erro ao conectar com a API TopDesk. Verifique o log para mais detalhes.")
     
     def query_call_pos(self, posnumber):
-        #print(f'O QueryCall recebeu: {posnumber}')
         try:
-            #pos = "POS " + str(posnumber)
-            #print(f'\n{settings.API_TOPDESK_URL}/incidents?&query=completed==False;briefDescription=="POS {posnumber}";(processingStatus.name!="Resolvido",processingStatus.name!="Fechado")')
-            #response = requests.get(f'{settings.API_TOPDESK_URL}/incidents?&query=completed==False;briefDescription=="{posnumber}";(processingStatus.name!="Resolvido",processingStatus.name!="Fechado")', headers=self._headers)
             response = requests.get(f'{settings.API_TOPDESK_URL}/incidents?&query=completed==False;optionalFields2.text5=="{posnumber}";(processingStatus.name!="Resolvido",processingStatus.name!="Fechado")', headers=self._headers)
             if response.status_code == 200:
                 #logger_topdesk.info(f"QUERY CALL POS :: Localizado Chamado {response.json()[0]['number']}. Status Code: {response.status_code}")
@@ -76,6 +72,16 @@ class TopDesk:
         except Error as e:
             #logger_topdesk.error("Erro ao conectar com a API TopDesk: %s", e)
             print("Erro ao conectar com a API TopDesk. Verifique o log para mais detalhes.")
+
+    def get_status_call(self, call):
+        try:
+            print(f'Chamado: {call}')
+            response = requests.get(f'{settings.API_TOPDESK_URL}/incidents/number/{call}', headers=self._headers)
+            print(f'RESPONSE :: {response}')
+        except Error as e:
+            print(f'ERROR :: TOPDESK :: {e}')
+        
+        return response.json()['completed']
 
     def put_action(self, call_number, status_code):
         try:

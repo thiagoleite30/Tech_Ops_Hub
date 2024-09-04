@@ -536,6 +536,5 @@ class ReturnTerm(models.Model):
             self.usuario_recebedor = usuario
         super(ReturnTerm, self).save(*args, **kwargs)
         if self._state.adding:
-            
             super(ReturnTerm, self).save(*args, **kwargs)
         

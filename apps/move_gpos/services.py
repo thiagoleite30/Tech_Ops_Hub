@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 
 from apps.tech_assets.models import Asset, AssetInfo, AssetModel, AssetType, Location, Manufacturer
-from apps.move_gpos.models import GPOS
+from apps.move_gpos.models import GPOS, Request
 from apps.move_gpos.TopDesk.TopDesk import TopDesk
 from apps.tech_assets.services import register_logentry
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
@@ -70,7 +70,8 @@ def upload_gpos(df):
                     'primary_pdv': row['PrimaryPDV'],
                     'creator_user': row['CreatorUser'],
                     'computer_type': row['ComputerType'],
-                    'is_mac': True if ':' in row['MacAddress'] else False
+                    'is_mac': True if ':' in row['MacAddress'] else False,
+                    'blocked': True if Request.objects.filter(gpos__id=int(row['Id']), concluida=False).exists() else False
                 }
             )
 
@@ -125,11 +126,21 @@ def dispara_fluxo(request, json_request):
         else:
             messages.error(request, f"""Algo deu errado na abertura de nova solicitação. Contate o suporte! Status code: {
                 response[0]}""")
+        return response
     else:
         messages.error(request, f"""Ocorreu um erro ao processar a buscar por um chamado referente ao POS {
             json_request['posNumber']}. Contate o suporte.\nO Status code é: {query_call[0]}"""
         )
+    return None
 
 
-def abre_chamado():
-    pass
+def verifica_requisicoes():
+    topdesk = TopDesk()
+    
+    requisicoes = Request.objects.filter(concluida=False)
+    
+    for requisicao in requisicoes:
+        if requisicao.chamado != None:
+            if topdesk.get_status_call(requisicao.chamado):
+                requisicao.concluida = True
+                requisicao.save()

@@ -1,0 +1,191 @@
+<div class="container-fluid">
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Número GPOS</label>
+        <div class="col-md-10">
+            <select id="id_gpos" name="gpos" class="form-control">
+                <option value="" selected>Selecione uma opção</option>
+                {% for option in form.gpos.field.queryset %}
+                <option value="{{ option.id }}">{{ option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label">PDV Atual</label>
+        <div class="col-md-10">
+            <select id="id_antigo_pdv" name="pdv_atual" class="form-control">
+                <option value="" selected>Selecione uma opção</option>
+                {% for option in form.pdv_atual.field.queryset %}
+                <option value="{{ option.id }}">{{ option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Nova Loja</label>
+        <div class="col-md-10">
+            <select id="id_nova_loja" name="loja_nova" class="form-control">
+                <option value="" selected>Selecione uma opção</option>
+                {% for option in form.loja_nova.field.queryset %}
+                <option value="{{ option.id }}">{{ option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Novo PDV</label>
+        <div class="col-md-10">
+            <select id="id_novo_pdv" name="pdv_novo" class="form-control">
+                <option value="" selected>Selecione uma opção</option>
+                {% for option in form.pdv_novo.field.queryset %}
+                <option value="{{ option.id }}">{{ option }}</option>
+                {% endfor %}
+            </select>
+            {% if form.pdv_novo.errors %}
+            {% for error in form.pdv_novo.errors %}
+            <div class="alert alert-danger" role="alert" style="margin-top: 15px;">{{error}}</div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <div class="form-group-new" style="margin-top: 25px;">
+        <div class="col-sm-20">
+            <button id="id_button_enviar" type="submit" class="btn btn-secondary btn-lg">Enviar</button>
+            <a href="{%  url 'move_gpos' %}" type="submit" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript">
+    /*
+    document.getElementById('nova_solicitacao').addEventListener('click', function () {
+        e.preventDefault();
+        const gposId = this.value;
+        console.log("Click Realizado:", gposId);
+
+        fetch(`/get_gpos/`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Opções recebidas:", data);
+                update_gpos_select(data);
+            })
+            .catch(error => console.error('Erro ao buscar PDVs:', error));
+    });*/
+
+    function update_gpos_select(options) {
+        const pdvSelect = document.getElementById('id_gpos');
+        pdvSelect.innerHTML = '';
+
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        //defaultOption.disabled = true;
+        defaultOption.selected = true;
+        defaultOption.text = 'Selecione uma opção';
+        pdvSelect.add(defaultOption);
+
+        options.forEach(option => {
+            const newOption = document.createElement('option');
+            newOption.value = option.id;
+            newOption.text = option.pos_number;
+            pdvSelect.add(newOption);
+        });
+    }
+
+    document.getElementById('id_gpos').addEventListener('change', function () {
+        const gposId = this.value;
+        console.log("ID selecionado:", gposId);
+
+        fetch(`/get_pdvs/?gpos_id=${gposId}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Opções recebidas:", data);
+                update_antigo_pdv_select(data);
+            })
+            .catch(error => console.error('Erro ao buscar PDVs:', error));
+    });
+
+    function update_antigo_pdv_select(options) {
+        const pdvSelect = document.getElementById('id_antigo_pdv');
+        pdvSelect.innerHTML = '';
+
+
+        options.forEach(option => {
+            const newOption = document.createElement('option');
+            newOption.value = option.id;
+            newOption.text = option.nome;
+            pdvSelect.add(newOption);
+
+        });
+
+    }
+
+
+
+    document.getElementById('id_nova_loja').addEventListener('change', function () {
+        const lojaId = this.value;
+        console.log("ID loja selecionado:", lojaId);
+
+        fetch(`/get_pdvs/?loja_id=${lojaId}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Opções recebidas:", data);
+                update_novo_pdv_select(data);
+            })
+            .catch(error => console.error('Erro ao buscar PDVs:', error));
+    });
+
+    function update_novo_pdv_select(options) {
+        const pdvSelect = document.getElementById('id_novo_pdv');
+        pdvSelect.innerHTML = '';
+
+
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        //defaultOption.disabled = true;
+        defaultOption.selected = true;
+        defaultOption.text = 'Selecione uma opção';
+        pdvSelect.add(defaultOption);
+
+        options.forEach(option => {
+            const newOption = document.createElement('option');
+            newOption.value = option.id;
+            newOption.text = option.nome;
+            pdvSelect.add(newOption);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const gposSelect = document.getElementById('id_gpos');
+        const pdvAtualSelect = document.getElementById('id_antigo_pdv');
+        const novoPdvSelect = document.getElementById('id_novo_pdv');
+        const novaLojaSelect = document.getElementById('id_nova_loja');
+        const submitButton = document.querySelector('button[id="id_button_enviar"]');
+
+        function validateSelection() {
+            const gposValue = gposSelect.value;
+            const pdvAtualValue = pdvAtualSelect.value;
+            const novoPdvValue = novoPdvSelect.value;
+            const novaLojaValue = novaLojaSelect.value;
+
+            // Verifica se todos os selects têm uma opção válida selecionada (diferente da opção padrão)
+            if (gposValue && pdvAtualValue && novoPdvValue && novaLojaValue) {
+                submitButton.disabled = false;  // Habilita o botão
+            } else {
+                submitButton.disabled = true;   // Desabilita o botão
+            }
+        }
+
+        // Inicializa o estado do botão de envio
+        validateSelection();
+
+        // Adiciona event listeners aos selects para validar as seleções sempre que forem alteradas
+        gposSelect.addEventListener('change', validateSelection);
+        pdvAtualSelect.addEventListener('change', validateSelection);
+        novoPdvSelect.addEventListener('change', validateSelection);
+        novaLojaSelect.addEventListener('change', validateSelection);
+    });
+
+</script>

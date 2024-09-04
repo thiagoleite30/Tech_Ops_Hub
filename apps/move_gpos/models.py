@@ -45,4 +45,18 @@ class Request(models.Model):
     concluida = models.BooleanField(default=False)
     data_inclusao = models.DateTimeField(auto_now_add=True)
     data_conclusao = models.DateTimeField(auto_now=True)
-    
+    usuario = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None  # Verifica se é uma nova instância
+        super(Request, self).save(*args, **kwargs)
+
+        if is_new:
+            gpos = GPOS.objects.get(pk=self.gpos.id)
+            gpos.blocked = True
+            gpos.save()
+        else:
+            if self.concluida:
+                gpos = GPOS.objects.get(pk=self.gpos.id)
+                gpos.blocked = False
+                gpos.save()

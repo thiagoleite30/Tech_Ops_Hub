@@ -4,11 +4,11 @@ from celery import shared_task
 import pandas as pd
 from django.conf import settings
 
-from apps.move_gpos.services import upload_gpos
+from apps.move_gpos.services import upload_gpos, verifica_requisicoes
 
 @shared_task
-def add():
-    print(f"DEBUG :: CELERY :: TAREFA CHAMADA")
+def rotina_checa_requisicoes():
+    verifica_requisicoes()
     
     
 
@@ -19,3 +19,6 @@ def consulta_bd_mv():
         df_consulta = pd.read_sql_query(settings.SQL_QUERY_POS, connection)
     
     upload_gpos(df_consulta)
+    
+    
+    

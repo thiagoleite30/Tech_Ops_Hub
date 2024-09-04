@@ -9,7 +9,7 @@ class RequestForms(forms.ModelForm):
 
     class Meta:
         model = Request
-        exclude = ['chamado', 'concluida']
+        exclude = ['chamado', 'concluida', 'usuario']
         labels = {
             'gpos': 'GPOS',
             'pdv_atual': 'PDV Atual',
@@ -25,7 +25,7 @@ class RequestForms(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['gpos'].queryset = GPOS.objects.filter(blocked=False).order_by('pos_number').distinct('pos_number')
+        self.fields['gpos'].queryset = GPOS.objects.filter(blocked=False, active=True).order_by('pos_number').distinct('pos_number')
         self.fields['loja_nova'].queryset = Location.objects.filter(sub_locations__isnull=False).distinct()
         self.fields['pdv_atual'].queryset = Location.objects.all()
         self.fields['pdv_novo'].queryset = Location.objects.all()

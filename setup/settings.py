@@ -300,9 +300,13 @@ URL_FLOW=str(os.getenv('URL_FLOW'))
 CELERY_BROKER_URL = 'amqp://toh:boils2020@localhost:5672'
 
 CELERY_BEAT_SCHEDULE = {
-    'rodar-add-periodicamente': {
+    'rodar_consulta_bd_mv': {
         'task': 'apps.move_gpos.tasks.consulta_bd_mv',
         'schedule': 900.0,  # 900.0 15 minutos em segundos
+    },
+    'rodar_rotina_checa_requisicoes': {
+        'task': 'apps.move_gpos.tasks.rotina_checa_requisicoes',
+        'schedule': 300.0,  # 900.0 15 minutos em segundos
     },
 }
 
