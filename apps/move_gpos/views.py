@@ -8,15 +8,19 @@ from apps.move_gpos.models import GPOS
 from apps.move_gpos.services import dispara_fluxo, dispara_fluxo_debug
 from apps.tech_assets.models import AssetInfo, Location
 from apps.tech_assets.services import register_logentry
+from django.contrib.auth.decorators import login_required
+from utils.decorators import group_required
 
 # Create your views here.
 
-
+@login_required
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def move_gpos(request):
 
     return render(request, 'apps/move_gpos/move_gpos.html')
 
-
+@login_required
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def get_pdvs(request):
     if request.GET.get('gpos_id'):
         gpos_id = request.GET.get('gpos_id')
@@ -41,16 +45,17 @@ def get_pdvs(request):
 
     return JsonResponse(pdvs_list, safe=False)
 
-
+@login_required
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def get_gpos(request):
-
     gpos_queryset = GPOS.objects.filter(blocked=False).order_by(
         'pos_number').distinct('pos_number')
     gpos_list = list(gpos_queryset.values('id', 'pos_number'))
 
     return JsonResponse(gpos_list, safe=False)
 
-
+@login_required
+@group_required(['Suporte'], redirect_url='zona_restrita')
 def requisicao_troca(request):
     if not request.user.is_authenticated:
         return redirect('login')
