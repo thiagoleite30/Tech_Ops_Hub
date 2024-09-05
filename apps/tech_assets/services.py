@@ -38,13 +38,6 @@ def register_logentry(instance, action, **kwargs):
             detalhe = kwargs.get('detalhe', None)
             str.join(details, f' {detalhe}')
 
-    # print(details)
-    # print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: content_type {
-    #      content_type}')
-    # print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: object_id {object_id}')
-    # print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: object_repr {
-    #      str(instance)}')
-    # print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: action_flag {action}')
     # Salvar no log
     LogEntry.objects.create(
         user=usuario,
@@ -56,13 +49,10 @@ def register_logentry(instance, action, **kwargs):
     )
 
 
-def create_approval(instance):
-    # Cria uma instância de Approval para o Loan recém-criado
-    Approval.objects.create(
-        emprestimo_id=instance,
-        # opcional: defina o aprovador se você tem uma lógica para isso
-        # aprovador=User.objects.first()  # Exemplo para definir um aprovador padrão
-    )
+#def create_approval(instance):
+#    Approval.objects.create(
+#        emprestimo_id=instance,
+#    )
 
 
 def get_user_photo_microsoft(user):

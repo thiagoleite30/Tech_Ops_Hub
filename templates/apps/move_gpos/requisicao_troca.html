@@ -9,7 +9,7 @@
             style="border: 2px; border-style: solid; border-color: rgb(56, 54, 54); padding: 20px; border-radius: 10px;">
             <form action="{%    url url_form %}" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                {% include 'apps/move_gpos/partials_move_gpos/_request_form.html' %}
+                {% include 'apps/move_gpos/_requisicao_troca/_request_form.html' %}
             </form>
         </div>
     </div>

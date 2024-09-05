@@ -295,9 +295,11 @@ KEY_TOPDESK=str(os.getenv('KEY_TOPDESK'))
 URL_FLOW=str(os.getenv('URL_FLOW'))
 
 
-# Settings Schedule Celery
 
-CELERY_BROKER_URL = 'amqp://toh:boils2020@localhost:5672'
+#CELERY_BROKER_URL = 'amqp://toh:boils2020@localhost:5672'
+CELERY_BROKER_URL = str(os.getenv('RMQ_URL'))
+
+# Settings Schedule Celery
 
 CELERY_BEAT_SCHEDULE = {
     'rodar_consulta_bd_mv': {

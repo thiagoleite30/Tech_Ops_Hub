@@ -69,6 +69,7 @@ def upload_gpos(df):
                     'only_pre_sales': row['OnlyPreSales'],
                     'primary_pdv': row['PrimaryPDV'],
                     'creator_user': row['CreatorUser'],
+                    'last_update_date': row['LastUpdateDate'] if not pd.isna(row['LastUpdateDate']) else None,
                     'computer_type': row['ComputerType'],
                     'is_mac': True if ':' in row['MacAddress'] else False,
                     'blocked': True if Request.objects.filter(gpos__id=int(row['Id']), concluida=False).exists() else False
@@ -97,6 +98,7 @@ def dispara_fluxo_debug(request, json_request):
 
     query_call = topdesk.query_call_pos(json_request['posNumber'])
     print(f'Status Code POS {json_request['posNumber']}: {query_call}')
+    
 
 def dispara_fluxo(request, json_request):
     topdesk = TopDesk()

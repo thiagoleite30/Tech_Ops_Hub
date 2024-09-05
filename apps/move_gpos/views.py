@@ -14,7 +14,6 @@ from apps.tech_assets.services import register_logentry
 
 def move_gpos(request):
 
-
     return render(request, 'apps/move_gpos/move_gpos.html')
 
 
@@ -22,12 +21,14 @@ def get_pdvs(request):
     if request.GET.get('gpos_id'):
         gpos_id = request.GET.get('gpos_id')
         gpos = GPOS.objects.get(pk=gpos_id)
-        if GPOS.objects.filter(pos_number=gpos.pos_number, primary_pdv=False).exists():
+        if GPOS.objects.filter(pos_number=gpos.pos_number, primary_pdv=False, blocked=False, active=True).exists():
+            print(f'DEBUG :: ENTROU NO IF')
             gpos_queryset = GPOS.objects.filter(
-                pos_number=gpos.pos_number, blocked=False, active=True)
+                pos_number=gpos.pos_number, primary_pdv=False, blocked=False, active=True)
         else:
+            print(f'DEBUG :: ENTROU NO ELSE')
             gpos_queryset = GPOS.objects.filter(
-                pos_number=gpos.pos_number, blocked=False, active=True)
+                pos_number=gpos.pos_number, primary_pdv=True, blocked=False, active=True)
         list_locations = [obj.pdv for obj in gpos_queryset]
         pdvs_ids = [pdv.id for pdv in list_locations]
         pdvs_list = list(Location.objects.filter(
@@ -53,7 +54,7 @@ def get_gpos(request):
 def requisicao_troca(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    
+
     gpos = GPOS.objects.filter(blocked=False)
     form = RequestForms()
 
@@ -97,13 +98,13 @@ def requisicao_troca(request):
                 instance.chamado = response[1] if response else None
                 instance.usuario = request.user
                 instance.save()
-                
+
                 return redirect('move_gpos')
 
             else:
                 for field, errors in form.errors.items():
                     for error in errors:
-                        #messages.warning(request, message=error)
+                        # messages.warning(request, message=error)
                         pass
 
     context = {
