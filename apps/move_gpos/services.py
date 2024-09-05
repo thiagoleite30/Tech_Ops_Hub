@@ -54,8 +54,7 @@ def upload_gpos(df):
                         endereco_mac=row['MacAddress'],
                     )
 
-            print(f'DEBUG :: GET OR CREATE GPOS :: AGORA VAI CRIAR O GPOS ID {
-                  row['ID_GPOS']}...')
+            print(f'DEBUG :: GET OR CREATE GPOS :: AGORA VAI CRIAR O GPOS ID {row["ID_GPOS"]}...')
             # Crie ou atualize o GPOS
             gpos, created = GPOS.objects.update_or_create(
                 id=int(row['Id']),
@@ -77,11 +76,9 @@ def upload_gpos(df):
             )
 
             if created:
-                print(f'DEBUG :: CREATE GPOS :: CRIOU O GPOS ID {
-                      gpos.id} {row['ID_GPOS']}...')
+                print(f'DEBUG :: CREATE GPOS :: CRIOU O GPOS ID {gpos.id} {row["ID_GPOS"]}...')
             else:
-                print(f'DEBUG :: CREATE GPOS :: SOMENTE PEGOU O GPOS {
-                      gpos.id}  {row['ID_GPOS']}...')
+                print(f'DEBUG :: CREATE GPOS :: SOMENTE PEGOU O GPOS {gpos.id}  {row["ID_GPOS"]}...')
 
         except IntegrityError as e:
             # Ignora erros de integridade e continua o fluxo
@@ -91,13 +88,12 @@ def upload_gpos(df):
 
 
 def dispara_fluxo_debug(request, json_request):
-    print(f'Usuario: {request.user}\nEmail: {
-          request.user.email}\nDisplayName: {request.user.first_name}')
+    print(f'Usuario: {request.user}\nEmail: {request.user.email}\nDisplayName: {request.user.first_name}')
     print(f'{json_request}')
     topdesk = TopDesk()
 
     query_call = topdesk.query_call_pos(json_request['posNumber'])
-    print(f'Status Code POS {json_request['posNumber']}: {query_call}')
+    print(f'Status Code POS {json_request["posNumber"]}: {query_call}')
     
 
 def dispara_fluxo(request, json_request):

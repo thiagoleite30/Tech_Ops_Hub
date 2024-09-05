@@ -16,24 +16,20 @@ def register_logentry(instance, action, **kwargs):
     content_type = ContentType.objects.get_for_model(instance)
     object_id = instance.pk
     if action == ADDITION:
-        details = f"O objeto {content_type.model} ID '{
-            instance.pk}' foi criada pelo usuário {usuario}"
+        details = f"O objeto {content_type.model} ID '{instance.pk}' foi criada pelo usuário {usuario}"
         if kwargs.get('detalhe', None) != None:
             detalhe = kwargs.get('detalhe', None)
             str.join(details, f' {detalhe}')
 
-        details = f"O objeto {content_type.model} ID '{
-            instance.pk}' foi criada pelo usuário {usuario}"
+        details = f"O objeto {content_type.model} ID '{instance.pk}' foi criada pelo usuário {usuario}"
     elif action == CHANGE:
-        details = f"O objeto {content_type.model} ID '{
-            instance.pk}' foi modificado pelo usuário {usuario}"
+        details = f"O objeto {content_type.model} ID '{instance.pk}' foi modificado pelo usuário {usuario}"
         if kwargs.get('modificacao', None) != None:
             modificacao = kwargs.get('modificacao', None)
             str.join(details, f' {modificacao}')
     else:
         object_id = kwargs.get('foto_id', None)
-        details = f"O objeto {content_type.model} ID '{
-            instance.pk}' foi deletado pelo usuário {usuario}"
+        details = f"O objeto {content_type.model} ID '{instance.pk}' foi deletado pelo usuário {usuario}"
         if kwargs.get('detalhe', None) != None:
             detalhe = kwargs.get('detalhe', None)
             str.join(details, f' {detalhe}')
@@ -49,7 +45,7 @@ def register_logentry(instance, action, **kwargs):
     )
 
 
-#def create_approval(instance):
+# def create_approval(instance):
 #    Approval.objects.create(
 #        emprestimo_id=instance,
 #    )
@@ -96,7 +92,7 @@ def get_movement_asset(asset_id):
             'queryset': Movement.objects.filter(status__in=status_ativos,
                                                 ativos__id=asset_id),
             'list_status': [movimento.status for movimento in Movement.objects.filter(status__in=status_ativos,
-                                                ativos__id=asset_id)] }
+                                                                                      ativos__id=asset_id)]}
 
 
 def get_maintenance_asset(asset_id):  # Busca manutencia de um asset
@@ -104,8 +100,10 @@ def get_maintenance_asset(asset_id):  # Busca manutencia de um asset
     return {'status': Maintenance.objects.filter(status=True, ativo=asset_id).exists(),
             'queryset': Maintenance.objects.filter(status=True, ativo=asset_id)}
 
+
 def get_movement_status_pendente(asset_id):
     return Movement.objects.filter(ativos=asset_id, status__in=['pendente_aprovacao']).exists()
+
 
 def concluir_manutencao_service(asset_id, user):
     asset = get_object_or_404(Asset, id=asset_id)
@@ -169,7 +167,8 @@ def upload_assets(csv_file, user):
         if created:
             register_logentry(instance=fabricante, action=ADDITION,
                               user=user, detalhe=f'Usando Import CSV')
-        modelo, created = AssetModel.objects.update_or_create(nome=row['modelo'], tipo=tipo, fabricante=fabricante)
+        modelo, created = AssetModel.objects.update_or_create(
+            nome=row['modelo'], tipo=tipo, fabricante=fabricante)
         if created:
             register_logentry(instance=modelo, action=ADDITION,
                               user=user, detalhe=f'Usando Import CSV')
@@ -198,9 +197,9 @@ def upload_assets(csv_file, user):
             ativo, created = Asset.objects.update_or_create(
                 numero_serie=row['numero_serie'],
                 defaults={
-                    'nome':row['nome'],
-                    'tipo':tipo,
-                    'modelo':modelo,
+                    'nome': row['nome'],
+                    'tipo': tipo,
+                    'modelo': modelo,
                 }
             )
 
@@ -240,5 +239,4 @@ def upload_assets(csv_file, user):
             # Ignora o erro e continua o fluxo
             print(f"Erro ao criar o tipo '{row['modelo']}': {e}")
         except Exception as e:
-            print(f"Erro inesperado ao processar '{
-                  row['modelo']}' ativo {ativo.id}: {e}")
+            print(f"Erro inesperado ao processar '{row['modelo']}' ativo {ativo.id}: {e}")
