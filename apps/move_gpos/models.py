@@ -21,7 +21,7 @@ class GPOS(models.Model):
     primary_pdv = models.BooleanField(default=False, verbose_name="PDV Primário")  # Indica se é o PDV principal
     creation_date = models.DateTimeField(auto_now_add=True, verbose_name="Data de Criação")  # Data de criação
     creator_user = models.CharField(max_length=255, verbose_name="Usuário Criador")  # Usuário que criou o registro
-    last_update_date = models.DateTimeField(auto_now=False, verbose_name="Última Atualização")  # Última data de atualização
+    last_update_date = models.DateTimeField(auto_now=False, null=True, verbose_name="Última Atualização MV")  # Última data de atualização
     computer_type = models.CharField(max_length=100, verbose_name="Tipo de Computador")  # Tipo de Computador
     blocked = models.BooleanField(default=False) # Define se o GPOS estará disponível para uma nova troca ou não
     is_mac = models.BooleanField(default=False) # Define se o GPOS é identificado com Mac ou IMEI
