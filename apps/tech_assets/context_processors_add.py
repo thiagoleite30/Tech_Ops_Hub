@@ -1,6 +1,6 @@
 from .models import Approval, Cart, AssetCart
 from django.contrib.auth.models import User
-from apps.tech_assets.services import get_user_photo_microsoft
+from apps.tech_assets.services import get_user_photo_microsoft, get_employedId
 from django.conf import settings
 from django.contrib.auth.models import Group
 
@@ -25,18 +25,23 @@ def verifica_aprovacoes_pendentes(request):
     return {'aprovacoes_pendentes': aprovacoes_pendentes}
 
 
-def get_profile_foto(request):
+def get_profile_info(request):
     if request.user.is_authenticated:
         if 'profile_photo' not in request.session:
-            # Buscar a foto e salvar na sessão
             foto = get_user_photo_microsoft(request.user)
             request.session['profile_photo'] = foto
         else:
-            # Recuperar a foto da sessão
             foto = request.session['profile_photo']
+        
+        if 'employeeId' not in request.session:
+            employeeId = get_employedId(request.user)
+            request.session['employeeId'] = employeeId
+        else:
+            employeeId = request.session['employeeId']
+        
     else:
         foto = None
-    return {'profile_photo': foto}
+    return {'profile_photo': foto, 'employeeId': employeeId}
 
 # Controles permissivos
 

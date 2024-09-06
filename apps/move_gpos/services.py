@@ -69,6 +69,9 @@ def upload_gpos(df):
                     'primary_pdv': row['PrimaryPDV'],
                     'creator_user': row['CreatorUser'],
                     'last_update_date': row['LastUpdateDate'] if not pd.isna(row['LastUpdateDate']) else None,
+                    'username_last_user_logon': row['LastUserLogon'],
+                    'code_last_user_logon': row['Matricula'],
+                    'last_logon_date': row['DATA_ULTIMO_LOGON'] if not pd.isna(row['DATA_ULTIMO_LOGON']) else None,
                     'computer_type': row['ComputerType'],
                     'is_mac': True if ':' in row['MacAddress'] else False,
                     'blocked': True if Request.objects.filter(gpos__id=int(row['Id']), concluida=False).exists() else False

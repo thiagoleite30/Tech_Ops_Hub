@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+from sqlalchemy.engine import URL
 from pathlib import Path, os
 from dotenv import load_dotenv
 
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'apps.move_gpos.apps.MoveGposConfig',
     'apps.tech_assets.apps.TechAssetsConfig',
+    'apps.tech_persons.apps.TechPersonsConfig',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -89,7 +91,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'apps.tech_assets.context_processors_add.cart_item_count',
                 'apps.tech_assets.context_processors_add.verifica_aprovacoes_pendentes',
-                'apps.tech_assets.context_processors_add.get_profile_foto',
+                'apps.tech_assets.context_processors_add.get_profile_info',
                 'apps.tech_assets.context_processors_add.get_url_logout',
                 'apps.tech_assets.context_processors_add.is_administradores_user',
                 'apps.tech_assets.context_processors_add.is_aprovadores_ti_user',
@@ -173,6 +175,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Configurações API Graphs
+
+CLIENT_ID=str(os.getenv('CLIENT_ID'))
+CLIENT_SECRET=str(os.getenv('CLIENT_SECRET'))
+AUTHORITY=str(os.getenv('AUTHORITY'))
+
 # Allauth e configurações especificas do provedor microsoft
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -206,7 +214,8 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 ACCOUNT_LOGOUT_ON_GET = True
 
 # ou a URL para onde deseja redirecionar após o logout - aqui tá indo pra index
-LOGOUT_REDIRECT_URL = f'https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={LOGIN_URL}'
+LOGOUT_REDIRECT_URL = f'https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={
+    LOGIN_URL}'
 
 # LOGOUT_REDIRECT_URL = '/login'
 
@@ -247,9 +256,9 @@ PWA_OFFLINE_URL = os.path.join(BASE_DIR, 'templates/shared/offline.html')
 
 # Setting DB MV
 
-from sqlalchemy.engine import URL
 
-CONNETION_STRING = f'DRIVER={{{str(os.getenv("DRIVER"))}}};SERVER={str(os.getenv("HOST_DB_MV"))};DATABASE={str(os.getenv("DB_MV"))};Trusted_Connection=yes;'
+CONNETION_STRING = f'DRIVER={{{str(os.getenv("DRIVER"))}}};SERVER={str(os.getenv(
+    "HOST_DB_MV"))};DATABASE={str(os.getenv("DB_MV"))};Trusted_Connection=yes;'
 
 CONNETION_URL = URL.create(
     "mssql+pyodbc",
@@ -271,32 +280,58 @@ SELECT
     CO.CreationDate AS CreationDate,
     CO.CreatorUser AS CreatorUser,
     CO.LastUpdateDate AS LastUpdateDate,
-    CO.ComputerType AS ComputerType
-FROM 
-    MultiVendas.dbo.Computers CO
+    CO.ComputerType AS ComputerType,
+    al.[DateTime]              as DATA_ULTIMO_LOGON,
+    us.UserName                as LastUserLogon, 
+    us.Code                    as Matricula
+FROM    
+    (SELECT        
+        a.Computer,        
+        MAX(a.Id) as IdAuditLog
+     FROM        
+        MultiVendas.dbo.Computers c
+        INNER JOIN MultiVendas.dbo.AuditLogs a  
+            ON a.Computer = c.Id
+     WHERE 
+        c.ComputerType = 16 
+        AND c.Active = 1 
+     GROUP BY 
+        a.Computer
+    ) sub
 INNER JOIN 
-    MultiVendas.dbo.Shops SH ON SH.ID = CO.Shop
+    MultiVendas.dbo.AuditLogs al 
+    ON al.Id = sub.IdAuditLog
 INNER JOIN 
-    MultiVendas.dbo.Shops SH2 ON SH2.ID = SH.Parent
-WHERE 
-    CO.ComputerType IN (16)
+    MultiVendas.dbo.Computers co 
+    ON co.Id = sub.Computer
+INNER JOIN 
+    MultiVendas.dbo.Users us 
+    ON us.Id = al.TargetUser
+INNER JOIN 
+    MultiVendas.dbo.Users us2 
+    ON us2.Id = co.CreatorUser
+INNER JOIN 
+    MultiVendas.dbo.Shops sh 
+    ON sh.Id = co.Shop
+INNER JOIN 
+    MultiVendas.dbo.Shops sh2 
+    ON sh2.Id = sh.Parent
 """
 
 
 # Configuração TopDesk
 
-API_TOPDESK_URL=str(os.getenv('API_TOPDESK_URL'))
-USER_TOPDESK=str(os.getenv('USER_TOPDESK'))
-KEY_TOPDESK=str(os.getenv('KEY_TOPDESK'))
+API_TOPDESK_URL = str(os.getenv('API_TOPDESK_URL'))
+USER_TOPDESK = str(os.getenv('USER_TOPDESK'))
+KEY_TOPDESK = str(os.getenv('KEY_TOPDESK'))
 
 
 # URL FLOW
 
-URL_FLOW=str(os.getenv('URL_FLOW'))
+URL_FLOW = str(os.getenv('URL_FLOW'))
 
 
-
-#CELERY_BROKER_URL = 'amqp://toh:boils2020@localhost:5672'
+# CELERY_BROKER_URL = 'amqp://toh:boils2020@localhost:5672'
 CELERY_BROKER_URL = str(os.getenv('RMQ_URL'))
 
 # Settings Schedule Celery
@@ -311,4 +346,3 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': 300.0,  # 900.0 15 minutos em segundos
     },
 }
-

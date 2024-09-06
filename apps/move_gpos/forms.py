@@ -1,4 +1,8 @@
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+
 from django import forms
+from django.utils import timezone
 
 from apps.move_gpos.models import GPOS, Request
 from apps.tech_assets.models import Location
@@ -25,7 +29,11 @@ class RequestForms(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['gpos'].queryset = GPOS.objects.filter(blocked=False, active=True).order_by('pos_number').distinct('pos_number')
+        
+        # Obtendo formatação de periodo para filtrar na consulta e trazer GPOS logados nos ultimos X meses
+        periodo = timezone.now() - relativedelta(month=8)
+
+        self.fields['gpos'].queryset = GPOS.objects.filter(blocked=False, active=True, last_logon_date__gte=periodo).order_by('pos_number').distinct('pos_number')
         self.fields['loja_nova'].queryset = Location.objects.filter(sub_locations__isnull=False).distinct()
         self.fields['pdv_atual'].queryset = Location.objects.all()
         self.fields['pdv_novo'].queryset = Location.objects.all()
