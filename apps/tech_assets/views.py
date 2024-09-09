@@ -18,6 +18,8 @@ from django.core.paginator import Paginator
 from utils.decorators import group_required
 from django.contrib import messages
 
+from django.views.decorators.cache import cache_page
+
 # Create your views here.
 
 
@@ -309,44 +311,33 @@ def novo_movimento(request):
 
 @login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
+#@cache_page(60 * 15) # 15 minutos de cache
 def ativos(request):
     if not request.user.is_authenticated:
         return redirect('login')
+    
+    # Defina a query inicial com select_related \
+        # Otimizando as consultas
+    assets = Asset.objects.select_related('tipo').all()
 
-    # Filtra os assets que não estão como Em Estoque (disponíveis)
-    assets_unavailable = [
-        asset.id for asset in Asset.objects.exclude(status__in=['em_estoque'])]
-    # Instancia um subquery que trará uma lista de ativos \
-    # que já estão em carrinho
+    # Filtrar os ativos que não estão disponíveis em estoque
+    assets_unavailable = assets.exclude(status__in=['em_estoque']).values_list('id', flat=True)
+
+    # Subquery para ativos que já estão em carrinho
     subquery = AssetCart.objects.filter(ativo_id=OuterRef('pk')).values('pk')
+    assets_in_cart = assets.filter(Exists(subquery)).values_list('id', flat=True)
 
-    # Captura a lista dos objetos já em um carrinho
-    assets_in_cart = [
-        asset.id for asset in Asset.objects.filter(Exists(subquery))]
-
-    # Define um objeto request para capturar informação q ou vazio '' da url
+    # Captura a query da URL valores após o q = 
     query = request.GET.get('q', '')
 
-    # Obtém todos os assets cadastrados
-    assets = Asset.objects.all()
 
-    # Estrutura lógica na view de ativos para modificar os assets de acordo \
-    # com a consulta obtida na query
-    STATUS_CHOICES = [
-        ('em_uso', 'Em Uso'),
-        ('em_manutencao', 'Em Manutenção'),
-        ('em_estoque', 'Em Estoque'),
-        ('baixado', 'Baixado'),
-        ('separado', 'Separado'),
-    ]
-    STATUS_MAP = dict((v, k) for k, v in STATUS_CHOICES)
+    # Criando mapeamento de status pré definidos
+    STATUS_MAP = dict((v, k) for k, v in Asset.STATUS_CHOICES)
+
+    # Se houver uma query de busca, aplique filtros
     if query:
-        # Verificar se a query corresponde parcialmente a um valor legível do status
-        status_codigo = None
-        for status_legivel, codigo in STATUS_MAP.items():
-            if query.lower() in status_legivel.lower():
-                status_codigo = codigo
-                break
+        # Procurar status entre os mapeados
+        status_codigo = next((codigo for status_legivel, codigo in STATUS_MAP.items() if query.lower() in status_legivel.lower()), None)
         assets = assets.filter(
             Q(nome__icontains=query) |
             Q(patrimonio__icontains=query) |
@@ -355,31 +346,16 @@ def ativos(request):
             Q(tipo__nome__icontains=query)
         )
 
-    assets_list = assets.order_by('id')
-
-    # Uma instancia paginator definida para o máximo de 15 ativos por pagina \
-    # E já captura dos assets os 15 primeiros da consulta
-    paginator = Paginator(assets_list, 15)
-
-    # Obtém o número da página atual
+    # Paginação
+    paginator = Paginator(assets.order_by('id'), 15)
     page_number = request.GET.get('page')
-
-    # Obtém os objetos de acordo com a página presente no URL
     page_obj = paginator.get_page(page_number)
 
-    # Verifica se tem manutenção ativa pro asset
-    # Se houver, muda status
-    for asset in assets:
-        if get_maintenance_asset(asset.id)['status']:
-            asset = get_object_or_404(Asset, pk=asset.id)
-            asset.status = 'em_manutencao'
-            asset.save()
-
     context = {
-        'assets_in_cart': assets_in_cart,
+        'assets_in_cart': list(assets_in_cart),
         'page_obj': page_obj,
         'query': query,
-        'assets_unavailable': assets_unavailable,
+        'assets_unavailable': list(assets_unavailable),
     }
     return render(request, 'apps/tech_assets/ativos.html', context)
 
@@ -557,7 +533,7 @@ def aprovacoes(request):
     if user_instance:
         try:
             query = request.GET.get('q', '')
-            aprovacoes = Approval.objects.all()
+            aprovacoes = Approval.objects.select_related('movimentacao').all()
             default_status = ['pendente']
             status_aprovacao = request.GET.getlist('status')
 
@@ -1034,7 +1010,7 @@ def acessorios(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    acessorios = Accessory.objects.all()
+    acessorios = Accessory.objects.select_related('fabricante').all()
 
     query = request.GET.get('q', '')
     if query:
@@ -1204,7 +1180,7 @@ def locais(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    objetos = Location.objects.all()
+    objetos = Location.objects.all().prefetch_related('local_pai')
 
     query = request.GET.get('q', '')
     if query:
@@ -1261,7 +1237,7 @@ def modelos_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    objetos = AssetModel.objects.all()
+    objetos = AssetModel.objects.select_related('tipo', 'fabricante').all()
 
     query = request.GET.get('q', '')
     if query:

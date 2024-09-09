@@ -163,7 +163,7 @@ class LocationForms(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(LocationForms, self).__init__(*args, **kwargs)
-        self.fields['local_pai'].queryset = Location.objects.all()
+        self.fields['local_pai'].queryset = Location.objects.select_related('local_pai').all()
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -323,7 +323,10 @@ class AssetForms(forms.ModelForm):
             'centro_de_custo_recebedor': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
         }
-
+        
+    def __init__(self, *args, **kwargs):
+        super(AssetForms, self).__init__(*args, **kwargs)
+        self.fields['localizacao'].queryset = Location.objects.select_related('local_pai').all()
     def save(self, commit=True):
         instance = super().save(commit=False)
 
@@ -348,7 +351,7 @@ class AssetForms(forms.ModelForm):
 
 class DynamicAccessoryForm(forms.Form):
     acessorio = forms.ModelChoiceField(
-        queryset=Accessory.objects.all(),
+        queryset=Accessory.objects.select_related('fabricante').all(),
         widget=forms.Select(
             attrs={'class': 'form-control'}
         ),

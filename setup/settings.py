@@ -30,32 +30,46 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.94.1.49', 'localhost', '127.0.0.1']
+#ALLOWED_HOSTS = ['10.94.1.49', 'localhost', '127.0.0.1']
 
 # Definindo o caminho/registro da aplicação
 # Por ser desenvolvimento então
 
 SITE_ID = 1
 
+
+
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'pwa',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.microsoft',
     'django.contrib.sites',
+]
+
+LOCAL_APPS = [
     'apps.move_gpos.apps.MoveGposConfig',
     'apps.tech_assets.apps.TechAssetsConfig',
     'apps.tech_persons.apps.TechPersonsConfig',
 ]
+
+THIRD_PARTY_APPS = [
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.microsoft',
+    'pwa',
+    'debug_toolbar',
+]
+
+
+INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS
+
+
 
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
@@ -74,6 +88,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "allauth.account.middleware.AccountMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'setup.urls'
@@ -344,3 +359,11 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': 300.0,  # 900.0 15 minutos em segundos
     },
 }
+
+
+# Configurar Internals IPs
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+    'localhost',
+]
