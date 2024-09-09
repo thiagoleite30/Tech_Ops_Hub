@@ -214,8 +214,7 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 ACCOUNT_LOGOUT_ON_GET = True
 
 # ou a URL para onde deseja redirecionar após o logout - aqui tá indo pra index
-LOGOUT_REDIRECT_URL = f'https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={
-    LOGIN_URL}'
+LOGOUT_REDIRECT_URL = f'''https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={LOGIN_URL}'''
 
 # LOGOUT_REDIRECT_URL = '/login'
 
@@ -257,8 +256,7 @@ PWA_OFFLINE_URL = os.path.join(BASE_DIR, 'templates/shared/offline.html')
 # Setting DB MV
 
 
-CONNETION_STRING = f'DRIVER={{{str(os.getenv("DRIVER"))}}};SERVER={str(os.getenv(
-    "HOST_DB_MV"))};DATABASE={str(os.getenv("DB_MV"))};Trusted_Connection=yes;'
+CONNETION_STRING = f'''DRIVER={{{str(os.getenv("DRIVER"))}}};SERVER={str(os.getenv("HOST_DB_MV"))};DATABASE={str(os.getenv("DB_MV"))};Trusted_Connection=yes;'''
 
 CONNETION_URL = URL.create(
     "mssql+pyodbc",

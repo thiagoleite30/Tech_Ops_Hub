@@ -41,6 +41,7 @@ def get_profile_info(request):
         
     else:
         foto = None
+        employeeId = None
     return {'profile_photo': foto, 'employeeId': employeeId}
 
 # Controles permissivos

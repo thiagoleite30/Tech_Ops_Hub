@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404
 import requests
 from allauth.socialaccount.models import SocialAccount, SocialToken
 import base64
-import msal
 
 from apps.tech_assets.models import Approval, Asset, AssetInfo, AssetModel, AssetType, Movement, Maintenance, Manufacturer
 import pandas as pd
@@ -18,24 +17,24 @@ def register_logentry(instance, action, **kwargs):
     content_type = ContentType.objects.get_for_model(instance)
     object_id = instance.pk
     if action == ADDITION:
-        details = f"O objeto {content_type.model} ID '{
-            instance.pk}' foi criada pelo usuário {usuario}"
+        details = f"""O objeto {content_type.model} ID '{
+            instance.pk}' foi criada pelo usuário {usuario}"""
         if kwargs.get('detalhe', None) != None:
             detalhe = kwargs.get('detalhe', None)
             str.join(details, f' {detalhe}')
 
-        details = f"O objeto {content_type.model} ID '{
-            instance.pk}' foi criada pelo usuário {usuario}"
+        details = f"""O objeto {content_type.model} ID '{
+            instance.pk}' foi criada pelo usuário {usuario}"""
     elif action == CHANGE:
-        details = f"O objeto {content_type.model} ID '{
-            instance.pk}' foi modificado pelo usuário {usuario}"
+        details = f"""O objeto {content_type.model} ID '{
+            instance.pk}' foi modificado pelo usuário {usuario}"""
         if kwargs.get('modificacao', None) != None:
             modificacao = kwargs.get('modificacao', None)
             str.join(details, f' {modificacao}')
     else:
         object_id = kwargs.get('foto_id', None)
-        details = f"O objeto {content_type.model} ID '{
-            instance.pk}' foi deletado pelo usuário {usuario}"
+        details = f"""O objeto {content_type.model} ID '{
+            instance.pk}' foi deletado pelo usuário {usuario}"""
         if kwargs.get('detalhe', None) != None:
             detalhe = kwargs.get('detalhe', None)
             str.join(details, f' {detalhe}')
@@ -74,7 +73,7 @@ def get_user_photo_microsoft(user):
         }
         graph_api_url = 'https://graph.microsoft.com/v1.0/me/photo/$value'
         response = requests.get(graph_api_url, headers=headers)
-        get_employedId(user, headers)
+
         if response.status_code == 200:
             image_base64 = base64.b64encode(response.content).decode('utf-8')
             return image_base64  # Retornar a foto
@@ -101,7 +100,10 @@ def get_employedId(user):
         }
         employedId = requests.get(f'https://graph.microsoft.com/beta/users/{user.email}', headers=headers)
         
-        return employedId.json()["employeeId"]
+        if employedId.status_code == 200:
+            return employedId.json()["employeeId"]
+        else:
+            return None
     # Caso o usuário logado não seja um login social, ou seja, um usuário criado em admin ou superusuario
     except SocialAccount.DoesNotExist as erro:
         # print(f"ERROR :: SERVICES :: SOCIAL ACCOUNT ERROR = {erro}")
@@ -141,7 +143,7 @@ def concluir_manutencao_service(asset_id, user):
             maintenance = get_object_or_404(
                 Maintenance, ativo=asset, status=True)
             Maintenance.marcar_como_finalizada(maintenance)
-            modificacao = f'Alterou status para "False" (Não ativa)'
+            modificacao = f'''Alterou status para "False" (Não ativa)'''
             register_logentry(instance=maintenance, action=CHANGE,
                               modificacao=modificacao, user=user)
 
@@ -266,7 +268,7 @@ def upload_assets(csv_file, user):
 
         except IntegrityError as e:
             # Ignora o erro e continua o fluxo
-            print(f"Erro ao criar o tipo '{row['modelo']}': {e}")
+            print(f"""Erro ao criar o tipo '{row['modelo']}': {e}""")
         except Exception as e:
-            print(f"Erro inesperado ao processar '{
-                  row['modelo']}' ativo {ativo.id}: {e}")
+            print(f"""Erro inesperado ao processar '{
+                  row['modelo']}' ativo {ativo.id}: {e}""")
