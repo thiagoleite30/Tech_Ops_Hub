@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from apps.tech_assets.models import Accessory, Approval, Asset, \
     AssetModel, Manufacturer, CostCenter, \
     AssetType, Location, Maintenance, \
-    Movement, MovementAsset, ReturnTerm
+    Movement, MovementAsset, ReturnTerm, Termo
 
 
 
@@ -601,6 +601,19 @@ class ReturnTermForms(forms.ModelForm):
             instance.save()
         return instance
 
+
+class TermoForms(forms.ModelForm):
+    form_name = 'Aprovação'
+
+    justificativa = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control'}),required=True)
+
+    class Meta:
+        model = Termo
+        exclude = ['movimentacao', 'aprovacao', 'data_criacao', 'data_resposta', 'status_resposta', 'aceite_usuario']
+        fields = ['justificativa',]
+        labels = {
+            'justificativa': 'Justificativa',
+        }
 
 class CSVUploadForm(forms.Form):
     csv_file = forms.FileField(label='CSV File')

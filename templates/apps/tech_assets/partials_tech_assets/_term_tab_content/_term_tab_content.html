@@ -16,6 +16,9 @@
                 {{term.get_aceite_usuario_display}} por
                 {{movement.usuario.first_name}} {{movement.usuario.last_name}} em {{term.data_resposta}}{% else %}
                 Pendente {%endif%}</li>
+            {% if term.justificativa %}
+            <li class="list-group-item"><b>Justificativa:</b> {{term.justificativa}}</li>
+            {%endif%}
         </ul>
     </div>
     <div class="card-body">
@@ -30,20 +33,18 @@
         {% if not term.status_resposta %}
         <a href="{% url 'aceita_termo' term.id %}" id="acceptLink" class="btn btn-success btn-lg disabled"
             style="margin-right: 10px;">Aceitar</a>
-        <a href="{% url 'recusa_termo' term.id %}" class="btn btn-danger btn-lg">Recusar</a>
+        <a type="button" data-bs-toggle="modal" data-bs-target="#staticBackdropJustify" class="btn btn-danger btn-lg">Recusar</a>
         {%else%}
+
         <!--
         <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aceitar</a>
         <a href="#" class="btn btn-danger btn-lg disabled">Recusar</a>
         -->
-        {% if not ReturnTerm %}
+        {% if not ReturnTerm and not term.aceite_usuario == 'recusado'  %}
         {% if is_aprovadores_ti_user and movement.tipo == 'emprestimo' %}
         <a href="{% url 'devolucao' term.id %}" class="btn btn-outline-secondary" style="width: 30%;">Iniciar
             Devolução</a>
         {%endif%}
-        {% else %}
-        <a href="{% url 'devolucao' term.id %}" class="btn btn-outline-success disabled" style="width: 30%;">Termo de
-            devolução gerado!</a>
         {%endif%}
         {%endif%}
     </div>

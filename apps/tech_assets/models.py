@@ -1,13 +1,11 @@
 from datetime import datetime
 from django.utils import timezone
-from typing import Iterable
 from django.db import models
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
 # Create your models here.
 from django.db import models
-from django.forms import ValidationError
 
 
 class Manufacturer(models.Model):
@@ -183,7 +181,7 @@ class Movement(models.Model):
         User, on_delete=models.CASCADE, related_name='user_recept')
     centro_de_custo_recebedor = models.ForeignKey(
         CostCenter, on_delete=models.CASCADE, related_name='cc_recept')
-    data_movimento = models.DateTimeField(default=datetime.now)
+    data_movimento = models.DateTimeField(default=timezone.now)
     data_devolucao_prevista = models.DateTimeField(null=True, blank=True)
     data_devolucao_real = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
@@ -196,7 +194,7 @@ class Movement(models.Model):
         return f'Movimento Tipo: {self.tipo} ID: {self.id} para o usuário {self.usuario} no centro de custo {self.centro_de_custo_recebedor}'
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None  # Verifica se é uma nova instância
+        is_new = self.pk is None
         ativos = kwargs.pop('ativos', None)
         aprovador = kwargs.pop('aprovador', None)
         acessorios = kwargs.pop('acessorios', None)
@@ -222,23 +220,26 @@ class Movement(models.Model):
                         print(f'ERROR :: {error}')
 
             # Cria uma nova aprovação automaticamente
-            print(
-                f'DEBUG :: DENTRO DO SAVE DO MOVEMENT :: CHAMANDO A CRIACAO DE APPROVAL!')
             Approval.objects.create(movimentacao=self, aprovador=aprovador)
 
     def esta_atrasado(self):
-        if self.status == 'em_andamento' and datetime.now() > self.data_devolucao_prevista:
+        if self.status == 'em_andamento' and timezone.now() > self.data_devolucao_prevista:
             return True
         return False
 
     def marcar_como_concluido(self):
         self.status = 'concluido'
-        self.data_devolucao_real = datetime.now()
+        self.data_devolucao_real = timezone.now()
         self.save()
+        ativos = self.ativos.all()
+        
+        for ativo in ativos:
+            movementAsset = MovementAsset.objects.get(ativo=ativo.id, movimento=self.id)
+            movementAsset.marcar_como_devolvido()
 
     def dias_de_atraso(self):
         if self.status == 'em_andamento' and self.esta_atrasado():
-            return (datetime.now() - self.data_devolucao_prevista).days
+            return (timezone.now() - self.data_devolucao_prevista).days
         return 0
 
     class Meta:
@@ -254,10 +255,10 @@ class MovementAsset(models.Model):
 
     def __str__(self):
         return self.ativo.nome
-    
+
     def marcar_como_devolvido(self):
         self.devolvido = True
-        ativo = get_object_or_404(Asset, pk=self.ativo_id)
+        ativo = get_object_or_404(Asset, pk=self.ativo.id)
         if ativo:
             if Maintenance.objects.filter(ativo=ativo, status=True).exists():
                 ativo.status = 'em_manutencao'
@@ -266,21 +267,22 @@ class MovementAsset(models.Model):
                 ativo.status = 'em_estoque'
                 ativo.save()
         self.save()
-        
 
 
 class MovementAccessory(models.Model):
     acessorio = models.ForeignKey(Accessory,  on_delete=models.CASCADE)
     movimento = models.ForeignKey(Movement, on_delete=models.CASCADE)
     quantidade = models.PositiveIntegerField()
-    quantidade_devolvida = models.PositiveIntegerField(null=True, blank=True, default=0)
+    quantidade_devolvida = models.PositiveIntegerField(
+        null=True, blank=True, default=0)
 
     def __str__(self):
         return f"{self.quantidade} x {self.acessorio.nome}"
-    
+
     def soma_quantidade_devolvida(self, quantidade):
-        self.quantidade_devolvida += quantidade
-        self.save()
+        if not self.quantidade_devolvida + quantidade > self.quantidade:
+            self.quantidade_devolvida += quantidade
+            self.save()
 
 
 class Cart(models.Model):
@@ -422,23 +424,26 @@ class Approval(models.Model):
     def aprovar_movimentacao(self):
         self.status_aprovacao = 'aprovado'
         self.data_conclusao = datetime.now()
-        #self.mudar_status_ativos('separado')
+        # self.mudar_status_ativos('separado')
         self.mudar_status_movimentacao('aprovar')
         self.save()
-        
+
         Termo.objects.create(movimentacao=self.movimentacao, aprovacao=self)
 
     def reprovar_movimentacao(self):
         self.status_aprovacao = 'reprovado'
         self.data_conclusao = datetime.now()
         self.mudar_status_ativos('em_estoque')
-        moviment_accessory = get_object_or_404(MovementAccessory, movimento=self.movimentacao)
-        moviment_accessory.soma_quantidade_devolvida(moviment_accessory.quantidade)
+        
+        for movement_accessory in MovementAccessory.objects.filter(movimento=self.movimentacao):
+            movement_accessory.soma_quantidade_devolvida(movement_accessory.quantidade)
+        
         self.mudar_status_movimentacao('reprovar')
         self.save()
 
     def mudar_status_ativos(self, status, *args, **kwargs):
         origin_model_term = kwargs.pop('origin_model_term', False)
+
         # Muda status do ativo de separado para pendente_aprovacao
         if MovementAsset.objects.filter(movimento=self.movimentacao).exists():
             ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
@@ -460,22 +465,25 @@ class Approval(models.Model):
                 else:
                     ativo.status = status
                     ativo.save()
-
+                    if status == 'em_estoque':
+                        movementAsset = MovementAsset.objects.get(ativo=ativo.id, movimento=self.movimentacao.id)
+                        movementAsset.marcar_como_devolvido()
     def mudar_status_movimentacao(self, status):
-        movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
         
-        if movimentacao:
+        movimento = self.movimentacao
+
+        if movimento:
             if status == 'aprovar':
-                movimentacao.status = 'pendente_entrega'
+                movimento.status = 'pendente_entrega'
             elif status == 'reprovar':
-                for item in MovementAsset.objects.filter(movimento=movimentacao):
+                for item in MovementAsset.objects.filter(movimento=movimento):
                     item.devolvido = True
                     item.save()
-                movimentacao.status = 'concluido'
-                movimentacao.data_devolucao_real = timezone.now()
-            movimentacao.save()
-            
-            
+                movimento.status = 'concluido'
+                movimento.data_devolucao_real = timezone.now()
+            movimento.save()
+
+
 class Termo(models.Model):
 
     status_aceite = [
@@ -495,30 +503,33 @@ class Termo(models.Model):
         max_length=100, choices=status_aceite, default='pendente')
     justificativa = models.TextField(null=True, blank=True)
 
-    def marcar_como_aceito(self):
+    def marcar_como_aceito(self, movimentacao):
         self.status_resposta = True
-        self.data_resposta = datetime.now()
+        self.data_resposta = timezone.now()
         self.aceite_usuario = 'aceito'
-        self.save()
-        movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
         if movimentacao.tipo == 'emprestimo':
             movimentacao.status = 'em_andamento'
-        elif movimentacao.tipo == 'transferencia':
+        elif movimentacao.tipo in ['transferencia', 'baixa']:
             movimentacao.status = 'concluido'
+            
         movimentacao.save()
-        Approval.mudar_status_ativos(self.aprovacao, 'em_uso', origin_model_term=True)
-
-    def marcar_como_recusa(self):
-        self.status_resposta = True
-        self.data_resposta = datetime.now()
-        self.aceite_usuario = 'recusado'
+        self.aprovacao.mudar_status_ativos('em_uso', origin_model_term=True)
         self.save()
-        movimentacao = get_object_or_404(Movement, pk=self.movimentacao.id)
-        movimentacao.status = 'concluido'
-        movimentacao.save()
-        Approval.mudar_status_ativos(self.aprovacao, 'em_estoque')
-        Approval.mudar_status_movimentacao(self.movimentacao, 'reprovar')
 
+    def marcar_como_recusa(self, movimentacao):
+        self.status_resposta = True
+        self.data_resposta = timezone.now()
+        self.aceite_usuario = 'recusado'
+        movimentacao.status = 'concluido'
+        movimentacao.data_devolucao_real = timezone.now()
+        movimentacao.save()
+        self.aprovacao.mudar_status_ativos('em_estoque')
+        self.aprovacao.mudar_status_movimentacao('reprovar')
+        for movement_accessory in MovementAccessory.objects.filter(movimento=movimentacao):
+            
+            movement_accessory.soma_quantidade_devolvida(movement_accessory.quantidade)
+
+        self.save()
 
 class ReturnTerm(models.Model):
     movimentacao = models.ForeignKey(
@@ -537,4 +548,3 @@ class ReturnTerm(models.Model):
         super(ReturnTerm, self).save(*args, **kwargs)
         if self._state.adding:
             super(ReturnTerm, self).save(*args, **kwargs)
-        

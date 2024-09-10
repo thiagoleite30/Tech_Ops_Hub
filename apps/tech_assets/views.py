@@ -1,15 +1,21 @@
+import traceback
 from django.forms import modelformset_factory
 from django.http import JsonResponse
 from django.shortcuts import render
-from apps.tech_assets.models import Accessory, Approval, Asset, AssetCart, AssetInfo, AssetModel, AssetType, Cart, CostCenter, Location, Manufacturer, Movement, MovementAccessory, MovementAsset, Maintenance, ReturnTerm, Termo
+from apps.tech_assets.models import Accessory, Approval, Asset, \
+    AssetCart, AssetInfo, AssetModel, AssetType, Cart, CostCenter, \
+    Location, Manufacturer, Movement, MovementAccessory, MovementAsset, \
+    Maintenance, ReturnTerm, Termo
 from django.shortcuts import get_object_or_404, render, redirect
 
 from apps.tech_assets.services import register_logentry, upload_assets, concluir_manutencao_service, get_maintenance_asset
 from django.contrib.admin.models import ADDITION, CHANGE
 
-from apps.tech_assets.forms import AccessoryForms, ApprovalForms, AssetModelForms, CSVUploadForm, DynamicAccessoryFormSet, MovementForms, AssetForms, MaintenanceForms, \
+from apps.tech_assets.forms import AccessoryForms, ApprovalForms, \
+    AssetModelForms, CSVUploadForm, DynamicAccessoryFormSet, \
+    MovementForms, AssetForms, MaintenanceForms, \
     LocationForms, ManufacturerForms, CostCenterForms, \
-    AssetTypeForms, ReturnTermForms
+    AssetTypeForms, ReturnTermForms, TermoForms
 from django.urls import resolve, reverse
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -33,8 +39,19 @@ def zona_restrita(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Suporte', 'Basico', 'Move GPOS'], redirect_url='zona_restrita')
 def index(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect('login')
+    
+    user_instance = User.objects.get(username=user)
+    
+    grupos = ['Move GPOS']
+    if user.groups.filter(name__in=grupos).exists():
+        return redirect('move_gpos')
+    
+    
     return render(request, 'apps/tech_assets/index.html')
 
 
@@ -311,25 +328,26 @@ def novo_movimento(request):
 
 @login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
-#@cache_page(60 * 15) # 15 minutos de cache
+# @cache_page(60 * 15) # 15 minutos de cache
 def ativos(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    
+
     # Defina a query inicial com select_related \
         # Otimizando as consultas
     assets = Asset.objects.select_related('tipo').all()
 
     # Filtrar os ativos que não estão disponíveis em estoque
-    assets_unavailable = assets.exclude(status__in=['em_estoque']).values_list('id', flat=True)
+    assets_unavailable = assets.exclude(
+        status__in=['em_estoque']).values_list('id', flat=True)
 
     # Subquery para ativos que já estão em carrinho
     subquery = AssetCart.objects.filter(ativo_id=OuterRef('pk')).values('pk')
-    assets_in_cart = assets.filter(Exists(subquery)).values_list('id', flat=True)
+    assets_in_cart = assets.filter(
+        Exists(subquery)).values_list('id', flat=True)
 
-    # Captura a query da URL valores após o q = 
+    # Captura a query da URL valores após o q =
     query = request.GET.get('q', '')
-
 
     # Criando mapeamento de status pré definidos
     STATUS_MAP = dict((v, k) for k, v in Asset.STATUS_CHOICES)
@@ -337,7 +355,8 @@ def ativos(request):
     # Se houver uma query de busca, aplique filtros
     if query:
         # Procurar status entre os mapeados
-        status_codigo = next((codigo for status_legivel, codigo in STATUS_MAP.items() if query.lower() in status_legivel.lower()), None)
+        status_codigo = next((codigo for status_legivel, codigo in STATUS_MAP.items(
+        ) if query.lower() in status_legivel.lower()), None)
         assets = assets.filter(
             Q(nome__icontains=query) |
             Q(patrimonio__icontains=query) |
@@ -368,7 +387,7 @@ def ativo(request, asset_id):
 
     asset = get_object_or_404(Asset, pk=asset_id)
     asset_infos = AssetInfo.objects.get(ativo=asset)
-    maintenances = Maintenance.objects.filter(ativo_id=asset_id)
+    maintenances = Maintenance.objects.filter(ativo_id=asset_id).select_related('ativo')
 
     if maintenances:
         for maintenance in maintenances:
@@ -400,13 +419,15 @@ def ativo(request, asset_id):
 @login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def carrinho(request):
-    if not request.user.is_authenticated:
+
+    user_instance = request.user
+    if not user_instance.is_authenticated:
         return redirect('login')
 
     query = request.GET.get('q', '')
 
     # Obtenha o carrinho do usuário logado
-    cart = get_object_or_404(Cart, usuario_sessao=request.user)
+    cart = get_object_or_404(Cart, usuario_sessao=user_instance)
 
     # Recupere os itens do carrinho do usuario logado
     cart_items = AssetCart.objects.filter(carrinho=cart)
@@ -522,7 +543,7 @@ def deleta_carrinho(request):
 
 
 @login_required
-@group_required(['Aprovadores TI', 'Administradores'], redirect_url='zona_restrita')
+@group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='zona_restrita')
 def aprovacoes(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -677,9 +698,13 @@ def aprova_movimentacao(request, aprovacao_id):
         aprovacao = get_object_or_404(Approval, id=aprovacao_id)
         if aprovacao:
             url = reverse('aprovacao', kwargs={'aprovacao_id': aprovacao_id})
+            if aprovacao.status_aprovacao != 'pendente':
+                messages.warning(request, f'''Esta aprovação já foi respondida pelo aprovador {
+                                 aprovacao.aprovador.username}''')
+                return redirect(url)
             if request.user != aprovacao.aprovador:
                 messages.warning(
-                    request, 'Você não é o aprovador designado para esta aprovação.')
+                    request, '''Você não é o aprovador designado para esta aprovação.''')
                 return redirect(url)
 
             Approval.aprovar_movimentacao(aprovacao)
@@ -695,13 +720,17 @@ def reprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
         return redirect('login')
     try:
+        url = reverse('aprovacao', kwargs={'aprovacao_id': aprovacao_id})
         # Pega da tabela asset o ativo pelo id
         aprovacao = get_object_or_404(Approval, id=aprovacao_id)
         if aprovacao:
-            url = reverse('aprovacao', kwargs={'aprovacao_id': aprovacao_id})
+            if aprovacao.status_aprovacao != 'pendente':
+                messages.warning(request, f'''Esta aprovação já foi respondida pelo aprovador {
+                                 aprovacao.aprovador.username}''')
+                return redirect(url)
             if request.user != aprovacao.aprovador:
                 messages.warning(
-                    request, 'Você não é o aprovador designado para esta aprovação.')
+                    request, '''Você não é o aprovador designado para esta aprovação.''')
                 return redirect(url)
 
             Approval.reprovar_movimentacao(aprovacao)
@@ -717,14 +746,14 @@ def reprova_movimentacao(request, aprovacao_id):
 def termos(request):
     if not request.user.is_authenticated:
         return redirect('login')
-
+    
     user_instance = get_object_or_404(User, username=request.user)
-
     # Se houver usuario
     if user_instance:
         try:
             query = request.GET.get('q', '')
-            termos = Termo.objects.all()
+            termos = Termo.objects.select_related(
+                'movimentacao', 'aprovacao').all()
             status_termos = request.GET.getlist('status')
 
             # Query pode ser alterada dependendo de como queremos consultar
@@ -732,8 +761,8 @@ def termos(request):
                 termos = termos.filter(
                     Q(movimentacao__id__icontains=query) |
                     Q(movimentacao__tipo__icontains=query) |
-                    Q(movimentacao__usuario__username__icontains=query) |
-                    Q(movimentacao__usuario__first_name__icontains=query)
+                    Q(movimentacao__usuario__username__icontains=user_instance) |
+                    Q(movimentacao__usuario__first_name__icontains=user_instance)
                 )
 
             status_query = Q()
@@ -782,35 +811,38 @@ def termo(request, termo_id):
     term_res = get_object_or_404(Termo, pk=termo_id)
     aprovacao = get_object_or_404(Approval, id=term_res.aprovacao_id)
     movimentacao = get_object_or_404(Movement, pk=aprovacao.movimentacao.id)
+    form = TermoForms(instance=term_res)
 
     if aprovacao:
-        if MovementAsset.objects.filter(movimento=aprovacao.movimentacao).exists():
-            ativos_id = [ativo.ativo_id for ativo in MovementAsset.objects.filter(
-                movimento=aprovacao.movimentacao)]
-            if ativos_id:
-                ativos_na_movimentacao = Asset.objects.filter(id__in=ativos_id)
+        ativos_na_movimentacao = list(Asset.objects.filter(
+            id__in=MovementAsset.objects.filter(movimento=aprovacao.movimentacao).values_list('ativo_id', flat=True)
+        ))
         # Caso não haja nenhum ativo atrelado a aprovação então ficará como uma lista vazia
         # Pode ocorrer em casos de movimentações somente de itens classificados como acessórios
-        else:
+        if not ativos_na_movimentacao:
             ativos_na_movimentacao = []
-
-    if MovementAccessory.objects.filter(movimento=aprovacao.movimentacao).exists():
-        acessorios_id = [acessorio.acessorio_id for acessorio in MovementAccessory.objects.filter(
-            movimento=aprovacao.movimentacao)]
-        if acessorios_id:
-            acessorios_na_movimentacao = Accessory.objects.filter(
-                id__in=acessorios_id)
-            # Criar uma lista de tuplas contendo o acessório e a quantidade
-            # Fica assim (acessorio instance, quantidade)
-            acessorios_com_quantidade = [
-                (acessorio, MovementAccessory.objects.get(
-                    movimento=aprovacao.movimentacao, acessorio=acessorio).quantidade)
-                for acessorio in acessorios_na_movimentacao
-            ]
+            
+    movements_accessory = list(MovementAccessory.objects.filter(movimento=aprovacao.movimentacao).select_related('acessorio'))
+    if movements_accessory:
+        acessorios_com_quantidade = [
+            (movement_acessorio.acessorio, movement_acessorio.quantidade)
+            for movement_acessorio in movements_accessory
+        ]
     else:
         acessorios_com_quantidade = []
+    
+    if request.method == 'POST':
+        form = TermoForms(request.POST, request.FILES, instance=term_res)
+        if form.is_valid():
+            term_res.justificativa = form.cleaned_data.get('justificativa')
+            term_res.save()
+            url = reverse('recusa_termo', args=[termo_id])
+            return redirect(url)
+        else:
+            print(f'Formulário inválido')
 
     context = {
+        'form': form,
         'term': term_res,
         'aprovall': aprovacao,
         'movement': movimentacao if movimentacao else None,
@@ -819,7 +851,7 @@ def termo(request, termo_id):
         'ReturnTerm': ReturnTerm.objects.filter(movimentacao=movimentacao).exists()
     }
 
-    return render(request, 'apps/tech_assets/term_res.html', context)
+    return render(request, 'apps/tech_assets/termo.html', context)
 
 
 @login_required
@@ -838,7 +870,7 @@ def aceita_termo(request, termo_id):
 
             # Busca a movimentação ligada ao termo/fluxo
             movimentacao = get_object_or_404(
-                Movement, id=term_res.movimentacao_id)
+                Movement, pk=term_res.movimentacao.id)
 
             if movimentacao:
                 if request.user != movimentacao.usuario:
@@ -847,9 +879,10 @@ def aceita_termo(request, termo_id):
                     return redirect(url)
                 # Método abaixo já faz tudo que é preciso após o aceito \
                     # como mudança de status de ativos, termos e etc...
-                Termo.marcar_como_aceito(term_res)
-                register_logentry(instance=term_res.save(
-                ), action=CHANGE, user=request.user, modificacao='Aceitou os Termos')
+                term_res.marcar_como_aceito(movimentacao)
+                messages.success(request, f'Termo aceito com sucesso!')
+                register_logentry(instance=term_res, action=CHANGE,
+                                  user=request.user, modificacao='Aceitou os Termos')
     except Exception as e:
         print(f'ERROR :: VIEW :: ACEITA TERMO :: {e}')
 
@@ -872,8 +905,8 @@ def recusa_termo(request, termo_id):
 
             # Busca a movimentação ligada ao termo/fluxo
             movimentacao = get_object_or_404(
-                Movement, id=term_res.movimentacao_id)
-
+                Movement, pk=term_res.movimentacao.id)
+            print(f'DEBUG :: VIEW :: RECUSA TERMO :: {movimentacao}')
             if movimentacao:
                 if request.user != movimentacao.usuario:
                     messages.warning(
@@ -881,11 +914,13 @@ def recusa_termo(request, termo_id):
                     return redirect(url)
                 # Método abaixo já faz tudo que é preciso após o aceito \
                     # como mudança de status de ativos, termos e etc...
-                Termo.marcar_como_recusa(term_res)
-                register_logentry(instance=term_res.save(
-                ), action=CHANGE, user=request.user, modificacao='Recusou os Termos')
+                term_res.marcar_como_recusa(movimentacao)
+                messages.success(request, f'Termo recusado com sucesso!')
+                register_logentry(instance=term_res, action=CHANGE,
+                                  user=request.user, modificacao='Recusou os Termos')
     except Exception as e:
         print(f'ERROR :: VIEW :: RECUSA TERMO :: {e}')
+        traceback.print_exc()
 
     return redirect(url)
 
@@ -957,8 +992,8 @@ def devolucao(request, termo_id):
             else:
                 instance.save()
 
-            for asset in movement_assets:
-                asset.marcar_como_devolvido()
+            for movement_asset in movement_assets:
+                movement_asset.marcar_como_devolvido()
 
             for movement_accessory_id, quantity in quantities.items():
                 moviment_accessory = MovementAccessory.objects.get(
@@ -1044,15 +1079,16 @@ def editar_acessorio(request, id):
     form = AccessoryForms(instance=acessorio)
     if acessorio:
         if request.method == 'POST':
-            form = AccessoryForms(request.POST, request.FILES, instance=acessorio)
-            
+            form = AccessoryForms(
+                request.POST, request.FILES, instance=acessorio)
+
             if form.is_valid():
                 register_logentry(instance=form.save(), action=CHANGE,
                                   user=request.user, modificacao='Editado Acessório')
                 messages.success(request, 'Acessório Salvo')
-                
+
                 return redirect('acessorios')
-            
+
     context = {
         'form': form,
         'id': id,
@@ -1060,6 +1096,7 @@ def editar_acessorio(request, id):
     }
 
     return render(request, 'apps/tech_assets/editar.html', context)
+
 
 @login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
@@ -1074,7 +1111,7 @@ def fabricantes(request):
         fabricantes = fabricantes.filter(
             Q(nome__icontains=query) |
             Q(telefone__icontains=query) |
-            Q(email__icontains=query) 
+            Q(email__icontains=query)
         )
 
     fabricantes_lista = fabricantes.order_by('id')
@@ -1100,15 +1137,16 @@ def editar_fabricante(request, id):
     form = ManufacturerForms(instance=fabricante)
     if fabricante:
         if request.method == 'POST':
-            form = ManufacturerForms(request.POST, request.FILES, instance=fabricante)
-            
+            form = ManufacturerForms(
+                request.POST, request.FILES, instance=fabricante)
+
             if form.is_valid():
                 register_logentry(instance=form.save(), action=CHANGE,
                                   user=request.user, modificacao='Editado Registro do Fabricante')
                 messages.success(request, 'Fabricante Salvo')
-                
+
                 return redirect('fabricantes')
-            
+
     context = {
         'form': form,
         'id': id,
@@ -1116,6 +1154,7 @@ def editar_fabricante(request, id):
     }
 
     return render(request, 'apps/tech_assets/editar.html', context)
+
 
 @login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
@@ -1158,14 +1197,14 @@ def editar_centro_custo(request, id):
     if cc:
         if request.method == 'POST':
             form = AccessoryForms(request.POST, request.FILES, instance=cc)
-            
+
             if form.is_valid():
                 register_logentry(instance=form.save(), action=CHANGE,
                                   user=request.user, modificacao='Editado Registro de Centro de Custo')
                 messages.success(request, 'Centro de Custo Salvo')
-                
+
                 return redirect('centros_custo')
-            
+
     context = {
         'form': form,
         'id': id,
@@ -1173,6 +1212,7 @@ def editar_centro_custo(request, id):
     }
 
     return render(request, 'apps/tech_assets/editar.html', context)
+
 
 @login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
@@ -1187,7 +1227,7 @@ def locais(request):
         objetos = objetos.filter(
             Q(nome__icontains=query) |
             Q(telefone__icontains=query) |
-            Q(email__icontains=query) 
+            Q(email__icontains=query)
         )
 
     objetos_lista = objetos.order_by('id')
@@ -1214,14 +1254,14 @@ def editar_local(request, id):
     if objeto:
         if request.method == 'POST':
             form = LocationForms(request.POST, request.FILES, instance=objeto)
-            
+
             if form.is_valid():
                 register_logentry(instance=form.save(), action=CHANGE,
                                   user=request.user, modificacao='Editado Registro de Local')
                 messages.success(request, 'Fabricante Salvo')
-                
+
                 return redirect('fabricantes')
-            
+
     context = {
         'form': form,
         'id': id,
@@ -1271,15 +1311,16 @@ def editar_modelo(request, id):
     form = AssetModelForms(instance=objeto)
     if objeto:
         if request.method == 'POST':
-            form = AssetModelForms(request.POST, request.FILES, instance=objeto)
-            
+            form = AssetModelForms(
+                request.POST, request.FILES, instance=objeto)
+
             if form.is_valid():
                 register_logentry(instance=form.save(), action=CHANGE,
                                   user=request.user, modificacao='Editado Registro de Modelo de Ativo')
                 messages.success(request, 'Modelo de Ativo Salvo')
-                
+
                 return redirect('modelos_ativo')
-            
+
     context = {
         'form': form,
         'id': id,
@@ -1330,14 +1371,14 @@ def editar_tipo_ativo(request, id):
     if objeto:
         if request.method == 'POST':
             form = AssetTypeForms(request.POST, request.FILES, instance=objeto)
-            
+
             if form.is_valid():
                 register_logentry(instance=form.save(), action=CHANGE,
                                   user=request.user, modificacao='Editado Registro de Tipo de Ativo')
                 messages.success(request, 'Tipo de Ativo Salvo')
-                
+
                 return redirect('tipos_ativo')
-            
+
     context = {
         'form': form,
         'id': id,

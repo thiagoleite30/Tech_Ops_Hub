@@ -16,6 +16,7 @@
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'index' %}">Home <span class="sr-only">(current)</span></a>
                 </li>
+                {% if is_suporte_user or is_administradores_user %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -34,6 +35,8 @@
                         <a class="dropdown-item" href="{% url 'cadastro_tipo_ativo' %}">Novo Tipo de Ativo</a>
                     </div>
                 </li>
+                {%endif%}
+                {% if is_suporte_user or is_administradores_user or is_aprovadores_ti_user %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -55,6 +58,15 @@
                         <a class="dropdown-item" href="{% url 'tipos_ativo' %}">Tipos de Ativo</a>
                     </div>
                 </li>
+                {%endif%}
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Meus Empréstimos</a>
+                </li>
+                {% if is_mvgpos_user or is_suporte_user or is_administradores_user %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'move_gpos' %}">Move GPOS</a>
+                </li>
+                {%endif%}
             </ul>
             {% include 'partials/_alerts.html' %}
             <div style="padding: 0.3rem; container-type: inline;">
@@ -70,11 +82,12 @@
                     </a>
                     {% endif %}
                     {% endif %}
+                    {% if is_suporte_user or is_administradores_user %}
                     {% if cart_item_count > 0 %}
                     <a class="nav-link" href="{% url 'carrinho' %}"
                         style="margin-bottom: 0; margin-right: 20px; display: flex; align-items: baseline;">
                         <div class="cart-icon-container">
-                            <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 30px; color: grey;"></i>
+                            <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 25px; color: grey;"></i>
                             <span class="cart-count">{{cart_item_count}}</span>
                         </div>
                     </a>
@@ -83,11 +96,12 @@
                         style="margin-bottom: 0; margin-right: 20px; display: flex; align-items: baseline;">
                         <div class="cart-icon-container disabled">
                             <i class="fa fa-shopping-cart"
-                                style="margin-left: 8px; font-size: 30px; color: rgb(82, 82, 82);"></i>
-                            <span class="cart-count">0</span>
+                                style="margin-left: 8px; font-size: 25px; color: rgb(82, 82, 82);"></i>
+                            <!--<span class="cart-count">0</span>-->
                         </div>
                     </a>
                     {% endif %}
+                    
                     <input class="form-control" type="text" name="q" id="filterInput" value="{{ query }}"
                         placeholder="Pesquisar...">
                     <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit"><svg
@@ -96,11 +110,12 @@
                             <path
                                 d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
                         </svg></button>
+                        {% endif %}
                 </form>
             </div>
-            <div class="dropdown">
+            <div id="id_profile_dropdown" class="dropstart" style="padding-right: 10pt;">
                 <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
-                    data-bs-toggle="dropdown" aria-expanded="false">
+                    data-bs-toggle="dropdown" data-bs-auto-close="false" aria-expanded="false">
                     {% if request.user.is_authenticated %}
                     <img alt="" width="32" height="32" class="rounded-circle me-2"
                         src="data:image/jpeg;base64,{{ profile_photo }}" />
@@ -127,3 +142,24 @@
         </div>
     </nav>
 </header>
+
+<script>
+
+function toggleDropdownClass() {
+    var navbarToggler = document.querySelector('.navbar-toggler');
+    var profileDropdown = document.getElementById('id_profile_dropdown');
+
+    if (navbarToggler && profileDropdown) {
+        if (window.getComputedStyle(navbarToggler).display !== 'none') {
+            profileDropdown.classList.remove('dropstart');
+            profileDropdown.classList.add('dropdown');
+        } else {
+            profileDropdown.classList.remove('dropdown');
+            profileDropdown.classList.add('dropstart');
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', toggleDropdownClass);
+window.addEventListener('resize', toggleDropdownClass);
+</script>
