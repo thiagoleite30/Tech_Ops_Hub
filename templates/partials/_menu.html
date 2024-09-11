@@ -40,19 +40,19 @@
                     </div>
                 </li>
                 {%endif%}
-                {% if 'Suporte' in user_groups or 'Administradores' in user_groups or 'Aprovadores TI' in user_groups %}
+                
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Ver
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        {% if 'Suporte' in user_groups or 'Administradores' in user_groups or 'Aprovadores TI' in user_groups %}
                         <a class="dropdown-item" href="{% url 'ativos' %}">Ativos</a>
                         <div class="dropdown-divider"></div>
                         {% if not 'Aprovadores TI' in user_groups or not aprovacoes_pendentes %}
                         <a class="dropdown-item" href="{% url 'aprovacoes' %}">Aprovações</a>
                         {% endif %}
-                        <a class="dropdown-item" href="{% url 'termos' %}">Termos</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="{% url 'acessorios' %}">Acessórios</a>
                         <a class="dropdown-item" href="{% url 'centros_custo' %}">Centros de Custo</a>
@@ -60,17 +60,19 @@
                         <a class="dropdown-item" href="{% url 'locais' %}">Locais</a>
                         <a class="dropdown-item" href="{% url 'modelos_ativo' %}">Modelos de Ativo</a>
                         <a class="dropdown-item" href="{% url 'tipos_ativo' %}">Tipos de Ativo</a>
+                        <div class="dropdown-divider"></div>
+                        {%endif%}
+                        {% if 'Suporte' in user_groups or 'Administradores' in user_groups or 'Aprovadores TI' in user_groups or 'TH' in user_groups %}
+                        <a class="dropdown-item" href="{% url 'termos' %}">Termos</a>
+                        <div class="dropdown-divider"></div>
+                        {%endif%}
+                        <a class="dropdown-item" href="{% url 'minhas_movimentacoes' %}">Minhas Movimentações</a>
                     </div>
                 </li>
-                {%endif%}
+                
                 {% if 'Move GPOS' in user_groups or 'Suporte' in user_groups or 'Administradores' in user_groups %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'move_gpos' %}">Move GPOS</a>
-                </li>
-                {%endif%}
-                {% if 'Basico' in user_groups %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'minhas_movimentacoes' %}">Meus Termos</a>
                 </li>
                 {%endif%}
             </ul>
@@ -78,8 +80,7 @@
             <div style="padding: 0.3rem; container-type: inline;">
                 <form class="form-inline my-2 my-lg-0">
 
-                    {% if 'Aprovadores TI' in user_groups %}
-                    {% if aprovacoes_pendentes %}
+                    {% if aprovacoes_pendentes and 'Aprovadores TI' in user_groups %}
                     <!-- Ícone de alerta -->
                     <a class="nav-link" href="{% url 'aprovacoes' %}"
                         style="margin-bottom: 0; display: flex; align-items: baseline;">
@@ -88,7 +89,7 @@
                         <span class="icon-alert" style="margin-left: 8px;">&#9888;</span>
                     </a>
                     {% endif %}
-                    {% endif %}
+
                     
                     {% if 'Suporte' in user_groups or 'Administradores' in user_groups %}
                     {% if cart_item_count > 0 %}
@@ -109,7 +110,8 @@
                         </div>
                     </a>
                     {% endif %}
-                    
+                    {% endif %}
+                    {% if 'Suporte' in user_groups or 'Administradores' in user_groups or 'TH' in user_groups %}
                     <input class="form-control" type="text" name="q" id="filterInput" value="{{ query }}"
                         placeholder="Pesquisar...">
                     <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit"><svg
@@ -118,7 +120,7 @@
                             <path
                                 d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
                         </svg></button>
-                        {% endif %}
+                    {% endif %}
                 </form>
             </div>
             <div id="id_profile_dropdown" class="dropstart" style="padding-right: 10pt;">

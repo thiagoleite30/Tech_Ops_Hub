@@ -1,4 +1,4 @@
-{% extends 'shared/base.html' %} {% load static %} {% block content %}
+{% extends 'shared/base.html' %} {% load static %} {% block content %} {% load template_tags %}
 <main role="main" class="container-fluid">
     <div class="container-fluid" style="padding-top: 20px;">
         <div class="starter-template" style="justify-content: center; align-items: center;">
@@ -7,19 +7,19 @@
         <div class="row">
             <div class="container-fluid" style="justify-content: center; display: flex; margin: 10px;">
                 <p class="d-inline-flex gap-1">
-                    <button id="btn-aprovado" type="button" class="btn"
+                    <button id="btn-aprovado" type="button" class="btn btn-outline-success"
                         onclick="toggleFilter('aprovado', this)">Aprovadas</button>
-                    <button id="btn-reprovado" type="button" class="btn"
+                    <button id="btn-reprovado" type="button" class="btn btn-outline-danger"
                         onclick="toggleFilter('reprovado', this)">Reprovadas</button>
-                    <button id="btn-pendente" type="button" class="btn"
+                    <button id="btn-pendente" type="button" class="btn btn-outline-primary"
                         onclick="toggleFilter('pendente', this)">Pendentes</button>
                 </p>
             </div>
             {% for approval in page_obj %}
             <div class="col-sm-3" style="padding-bottom: 10px;">
-                <div class="card h-100">
+                <div class="card {{ approval.status_aprovacao|checa_resposta_aprovacoes }} h-100">
                     <div class="card-body text-center">
-                        <h5 class="card-title"><a href="{% url 'aprovacao' approval.id %}">Aprovação Número:
+                        <h5 class="card-title"><a class="text-white" href="{% url 'aprovacao' approval.id %}">Aprovação Número:
                                 {{approval.id}}</a></h5>
                     </div>
                     <ul class="list-group list-group-flush">
@@ -34,6 +34,7 @@
                         <li class="list-group-item"><b>Aprovador designado: </b>{{approval.aprovador}}</li>
                         <li class="list-group-item"><b>Status: </b>{{approval.get_status_aprovacao_display}}</li>
                     </ul>
+                    <!--
                     <div class="card-body">
                         {% if approval.status_aprovacao == 'pendente' %}
                         <div class="end-template container-fluid"
@@ -52,6 +53,7 @@
                         </div>
                         {%endif%}
                     </div>
+                    -->
                 </div>
             </div>
             {% endfor %}

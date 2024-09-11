@@ -1,4 +1,4 @@
-{% load static %}
+{% load static %} {% load template_tags %}
 <div class="tab-pane fade" id="movement" role="tabpanel" aria-labelledby="movement-tab">
     <div class="card-body">
         <h5 class="card-title">{{movement.get_tipo_display}} ID {{movement.id}}</h5>
@@ -6,6 +6,7 @@
     <ul class="list-group list-group-flush">
         <li class="list-group-item"><b>Nome do Responsável:</b> {{movement.usuario.first_name}}
             {{movement.usuario.last_name}} ({{movement.usuario}})</li>
+            <li class="list-group-item"><b>Matricula Responsável: </b>{{ movement.usuario.profile.employee_id|pegar_matricula_empId }}</li>
         <li class="list-group-item"><b>Unidade Recebedora:</b>
             {{movement.centro_de_custo_recebedor.nome}}
             ({{movement.centro_de_custo_recebedor}})</li>

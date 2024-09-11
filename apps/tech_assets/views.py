@@ -2,6 +2,7 @@ import traceback
 from django.forms import modelformset_factory
 from django.http import JsonResponse
 from django.shortcuts import render
+from apps.tech_assets.context_processors_add import get_profile_info
 from apps.tech_assets.models import Accessory, Approval, Asset, \
     AssetCart, AssetInfo, AssetModel, AssetType, Cart, CostCenter, \
     Location, Manufacturer, Movement, MovementAccessory, MovementAsset, \
@@ -21,6 +22,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q, Case, When, Value, IntegerField
 from django.core.paginator import Paginator
+from apps.tech_persons.models import Profile
 from utils.decorators import group_required
 from django.contrib import messages
 
@@ -44,14 +46,17 @@ def index(request):
     user = request.user
     if not user.is_authenticated:
         return redirect('login')
-    
-    user_instance = User.objects.get(username=user)
-    
+
+    # info_perfil = get_profile_info(request)
+    perfil, create = Profile.objects.get_or_create(user=request.user)
+    perfil.employee_id = request.session['employeeId']
+
+    perfil.save()
+
     grupos = ['Move GPOS']
     if user.groups.filter(name__in=grupos).exists():
         return redirect('move_gpos')
-    
-    
+
     return render(request, 'apps/tech_assets/index.html')
 
 
@@ -387,7 +392,8 @@ def ativo(request, asset_id):
 
     asset = get_object_or_404(Asset, pk=asset_id)
     asset_infos = AssetInfo.objects.get(ativo=asset)
-    maintenances = Maintenance.objects.filter(ativo_id=asset_id).select_related('ativo')
+    maintenances = Maintenance.objects.filter(
+        ativo_id=asset_id).select_related('ativo')
 
     if maintenances:
         for maintenance in maintenances:
@@ -561,8 +567,13 @@ def aprovacoes(request):
             # Query pode ser alterada dependendo de como queremos consultar
             if query:
                 aprovacoes = aprovacoes.filter(
-                    # Q(aprovador__icontains=query) |
-                    Q(status_aprovacao__icontains=query)
+                    Q(aprovador__icontains=query) |
+                    Q(status_aprovacao__icontains=query) |
+                    Q(movimentacao__id__icontains=query) |
+                    Q(movimentacao__tipo__icontains=query) |
+                    Q(movimentacao__usuario__username__icontains=query) |
+                    Q(movimentacao__usuario__first_name__icontains=query) |
+                    Q(movimentacao__usuario__last_name__icontains=query)
                 )
 
             status_query = Q()
@@ -574,9 +585,7 @@ def aprovacoes(request):
                     status_query |= Q(status_aprovacao='reprovado')
                 if 'pendente' in status_aprovacao:
                     status_query |= Q(status_aprovacao='pendente')
-
-            aprovacoes = aprovacoes.filter(status_query)
-
+            
             # Ordenar por status_aprovacao com 'pendente' primeiro
             aprovacoes = aprovacoes.order_by(
                 Case(
@@ -586,7 +595,7 @@ def aprovacoes(request):
                 ),
                 'status_aprovacao'
             )
-
+            
             paginator = Paginator(aprovacoes, 16)
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
@@ -746,13 +755,12 @@ def reprova_movimentacao(request, aprovacao_id):
 def termos(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    
+
     user_instance = get_object_or_404(User, username=request.user)
     # Se houver usuario
     if user_instance:
         try:
             query = request.GET.get('q', '')
-
             termos = Termo.objects.select_related(
                 'movimentacao', 'aprovacao').all()
             status_termos = request.GET.getlist('status')
@@ -762,8 +770,9 @@ def termos(request):
                 termos = termos.filter(
                     Q(movimentacao__id__icontains=query) |
                     Q(movimentacao__tipo__icontains=query) |
-                    Q(movimentacao__usuario__username__icontains=user_instance) |
-                    Q(movimentacao__usuario__first_name__icontains=user_instance)
+                    Q(movimentacao__usuario__username__icontains=query) |
+                    Q(movimentacao__usuario__first_name__icontains=query) |
+                    Q(movimentacao__usuario__last_name__icontains=query)
                 )
 
             status_query = Q()
@@ -799,6 +808,7 @@ def termos(request):
             return render(request, 'apps/tech_assets/termos.html', context)
         except Exception as e:
             print(f'ERROR :: TERMOS :: {e}')
+            traceback.print_exc()
 
     return redirect('index')
 
@@ -816,14 +826,16 @@ def termo(request, termo_id):
 
     if aprovacao:
         ativos_na_movimentacao = list(Asset.objects.filter(
-            id__in=MovementAsset.objects.filter(movimento=aprovacao.movimentacao).values_list('ativo_id', flat=True)
+            id__in=MovementAsset.objects.filter(
+                movimento=aprovacao.movimentacao).values_list('ativo_id', flat=True)
         ))
         # Caso não haja nenhum ativo atrelado a aprovação então ficará como uma lista vazia
         # Pode ocorrer em casos de movimentações somente de itens classificados como acessórios
         if not ativos_na_movimentacao:
             ativos_na_movimentacao = []
-            
-    movements_accessory = list(MovementAccessory.objects.filter(movimento=aprovacao.movimentacao).select_related('acessorio'))
+
+    movements_accessory = list(MovementAccessory.objects.filter(
+        movimento=aprovacao.movimentacao).select_related('acessorio'))
     if movements_accessory:
         acessorios_com_quantidade = [
             (movement_acessorio.acessorio, movement_acessorio.quantidade)
@@ -831,8 +843,14 @@ def termo(request, termo_id):
         ]
     else:
         acessorios_com_quantidade = []
-    
+
     if request.method == 'POST':
+        if term_res.movimentacao.usuario != request.user:
+            messages.warning(
+                request, 'Você não é o usuário responsável por este termo.')
+            url = reverse('termo', args=[termo_id])
+            return redirect(url)
+
         form = TermoForms(request.POST, request.FILES, instance=term_res)
         if form.is_valid():
             term_res.justificativa = form.cleaned_data.get('justificativa')
@@ -876,7 +894,7 @@ def aceita_termo(request, termo_id):
             if movimentacao:
                 if request.user != movimentacao.usuario:
                     messages.warning(
-                        request, 'Você não é o usuário referido neste termo.')
+                        request, 'Você não é o usuário responsável por este termo.')
                     return redirect(url)
                 # Método abaixo já faz tudo que é preciso após o aceito \
                     # como mudança de status de ativos, termos e etc...
@@ -1390,11 +1408,11 @@ def editar_tipo_ativo(request, id):
 
 
 @login_required
-#@group_required(['Basico'], redirect_url='zona_restrita')
+# @group_required(['Basico'], redirect_url='zona_restrita')
 def minhas_movimentacoes(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    
+
     user_instance = get_object_or_404(User, username=request.user)
     # Se houver usuario
     if user_instance:
@@ -1410,8 +1428,9 @@ def minhas_movimentacoes(request):
                 termos = termos.filter(
                     Q(movimentacao__id__icontains=query) |
                     Q(movimentacao__tipo__icontains=query) |
-                    Q(movimentacao__usuario__username__icontains=user_instance) |
-                    Q(movimentacao__usuario__first_name__icontains=user_instance)
+                    Q(movimentacao__usuario__username__icontains=query) |
+                    Q(movimentacao__usuario__first_name__icontains=query) |
+                    Q(movimentacao__usuario__last_name__icontains=query)
                 )
 
             status_query = Q()
