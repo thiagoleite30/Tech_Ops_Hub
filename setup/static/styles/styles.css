@@ -227,10 +227,15 @@ td:nth-last-child(2) {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Efeito de profundidade ao passar o mouse */
 }
 
-.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
-  margin-top: 0;
-  margin-bottom: .5rem;
-  font-weight: 500;
-  line-height: 1.2;
-  color: #6c757d;
+
+.logo_menu {
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* horizontal offset, vertical offset, blur radius, spread radius, color */
+  padding: 16px;
+  margin: 8px;
+  transition: box-shadow 0.3s ease; /* Suaviza o efeito de profundidade ao interagir */
+}
+
+.logo_menu:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Efeito de profundidade ao passar o mouse */
 }

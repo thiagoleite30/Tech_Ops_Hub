@@ -713,7 +713,7 @@ def aprova_movimentacao(request, aprovacao_id):
                 return redirect(url)
             if request.user != aprovacao.aprovador:
                 messages.warning(
-                    request, '''Você não é o aprovador designado para esta aprovação.''')
+                    request, '''Você não é o aprovador designado para esta movimentação.''')
                 return redirect(url)
 
             Approval.aprovar_movimentacao(aprovacao)
@@ -739,7 +739,7 @@ def reprova_movimentacao(request, aprovacao_id):
                 return redirect(url)
             if request.user != aprovacao.aprovador:
                 messages.warning(
-                    request, '''Você não é o aprovador designado para esta aprovação.''')
+                    request, '''Você não é o aprovador designado para esta movimentação.''')
                 return redirect(url)
 
             Approval.reprovar_movimentacao(aprovacao)

@@ -5,10 +5,10 @@
 
 <header>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-lg">
-        <div
-            style="border-style: double; border-color: rgb(0, 0, 0); padding: 2px; margin-left: 0; margin-right: 15px;">
+        <div class="logo_menu"
+            style="padding: 2px; margin-left: 0; margin-right: 15px;">
             <img src="{% static 'assets/marcaDaguaAviva.png' %}" style="width: 60px;" />
-            <a class="navbar-brand" href="#">Tech Ops Hub</a>
+            <a class="navbar-brand">Tech Ops Hub</a>
         </div>
 
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -52,8 +52,9 @@
                         <div class="dropdown-divider"></div>
                         {% if not 'Aprovadores TI' in user_groups or not aprovacoes_pendentes %}
                         <a class="dropdown-item" href="{% url 'aprovacoes' %}">Aprovações</a>
-                        {% endif %}
                         <div class="dropdown-divider"></div>
+                        {% endif %}
+                        
                         <a class="dropdown-item" href="{% url 'acessorios' %}">Acessórios</a>
                         <a class="dropdown-item" href="{% url 'centros_custo' %}">Centros de Custo</a>
                         <a class="dropdown-item" href="{% url 'fabricantes' %}">Fabricantes</a>
@@ -126,7 +127,7 @@
             <div id="id_profile_dropdown" class="dropstart" style="padding-right: 10pt;">
                 <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
                     data-bs-toggle="dropdown" data-bs-auto-close="false" aria-expanded="false">
-                    {% if request.user.is_authenticated %}
+                    {% if request.user.is_authenticated and profile_photo != None %}
                     <img alt="" width="32" height="32" class="rounded-circle me-2"
                         src="data:image/jpeg;base64,{{ profile_photo }}" />
 
