@@ -20,9 +20,13 @@ def get_url_logout(request):
 
 
 def verifica_aprovacoes_pendentes(request):
-    aprovacoes_pendentes = Approval.objects.filter(
-        status_aprovacao='pendente').exists()
+    aprovacoes_pendentes = Approval.objects.filter(movimentacao__usuario=request.user).exists()
     return {'aprovacoes_pendentes': aprovacoes_pendentes}
+
+def verifica_movimentacoes(request):
+    minhas_movimentacoes = Approval.objects.filter(
+        status_aprovacao='pendente').exists()
+    return {'minhas_movimentacoes': minhas_movimentacoes}
 
 
 def get_profile_info(request):
