@@ -10,7 +10,7 @@ from apps.tech_assets.views import zona_restrita, index, login, cadastro_fabrica
     get_assets_return_options, acessorios, editar_acessorio, \
     fabricantes, editar_fabricante, centros_custo, editar_centro_custo, \
     locais, editar_local, modelos_ativo, editar_modelo, tipos_ativo, \
-    editar_tipo_ativo
+    editar_tipo_ativo, minhas_movimentacoes
 
 
 # Lista de endpoints:
@@ -73,5 +73,6 @@ urlpatterns = [
     path('get_accessory_options/', get_accessory_options,
          name='get_accessory_options'),
     path('get_assets_return_options/', get_assets_return_options,
-         name='get_assets_return_options')
+         name='get_assets_return_options'),
+    path('minhas_movimentacoes/', minhas_movimentacoes, name='minhas_movimentacoes'),
 ]

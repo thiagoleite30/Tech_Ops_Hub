@@ -41,7 +41,7 @@
         <a href="#" class="btn btn-danger btn-lg disabled">Recusar</a>
         -->
         {% if not ReturnTerm and not term.aceite_usuario == 'recusado'  %}
-        {% if is_aprovadores_ti_user and movement.tipo == 'emprestimo' %}
+        {% if 'TH' in user_groups or 'Suporte' in user_groups or 'Administradores' in user_groups and movement.tipo == 'emprestimo' %}
         <a href="{% url 'devolucao' term.id %}" class="btn btn-outline-secondary" style="width: 30%;">Iniciar
             Devolução</a>
         {%endif%}

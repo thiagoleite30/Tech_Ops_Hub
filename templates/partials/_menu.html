@@ -1,4 +1,8 @@
 {% load static %}
+{% load template_tags %}
+
+
+
 <header>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-lg">
         <div
@@ -16,7 +20,7 @@
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'index' %}">Home <span class="sr-only">(current)</span></a>
                 </li>
-                {% if is_suporte_user or is_administradores_user %}
+                {% if 'Suporte' in user_groups or 'Administradores' in user_groups %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -36,7 +40,7 @@
                     </div>
                 </li>
                 {%endif%}
-                {% if is_suporte_user or is_administradores_user or is_aprovadores_ti_user %}
+                {% if 'Suporte' in user_groups or 'Administradores' in user_groups or 'Aprovadores TI' in user_groups %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -45,7 +49,7 @@
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{% url 'ativos' %}">Ativos</a>
                         <div class="dropdown-divider"></div>
-                        {% if not is_aprovadores_ti_user or not aprovacoes_pendentes %}
+                        {% if not 'Aprovadores TI' in user_groups or not aprovacoes_pendentes %}
                         <a class="dropdown-item" href="{% url 'aprovacoes' %}">Aprovações</a>
                         {% endif %}
                         <a class="dropdown-item" href="{% url 'termos' %}">Termos</a>
@@ -59,19 +63,22 @@
                     </div>
                 </li>
                 {%endif%}
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Meus Empréstimos</a>
-                </li>
-                {% if is_mvgpos_user or is_suporte_user or is_administradores_user %}
+                {% if 'Move GPOS' in user_groups or 'Suporte' in user_groups or 'Administradores' in user_groups %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'move_gpos' %}">Move GPOS</a>
+                </li>
+                {%endif%}
+                {% if 'Basico' in user_groups %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'minhas_movimentacoes' %}">Meus Termos</a>
                 </li>
                 {%endif%}
             </ul>
             {% include 'partials/_alerts.html' %}
             <div style="padding: 0.3rem; container-type: inline;">
                 <form class="form-inline my-2 my-lg-0">
-                    {% if is_aprovadores_ti_user %}
+
+                    {% if 'Aprovadores TI' in user_groups %}
                     {% if aprovacoes_pendentes %}
                     <!-- Ícone de alerta -->
                     <a class="nav-link" href="{% url 'aprovacoes' %}"
@@ -82,7 +89,8 @@
                     </a>
                     {% endif %}
                     {% endif %}
-                    {% if is_suporte_user or is_administradores_user %}
+                    
+                    {% if 'Suporte' in user_groups or 'Administradores' in user_groups %}
                     {% if cart_item_count > 0 %}
                     <a class="nav-link" href="{% url 'carrinho' %}"
                         style="margin-bottom: 0; margin-right: 20px; display: flex; align-items: baseline;">

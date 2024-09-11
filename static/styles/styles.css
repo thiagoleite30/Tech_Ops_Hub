@@ -1,0 +1,235 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+
+
+main {
+  flex: 1;
+}
+
+footer {
+  background-color: #04244f;
+  width: 100%;
+  padding: 1rem 0;
+  box-sizing: border-box;
+  color: #ffffff;
+  position: relative;
+  bottom: 0;
+}
+
+.form-group-new {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+@keyframes blink {
+  0%, 50%, 100% {
+      opacity: 1;
+  }
+  25%, 75% {
+      opacity: 0;
+  }
+}
+
+.icon-alert {
+  font-size: 28px;
+  color: red;
+  margin-bottom: 8px; /* Espaçamento entre o ícone e o link */
+  animation: blink 1s infinite;
+}
+
+
+@media (max-width: 768px) {
+  .table .less-important-column {
+    display: none;
+  }
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 800px; /* Ajuste este valor conforme necessário */
+}
+
+@media (max-width: 992px) {
+  .table {
+      width: auto;
+  }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  word-wrap: break-word;
+  overflow: hidden;
+}
+
+td {
+  max-width: 200px;
+}
+
+.scrollable-text {
+  max-height: 50px; /* Define a altura máxima da célula */
+  overflow-y: auto; /* Habilita a rolagem vertical */
+  padding-right: 10px; /* Espaçamento à direita para a barra de rolagem */
+}
+
+/* Estilo para as colunas fixas */
+th:nth-last-child(-n+2),
+td:nth-last-child(-n+2) {
+  position: sticky;
+  background: #fff; /* Cor de fundo para o cabeçalho fixo */
+  z-index: 1; /* Para garantir que as colunas fixas estejam acima das outras */
+}
+
+th:nth-last-child(1),
+td:nth-last-child(1) {
+  right: 0; /* Alinha à direita */
+}
+
+th:nth-last-child(2),
+td:nth-last-child(2) {
+  right: 100px; /* Ajuste conforme necessário para a largura da coluna */
+}
+
+.cart-icon-container {
+  position: relative;
+  display: inline-block;
+}
+
+.cart-count {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.cart-add {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: green;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.cart-remove {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.cart-block {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: grey;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.profile-image {
+  width: 60px; /* Defina o tamanho desejado */
+  height: 60; /* Defina o tamanho desejado */
+  border-radius: 50%; /* Transforma a imagem em um círculo */
+  object-fit: cover; /* Garante que a imagem cubra a área especificada */
+  object-position: center; /* Centraliza a imagem dentro do círculo */
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.step-links a {
+  margin: 0 5px;
+  text-decoration: none;
+  color: #007bff;
+}
+
+.step-links .current {
+  margin: 0 5px;
+  font-weight: bold;
+}
+
+.btn-circle-red {
+  width: 25px; /* Ajuste o tamanho conforme necessário */
+  height: 25px; /* Ajuste o tamanho conforme necessário */
+  background-color: red; /* Cor de fundo do botão */
+  border: none;
+  border-radius: 50%; /* Torna o botão circular */
+  color: white; /* Cor do texto */
+  font-size: 24px; /* Tamanho do texto */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15pt;
+  cursor: pointer;
+  outline: none; /* Remove o contorno ao focar */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adiciona uma sombra sutil */
+  transition: background-color 0.3s ease; /* Transição suave na cor do fundo */
+}
+
+.btn-circle-red:hover {
+  background-color: darkred; /* Cor do fundo quando o botão é hovered */
+}
+
+.btn-icon {
+  font-weight: bold;
+}
+
+.container_form_id {
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* horizontal offset, vertical offset, blur radius, spread radius, color */
+  padding: 16px;
+  margin: 16px;
+  transition: box-shadow 0.3s ease; /* Suaviza o efeito de profundidade ao interagir */
+}
+
+.container_form_id:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Efeito de profundidade ao passar o mouse */
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-weight: 300;
+  font-size: 1.25rem;
+  color: #6c757d;
+}

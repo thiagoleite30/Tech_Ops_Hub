@@ -47,6 +47,15 @@ def get_profile_info(request):
 # Controles permissivos
 
 
+def user_groups_processor(request):
+    if request.user.is_authenticated:
+        # Carrega todos os grupos de uma vez usando prefetch_related
+        groups = list(request.user.groups.values_list('name', flat=True))
+    else:
+        groups = []
+    
+    return {'user_groups': groups}
+
 def is_administradores_user(request):
     is_admin = False
     user = request.user

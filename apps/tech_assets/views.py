@@ -742,7 +742,7 @@ def reprova_movimentacao(request, aprovacao_id):
 
 
 @login_required
-@group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte', 'TH'], redirect_url='zona_restrita')
 def termos(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -752,6 +752,7 @@ def termos(request):
     if user_instance:
         try:
             query = request.GET.get('q', '')
+
             termos = Termo.objects.select_related(
                 'movimentacao', 'aprovacao').all()
             status_termos = request.GET.getlist('status')
@@ -1386,3 +1387,65 @@ def editar_tipo_ativo(request, id):
     }
 
     return render(request, 'apps/tech_assets/editar.html', context)
+
+
+@login_required
+#@group_required(['Basico'], redirect_url='zona_restrita')
+def minhas_movimentacoes(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    user_instance = get_object_or_404(User, username=request.user)
+    # Se houver usuario
+    if user_instance:
+        try:
+            query = request.GET.get('q', '')
+
+            termos = Termo.objects.select_related(
+                'movimentacao', 'aprovacao').filter(movimentacao__usuario=user_instance)
+            status_termos = request.GET.getlist('status')
+
+            # Query pode ser alterada dependendo de como queremos consultar
+            if query:
+                termos = termos.filter(
+                    Q(movimentacao__id__icontains=query) |
+                    Q(movimentacao__tipo__icontains=query) |
+                    Q(movimentacao__usuario__username__icontains=user_instance) |
+                    Q(movimentacao__usuario__first_name__icontains=user_instance)
+                )
+
+            status_query = Q()
+            if status_termos:
+
+                if 'aceito' in status_termos:
+                    status_query |= Q(aceite_usuario='aceito')
+                if 'recusado' in status_termos:
+                    status_query |= Q(aceite_usuario='recusado')
+                if 'pendente' in status_termos:
+                    status_query |= Q(aceite_usuario='pendente')
+
+            termos = termos.filter(status_query).order_by(
+                Case(
+                    When(aceite_usuario='pendente', then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField()
+                ),
+                'aceite_usuario'
+            )
+
+            paginator = Paginator(termos, 15)
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+
+            context = {
+                'termos': termos,
+                'url_form': resolve(request.path_info).url_name,
+                'page_obj': page_obj,
+                'query': query,
+            }
+
+            return render(request, 'apps/tech_assets/termos.html', context)
+        except Exception as e:
+            print(f'ERROR :: TERMOS :: {e}')
+
+    return redirect('index')
