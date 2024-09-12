@@ -126,7 +126,7 @@
             </div>
             <div id="id_profile_dropdown" class="dropstart" style="padding-right: 10pt;">
                 <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
-                    data-bs-toggle="dropdown" data-bs-auto-close="false" aria-expanded="false">
+                    data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
                     {% if request.user.is_authenticated and profile_photo != None %}
                     <img alt="" width="32" height="32" class="rounded-circle me-2"
                         src="data:image/jpeg;base64,{{ profile_photo }}" />
@@ -139,11 +139,12 @@
                     {% endif %}
 
                 </a>
-                <ul class="dropdown-menu dropdown-menu-light text-small shadow">
+                
+                <ul class="dropdown-menu dropdown-menu-light text-small shadow" data-bs-auto-close="true">
                     <!--
                     <li><a class="dropdown-item" href="#">New project...</a></li>
                     <li><a class="dropdown-item" href="#">Settings</a></li>-->
-                    <li><a class="dropdown-item" href="#">ID: {{ employeeId }}</a></li>
+                    <li><a class="dropdown-item" href="#">Matricula: {{ employeeId|pegar_matricula_empId }}</a></li>
                     <li>
                         <hr class="dropdown-divider">
                     </li>

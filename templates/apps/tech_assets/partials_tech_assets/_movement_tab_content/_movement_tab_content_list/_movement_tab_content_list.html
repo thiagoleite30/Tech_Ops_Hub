@@ -15,9 +15,13 @@
         <li class="list-group-item"><b>Unidade Cedente:</b> {{movement.centro_de_custo_cedente.nome}}
             ({{movement.centro_de_custo_cedente}})</li>
         <li class="list-group-item"><b>Data Inicio:</b> {{movement.data_movimento}}</li>
-        <li class="list-group-item"><b>Previsão de Término:</b> {{movement.data_devolucao_prevista}}
+        <li class="list-group-item"><b>Previsão de Término: </b>{% if movement.data_devolucao_prevista %}{{movement.data_devolucao_prevista}}{%else%}Não Informada{%endif%}
+        </li>
+        <li class="list-group-item"><b>Data de Conclusão: </b>{% if movement.data_devolucao_real %}{{movement.data_devolucao_real}}{%else%}-{%endif%}
         </li>
         <li class="list-group-item"><b>Chamado Interno:</b> {{movement.chamado_top_desk}}</li>
+        {% if movement.observacoes != None and movement.observacoes != '' %}
         <li class="list-group-item"><b>Observação:</b> {{movement.observacoes}}</li>
+        {%endif%}
     </ul>
 </div>

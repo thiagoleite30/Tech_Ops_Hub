@@ -1,15 +1,14 @@
 import traceback
-from django.forms import modelformset_factory
 from django.http import JsonResponse
 from django.shortcuts import render
-from apps.tech_assets.context_processors_add import get_profile_info
 from apps.tech_assets.models import Accessory, Approval, Asset, \
     AssetCart, AssetInfo, AssetModel, AssetType, Cart, CostCenter, \
     Location, Manufacturer, Movement, MovementAccessory, MovementAsset, \
     Maintenance, ReturnTerm, Termo
 from django.shortcuts import get_object_or_404, render, redirect
 
-from apps.tech_assets.services import register_logentry, upload_assets, concluir_manutencao_service, get_maintenance_asset
+from apps.tech_assets.services import register_logentry, upload_assets, \
+    concluir_manutencao_service
 from django.contrib.admin.models import ADDITION, CHANGE
 
 from apps.tech_assets.forms import AccessoryForms, ApprovalForms, \
@@ -20,13 +19,14 @@ from apps.tech_assets.forms import AccessoryForms, ApprovalForms, \
 from django.urls import resolve, reverse
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.db.models import Exists, OuterRef, Q, Case, When, Value, IntegerField
+from django.db.models import Exists, OuterRef, Q, Case, \
+    When, Value, IntegerField
 from django.core.paginator import Paginator
 from apps.tech_persons.models import Profile
 from utils.decorators import group_required
 from django.contrib import messages
 
-from django.views.decorators.cache import cache_page
+# from django.views.decorators.cache import cache_page
 
 # Create your views here.
 
@@ -585,7 +585,7 @@ def aprovacoes(request):
                     status_query |= Q(status_aprovacao='reprovado')
                 if 'pendente' in status_aprovacao:
                     status_query |= Q(status_aprovacao='pendente')
-            
+
             # Ordenar por status_aprovacao com 'pendente' primeiro
             aprovacoes = aprovacoes.order_by(
                 Case(
@@ -595,7 +595,7 @@ def aprovacoes(request):
                 ),
                 'status_aprovacao'
             )
-            
+
             paginator = Paginator(aprovacoes, 16)
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
@@ -772,7 +772,8 @@ def termos(request):
                     Q(movimentacao__tipo__icontains=query) |
                     Q(movimentacao__usuario__username__icontains=query) |
                     Q(movimentacao__usuario__first_name__icontains=query) |
-                    Q(movimentacao__usuario__last_name__icontains=query)
+                    Q(movimentacao__usuario__last_name__icontains=query) |
+                    Q(movimentacao__usuario__profile__employee_id__icontains=query)
                 )
 
             status_query = Q()

@@ -110,10 +110,10 @@ TEMPLATES = [
                 'apps.tech_assets.context_processors_add.get_profile_info',
                 'apps.tech_assets.context_processors_add.get_url_logout',
                 'apps.tech_assets.context_processors_add.user_groups_processor',
-                'apps.tech_assets.context_processors_add.is_administradores_user',
-                'apps.tech_assets.context_processors_add.is_aprovadores_ti_user',
-                'apps.tech_assets.context_processors_add.is_suporte_user',
-                'apps.tech_assets.context_processors_add.is_mvgpos_user',
+                #'apps.tech_assets.context_processors_add.is_administradores_user',
+                #'apps.tech_assets.context_processors_add.is_aprovadores_ti_user',
+                #'apps.tech_assets.context_processors_add.is_suporte_user',
+                #'apps.tech_assets.context_processors_add.is_mvgpos_user',
             ],
 
 

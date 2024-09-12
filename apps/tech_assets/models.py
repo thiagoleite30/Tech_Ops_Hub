@@ -181,7 +181,7 @@ class Movement(models.Model):
         User, on_delete=models.CASCADE, related_name='user_recept')
     centro_de_custo_recebedor = models.ForeignKey(
         CostCenter, on_delete=models.CASCADE, related_name='cc_recept')
-    data_movimento = models.DateTimeField(default=timezone.now)
+    data_movimento = models.DateTimeField(auto_now_add=False)
     data_devolucao_prevista = models.DateTimeField(null=True, blank=True)
     data_devolucao_real = models.DateTimeField(null=True, blank=True)
     status = models.CharField(

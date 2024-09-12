@@ -20,8 +20,10 @@ def get_url_logout(request):
 
 
 def verifica_aprovacoes_pendentes(request):
-    aprovacoes_pendentes = Approval.objects.filter(movimentacao__usuario=request.user).exists()
-    return {'aprovacoes_pendentes': aprovacoes_pendentes}
+    if request.user.is_authenticated:
+        aprovacoes_pendentes = Approval.objects.filter(movimentacao__usuario=request.user).exists()
+        return {'aprovacoes_pendentes': aprovacoes_pendentes}
+    return {'aprovacoes_pendentes': False}
 
 def verifica_movimentacoes(request):
     minhas_movimentacoes = Approval.objects.filter(
@@ -60,6 +62,7 @@ def user_groups_processor(request):
     
     return {'user_groups': groups}
 
+"""
 def is_administradores_user(request):
     is_admin = False
     user = request.user
@@ -91,3 +94,4 @@ def is_mvgpos_user(request):
         is_mvgpos_user = user.groups.filter(
             name='Move GPOS').exists()
     return {'is_mvgpos_user': is_mvgpos_user}
+"""
