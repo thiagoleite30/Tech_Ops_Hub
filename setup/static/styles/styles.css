@@ -230,12 +230,12 @@ td:nth-last-child(2) {
 
 .logo_menu {
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* horizontal offset, vertical offset, blur radius, spread radius, color */
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2); /* horizontal offset, vertical offset, blur radius, spread radius, color */
   padding: 16px;
   margin: 4px;
   transition: box-shadow 0.3s ease; /* Suaviza o efeito de profundidade ao interagir */
 }
 
 .logo_menu:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Efeito de profundidade ao passar o mouse */
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.4); /* Efeito de profundidade ao passar o mouse */
 }
