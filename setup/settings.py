@@ -30,7 +30,7 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = ['10.94.1.49', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['10.94.1.49', 'localhost', '127.0.0.1', 'techopshub-test.aviva.com.br']
 
 # Definindo o caminho/registro da aplicação
 # Por ser desenvolvimento então
