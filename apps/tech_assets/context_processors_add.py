@@ -14,6 +14,8 @@ def cart_item_count(request):
 
     return {'cart_item_count': count}
 
+def get_url_login_ms(request):
+    return {'URL_POS_CLICK_MS_LOGO': settings.URL_POS_CLICK_MS_LOGO}
 
 def get_url_logout(request):
     return {'URL_LOGOUT': settings.LOGOUT_REDIRECT_URL}

@@ -1,5 +1,7 @@
 from django import template
 
+from setup import settings
+
 register = template.Library()
 
 @register.filter
