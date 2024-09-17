@@ -102,7 +102,8 @@ def requisicao_troca(request):
                 response = dispara_fluxo(request, json)
                 instance.chamado = response[1] if response else None
                 instance.usuario = request.user
-                instance.save()
+                if response:
+                    instance.save()
 
                 return redirect('move_gpos')
 
