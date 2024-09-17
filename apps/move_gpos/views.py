@@ -109,8 +109,9 @@ def requisicao_troca(request):
 
             else:
                 for field, errors in form.errors.items():
+                    print(form)
                     for error in errors:
-                        # messages.warning(request, message=error)
+                        messages.warning(request, message=error)
                         pass
 
     context = {

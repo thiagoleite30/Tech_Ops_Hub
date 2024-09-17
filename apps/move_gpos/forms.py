@@ -13,7 +13,7 @@ class RequestForms(forms.ModelForm):
 
     class Meta:
         model = Request
-        exclude = ['chamado', 'concluida', 'usuario']
+        exclude = ['chamado', 'concluida', 'usuario', 'data_conclusao', 'existe_novo_pdv']
         labels = {
             'gpos': 'GPOS',
             'pdv_atual': 'PDV Atual',
