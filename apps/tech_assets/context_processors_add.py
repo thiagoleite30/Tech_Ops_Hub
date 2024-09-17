@@ -21,16 +21,18 @@ def get_url_logout(request):
     return {'URL_LOGOUT': settings.LOGOUT_REDIRECT_URL}
 
 
-def verifica_aprovacoes_pendentes(request):
+def verifica_movimentacoes(request):
     if request.user.is_authenticated:
         aprovacoes_pendentes = Approval.objects.filter(movimentacao__usuario=request.user).exists()
         return {'aprovacoes_pendentes': aprovacoes_pendentes}
     return {'aprovacoes_pendentes': False}
 
-def verifica_movimentacoes(request):
-    minhas_movimentacoes = Approval.objects.filter(
-        status_aprovacao='pendente').exists()
-    return {'minhas_movimentacoes': minhas_movimentacoes}
+def verifica_aprovacoes_pendentes(request):
+    if request.user.is_authenticated:
+        minhas_movimentacoes = Approval.objects.filter(
+            status_aprovacao='pendente').exists()
+        return {'minhas_movimentacoes': minhas_movimentacoes}
+    return {'aprovacoes_pendentes': False}
 
 
 def get_profile_info(request):
