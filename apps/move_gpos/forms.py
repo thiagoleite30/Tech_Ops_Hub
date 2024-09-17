@@ -31,7 +31,7 @@ class RequestForms(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         # Obtendo formatação de periodo para filtrar na consulta e trazer GPOS logados nos ultimos X meses
-        periodo = timezone.now() - relativedelta(month=8)
+        periodo = timezone.now() - relativedelta(months=8)
 
         self.fields['gpos'].queryset = GPOS.objects.filter(blocked=False, active=True, last_logon_date__gte=periodo).order_by('pos_number').distinct('pos_number')
         self.fields['loja_nova'].queryset = Location.objects.filter(sub_locations__isnull=False).distinct()
