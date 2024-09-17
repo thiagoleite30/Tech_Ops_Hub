@@ -30,13 +30,13 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.94.1.49', 'localhost', '127.0.0.1', 'techopshub-test.aviva.com.br']
+ALLOWED_HOSTS = ['10.94.1.49', 'localhost',
+                 '127.0.0.1', 'techopshub-test.aviva.com.br']
 
 # Definindo o caminho/registro da aplicação
 # Por ser desenvolvimento então
 
 SITE_ID = 1
-
 
 
 # Application definition
@@ -69,7 +69,6 @@ THIRD_PARTY_APPS = [
 
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS
-
 
 
 AUTHENTICATION_BACKENDS = [
@@ -111,10 +110,10 @@ TEMPLATES = [
                 'apps.tech_assets.context_processors_add.get_url_login_ms',
                 'apps.tech_assets.context_processors_add.get_url_logout',
                 'apps.tech_assets.context_processors_add.user_groups_processor',
-                #'apps.tech_assets.context_processors_add.is_administradores_user',
-                #'apps.tech_assets.context_processors_add.is_aprovadores_ti_user',
-                #'apps.tech_assets.context_processors_add.is_suporte_user',
-                #'apps.tech_assets.context_processors_add.is_mvgpos_user',
+                # 'apps.tech_assets.context_processors_add.is_administradores_user',
+                # 'apps.tech_assets.context_processors_add.is_aprovadores_ti_user',
+                # 'apps.tech_assets.context_processors_add.is_suporte_user',
+                # 'apps.tech_assets.context_processors_add.is_mvgpos_user',
             ],
 
 
@@ -196,9 +195,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configurações API Graphs
 
-CLIENT_ID=str(os.getenv('CLIENT_ID'))
-CLIENT_SECRET=str(os.getenv('CLIENT_SECRET'))
-AUTHORITY=str(os.getenv('AUTHORITY'))
+CLIENT_ID = str(os.getenv('CLIENT_ID'))
+CLIENT_SECRET = str(os.getenv('CLIENT_SECRET'))
+AUTHORITY = str(os.getenv('AUTHORITY'))
 
 # Allauth e configurações especificas do provedor microsoft
 
@@ -235,7 +234,7 @@ ACCOUNT_LOGOUT_ON_GET = True
 # ou a URL para onde deseja redirecionar após o logout - aqui tá indo pra index
 LOGOUT_REDIRECT_URL = f'''https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={LOGIN_URL}'''
 
-URL_POS_CLICK_MS_LOGO =  str(os.getenv('URL_POS_CLICK_MS_LOGO'))
+URL_POS_CLICK_MS_LOGO = str(os.getenv('URL_POS_CLICK_MS_LOGO'))
 
 # PWA Settings
 
@@ -298,41 +297,64 @@ SELECT
     CO.CreatorUser AS CreatorUser,
     CO.LastUpdateDate AS LastUpdateDate,
     CO.ComputerType AS ComputerType,
-    al.[DateTime]              as DATA_ULTIMO_LOGON,
-    us.UserName                as LastUserLogon, 
-    us.Code                    as Matricula
+    al.[DateTime] AS DATA_ULTIMO_LOGON,
+    us.UserName AS LastUserLogon, 
+    us.Code AS Matricula
 FROM    
-    (SELECT        
-        a.Computer,        
-        MAX(a.Id) as IdAuditLog
-     FROM        
-        MultiVendas.dbo.Computers c
-        INNER JOIN MultiVendas.dbo.AuditLogs a  
-            ON a.Computer = c.Id
-     WHERE 
-        c.ComputerType = 16 
-        AND c.Active = 1 
-     GROUP BY 
-        a.Computer
-    ) sub
-INNER JOIN 
-    MultiVendas.dbo.AuditLogs al 
-    ON al.Id = sub.IdAuditLog
-INNER JOIN 
-    MultiVendas.dbo.Computers co 
-    ON co.Id = sub.Computer
-INNER JOIN 
-    MultiVendas.dbo.Users us 
-    ON us.Id = al.TargetUser
-INNER JOIN 
-    MultiVendas.dbo.Users us2 
-    ON us2.Id = co.CreatorUser
-INNER JOIN 
-    MultiVendas.dbo.Shops sh 
-    ON sh.Id = co.Shop
-INNER JOIN 
-    MultiVendas.dbo.Shops sh2 
-    ON sh2.Id = sh.Parent
+    MultiVendas.dbo.Computers CO
+    LEFT JOIN MultiVendas.dbo.AuditLogs AL 
+        ON CO.Id = AL.Computer
+        AND AL.Id = (
+            SELECT MAX(a.Id) 
+            FROM MultiVendas.dbo.AuditLogs a  
+            WHERE a.Computer = CO.Id
+        )
+    LEFT JOIN MultiVendas.dbo.Users US 
+        ON US.Id = AL.TargetUser
+    LEFT JOIN MultiVendas.dbo.Users US2 
+        ON US2.Id = CO.CreatorUser
+    LEFT JOIN MultiVendas.dbo.Shops SH 
+        ON SH.Id = CO.Shop
+    LEFT JOIN MultiVendas.dbo.Shops SH2 
+        ON SH2.Id = SH.Parent
+WHERE 
+    CO.ComputerType = 16SELECT 
+    CO.Id AS Id,
+    CO.Name AS ID_GPOS,
+    SH2.Name AS Loja,
+    SH.Name AS PDV,
+    CO.Description AS Description,
+    CO.MacAddress AS MacAddress,
+    CO.Active AS Active,
+    CO.PosNumber AS PosNumber,
+    CO.OnlyPreSales AS OnlyPreSales,
+    CO.IsDefaultComputer AS PrimaryPDV,
+    CO.CreationDate AS CreationDate,
+    CO.CreatorUser AS CreatorUser,
+    CO.LastUpdateDate AS LastUpdateDate,
+    CO.ComputerType AS ComputerType,
+    al.[DateTime] AS DATA_ULTIMO_LOGON,
+    us.UserName AS LastUserLogon, 
+    us.Code AS Matricula
+FROM    
+    MultiVendas.dbo.Computers CO
+    LEFT JOIN MultiVendas.dbo.AuditLogs AL 
+        ON CO.Id = AL.Computer
+        AND AL.Id = (
+            SELECT MAX(a.Id) 
+            FROM MultiVendas.dbo.AuditLogs a  
+            WHERE a.Computer = CO.Id
+        )
+    LEFT JOIN MultiVendas.dbo.Users US 
+        ON US.Id = AL.TargetUser
+    LEFT JOIN MultiVendas.dbo.Users US2 
+        ON US2.Id = CO.CreatorUser
+    LEFT JOIN MultiVendas.dbo.Shops SH 
+        ON SH.Id = CO.Shop
+    LEFT JOIN MultiVendas.dbo.Shops SH2 
+        ON SH2.Id = SH.Parent
+WHERE 
+    CO.ComputerType = 16
 """
 
 
@@ -360,7 +382,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'rodar_rotina_checa_requisicoes': {
         'task': 'apps.move_gpos.tasks.rotina_checa_requisicoes',
-        'schedule': 300.0,  # 900.0 15 minutos em segundos
+        'schedule': 300.0,  # 300.0 5 minutos em segundos
     },
 }
 

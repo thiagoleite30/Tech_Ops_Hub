@@ -1246,8 +1246,7 @@ def locais(request):
     if query:
         objetos = objetos.filter(
             Q(nome__icontains=query) |
-            Q(telefone__icontains=query) |
-            Q(email__icontains=query)
+            Q(local_pai__nome__icontains=query)
         )
 
     objetos_lista = objetos.order_by('id')

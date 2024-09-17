@@ -16,17 +16,18 @@ from django.conf import settings
 def upload_gpos(df):
     # Filtrando apenas as linhas que possuem um endereço MAC válido
     df = df[df['MacAddress'].notna() & (df['MacAddress'] != '')]
-
+    df.dropna(subset=['Loja', 'Id', 'MacAddress', 'PosNumber', 'PDV' ], inplace=True)
     for index, row in df.iterrows():
         tipo, created = AssetType.objects.get_or_create(nome='GPOS')
 
         fabricante, created = Manufacturer.objects.get_or_create(nome='Gertec')
-
+        print(f'DEBUG :: GET OR CREATE FABRICANTE :: CRIOU OU PEGOU O FABRICANTE {fabricante.nome}...')
+        print(f'\n\nDEBUG :: GET OR CREATE LOJA :: VAI CRIAR A LOJA {row["Loja"]} do GPOS {row["PosNumber"]} ID {row["Id"]}...')
         loja, created = Location.objects.get_or_create(nome=row['Loja'])
-
-        pdv, created = Location.objects.update_or_create(nome=row['PDV'], defaults={
-            'local_pai': loja})
-
+        print(f'\nDEBUG :: GET OR CREATE LOJA :: CRIOU OU PEGOU A LOJA {loja.nome}...')
+        pdv, created = Location.objects.update_or_create(
+            nome=row['PDV'], defaults={'local_pai': loja})
+        print(f'DEBUG :: GET OR CREATE PDV :: CRIOU OU PEGOU A LOJA {pdv.nome}...')
         try:
             # Verifique se o AssetInfo já existe com o endereço MAC
             if AssetInfo.objects.filter(endereco_mac=row['MacAddress']).exists():
@@ -55,7 +56,8 @@ def upload_gpos(df):
                         endereco_mac=row['MacAddress'],
                     )
 
-            print(f'DEBUG :: GET OR CREATE GPOS :: AGORA VAI CRIAR O GPOS ID {row["ID_GPOS"]}...')
+            print(
+                f'DEBUG :: GET OR CREATE GPOS :: AGORA VAI CRIAR O GPOS ID {row["ID_GPOS"]}...')
             # Crie ou atualize o GPOS
             gpos, created = GPOS.objects.update_or_create(
                 id=int(row['Id']),
@@ -64,10 +66,10 @@ def upload_gpos(df):
                     'loja': loja,
                     'pdv': pdv,
                     'description': row['Description'],
-                    'active': row['Active'],
+                    'active': True if row['Active'] else False,
                     'pos_number': row['PosNumber'],
                     'only_pre_sales': row['OnlyPreSales'],
-                    'primary_pdv': row['PrimaryPDV'],
+                    'primary_pdv': True if row['PrimaryPDV'] else False,
                     'creator_user': row['CreatorUser'],
                     'username_last_user_logon': row['LastUserLogon'],
                     'code_last_user_logon': row['Matricula'],
@@ -79,9 +81,11 @@ def upload_gpos(df):
             )
 
             if created:
-                print(f'DEBUG :: CREATE GPOS :: CRIOU O GPOS ID {gpos.id} {row["ID_GPOS"]}...')
+                print(
+                    f'DEBUG :: CREATE GPOS :: CRIOU O GPOS ID {gpos.id} {row["ID_GPOS"]}...')
             else:
-                print(f'DEBUG :: CREATE GPOS :: SOMENTE PEGOU O GPOS {gpos.id}  {row["ID_GPOS"]}...')
+                print(
+                    f'DEBUG :: CREATE GPOS :: SOMENTE PEGOU O GPOS {gpos.id}  {row["ID_GPOS"]}...')
 
         except IntegrityError as e:
             # Ignora erros de integridade e continua o fluxo
@@ -91,13 +95,14 @@ def upload_gpos(df):
 
 
 def dispara_fluxo_debug(request, json_request):
-    print(f'Usuario: {request.user}\nEmail: {request.user.email}\nDisplayName: {request.user.first_name}')
+    print(
+        f'Usuario: {request.user}\nEmail: {request.user.email}\nDisplayName: {request.user.first_name}')
     print(f'{json_request}')
     topdesk = TopDesk()
 
     query_call = topdesk.query_call_pos(json_request['posNumber'])
     print(f'Status Code POS {json_request["posNumber"]}: {query_call}')
-    
+
 
 def dispara_fluxo(request, json_request):
     topdesk = TopDesk()
@@ -117,13 +122,13 @@ def dispara_fluxo(request, json_request):
             if response_pa.status_code == 202:
                 messages.success(request, f"""Sua solicitação foi inserida na fila e gerou o chamado {
                     response[1]}."""
-                )
+                                 )
             else:
                 topdesk.put_action(
                     response[1], response_pa.status_code)
                 messages.error(request, f"""ATENÇÃO: Sua solicitação gerou o chamado {
                     response[1]}. No entanto, ocorreu um erro ao inserir na fila de troca(CODE: {response_pa.status_code})."""
-                )
+                               )
         else:
             messages.error(request, f"""Algo deu errado na abertura de nova solicitação. Contate o suporte! Status code: {
                 response[0]}""")
@@ -131,17 +136,18 @@ def dispara_fluxo(request, json_request):
     else:
         messages.error(request, f"""Ocorreu um erro ao processar a buscar por um chamado referente ao POS {
             json_request['posNumber']}. Contate o suporte.\nO Status code é: {query_call[0]}"""
-        )
+                       )
     return None
 
 
 def verifica_requisicoes():
     topdesk = TopDesk()
-    
+
     requisicoes = Request.objects.filter(concluida=False)
-    
+
     for requisicao in requisicoes:
         if requisicao.chamado != None:
             if topdesk.get_status_call(requisicao.chamado):
                 requisicao.concluida = True
+                requisicao.data_conclusao = timezone.now()
                 requisicao.save()

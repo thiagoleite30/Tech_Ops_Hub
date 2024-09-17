@@ -46,7 +46,7 @@ class Request(models.Model):
     existe_novo_pdv = models.BooleanField(default=False)
     concluida = models.BooleanField(default=False)
     data_inclusao = models.DateTimeField(auto_now_add=True)
-    data_conclusao = models.DateTimeField(auto_now=True)
+    data_conclusao = models.DateTimeField(auto_now=False, null=True)
     usuario = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
