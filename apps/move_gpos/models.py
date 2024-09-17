@@ -20,7 +20,7 @@ class GPOS(models.Model):
     primary_pdv = models.BooleanField(default=False, verbose_name="PDV Primário")
     creation_date = models.DateTimeField(auto_now_add=True, verbose_name="Data de Criação")
     creator_user = models.CharField(max_length=100, verbose_name="Usuário Criador")
-    last_update_date = models.DateTimeField(auto_now=False, null=True, verbose_name="Última Atualização MV")
+    last_update_date = models.DateTimeField(auto_now=True, null=True, verbose_name="Última Atualização MV")
     username_last_user_logon = models.CharField(max_length=100, null=True, verbose_name="Último usuário a fazer logon")
     code_last_user_logon = models.CharField(max_length=100, null=True, verbose_name="Código do último usuário a fazer logon")
     last_logon_date = models.DateTimeField(auto_now=False, null=True, verbose_name="Data último logon MV")
