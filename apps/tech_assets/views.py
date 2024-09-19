@@ -1,6 +1,8 @@
 import traceback
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.template import RequestContext
+from apps.tech_assets.context_processors_add import user_groups_processor
 from apps.tech_assets.models import Accessory, Approval, Asset, \
     AssetCart, AssetInfo, AssetModel, AssetType, Cart, CostCenter, \
     Location, Manufacturer, Movement, MovementAccessory, MovementAsset, \
@@ -821,8 +823,15 @@ def termo(request, termo_id):
         return redirect('login')
 
     term_res = get_object_or_404(Termo, pk=termo_id)
+    grupos = user_groups_processor(request)['user_groups']
+    print(f'DEBUG :: TERMO :: LISTA DE GRUPOS :: {grupos}')
+    if term_res.movimentacao.usuario != request.user and not set(['Administradores', 'Suporte', 'TH']) & set(grupos):
+        messages.warning(request, 'Você não possui permissão para acessar este termo.')
+        return redirect('minhas_movimentacoes')
+    
     aprovacao = get_object_or_404(Approval, id=term_res.aprovacao_id)
-    movimentacao = get_object_or_404(Movement, pk=aprovacao.movimentacao.id)
+    #movimentacao = get_object_or_404(Movement, pk=aprovacao.movimentacao.id)
+    movimentacao = aprovacao.movimentacao
     form = TermoForms(instance=term_res)
 
     if aprovacao:
@@ -875,7 +884,7 @@ def termo(request, termo_id):
 
 
 @login_required
-@group_required(['Administradores', 'Aprovadores TI'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Aprovadores TI', 'Basico'], redirect_url='zona_restrita')
 def aceita_termo(request, termo_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -887,10 +896,13 @@ def aceita_termo(request, termo_id):
             if term_res.status_resposta != False:
                 messages.warning(request, 'Este termo já foi respondido.')
                 return redirect(url)
+            
+            grupos = user_groups_processor(request)['user_groups']
+            if term_res.movimentacao.usuario != request.user:
+                messages.warning(request, 'Você não é o usuário responsável por este termo.')
+                return redirect('minhas_movimentacoes')
 
-            # Busca a movimentação ligada ao termo/fluxo
-            movimentacao = get_object_or_404(
-                Movement, pk=term_res.movimentacao.id)
+            movimentacao = term_res.movimentacao
 
             if movimentacao:
                 if request.user != movimentacao.usuario:
@@ -910,7 +922,7 @@ def aceita_termo(request, termo_id):
 
 
 @login_required
-@group_required(['Administradores', 'Aprovadores TI'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Aprovadores TI', 'Basico'], redirect_url='zona_restrita')
 def recusa_termo(request, termo_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -923,14 +935,19 @@ def recusa_termo(request, termo_id):
                 messages.warning(request, 'Este termo já foi respondido.')
                 return redirect(url)
 
+            grupos = user_groups_processor(request)['user_groups']
+            if term_res.movimentacao.usuario != request.user:
+                messages.warning(request, 'Você não é o usuário responsável por este termo.')
+                return redirect('minhas_movimentacoes')
+
             # Busca a movimentação ligada ao termo/fluxo
-            movimentacao = get_object_or_404(
-                Movement, pk=term_res.movimentacao.id)
-            print(f'DEBUG :: VIEW :: RECUSA TERMO :: {movimentacao}')
+            #movimentacao = get_object_or_404(Movement, pk=term_res.movimentacao.id)
+            movimentacao = term_res.movimentacao
+            
             if movimentacao:
                 if request.user != movimentacao.usuario:
                     messages.warning(
-                        request, 'Você não é o usuário referido neste termo.')
+                        request, 'Você não é o usuário responsável por este termo.')
                     return redirect(url)
                 # Método abaixo já faz tudo que é preciso após o aceito \
                     # como mudança de status de ativos, termos e etc...
@@ -963,7 +980,8 @@ def devolucao(request, termo_id):
         return redirect('login')
 
     termo = get_object_or_404(Termo, pk=termo_id)
-    movimentacao = get_object_or_404(Movement, pk=termo.movimentacao_id)
+    movimentacao = termo.movimentacao
+    
     url = reverse('termo', kwargs={'termo_id': termo_id})
 
     if not termo.status_resposta:
@@ -1449,7 +1467,8 @@ def minhas_movimentacoes(request):
                     default=Value(1),
                     output_field=IntegerField()
                 ),
-                'aceite_usuario'
+                'aceite_usuario',
+                '-data_criacao',
             )
 
             paginator = Paginator(termos, 15)

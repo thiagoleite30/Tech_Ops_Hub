@@ -4,21 +4,43 @@
         {{movement.usuario.last_name}}"</h5>
     <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
         <ul class="list-group list-group-flush">
-            <li class="list-group-item"><b>Matricula Responsável: </b>{{ movement.usuario.profile.employee_id|pegar_matricula_empId }}</li>
-            <li class="list-group-item"><b>Unidade Recebedora:</b> {{movement.centro_de_custo_recebedor.nome}}
-                ({{movement.centro_de_custo_recebedor}})</li>
-            <li class="list-group-item"><b>Unidade Cedente Cedente:</b> {{movement.centro_de_custo_cedente.nome}}
-                ({{movement.centro_de_custo_cedente}})</li>
-            <li class="list-group-item"><b>Data Inclusão:</b> {{term.data_criacao}}</li>
-            <li class="list-group-item"><b>Aprovação de TI:</b>
+            <li class="list-group-item">
+                <b>Matricula Responsável: </b>
+                {{ movement.usuario.profile.employee_id|pegar_matricula_empId }}
+            </li>
+            <li class="list-group-item">
+                <b>Unidade Recebedora: </b>
+                {{movement.centro_de_custo_recebedor.nome}}
+                ({{movement.centro_de_custo_recebedor}})
+            </li>
+            <li class="list-group-item">
+                <b>Unidade Cedente Cedente: </b>
+                {{movement.centro_de_custo_cedente.nome}}
+                ({{movement.centro_de_custo_cedente}})
+            </li>
+            <li class="list-group-item">
+                <b>Data Inclusão: </b>
+                {{term.data_criacao}}
+            </li>
+            <li class="list-group-item">
+                <b>Aprovação de TI: </b>
                 {{aprovall.get_status_aprovacao_display}} por {{aprovall.aprovador.first_name}}
-                {{aprovall.aprovador.last_name}} em {{aprovall.data_conclusao}}</li>
-            <li class="list-group-item"><b>Resposta do Usuário Responsável:</b> {% if term.aceite_usuario != 'pendente' %}
+                {{aprovall.aprovador.last_name}} em {{aprovall.data_conclusao}}
+            </li>
+            <li class="list-group-item">
+                <b>Resposta do Usuário Responsável: </b>
+                {% if term.aceite_usuario != 'pendente' %}
                 {{term.get_aceite_usuario_display}} por
-                {{movement.usuario.first_name}} {{movement.usuario.last_name}} em {{term.data_resposta}}{% else %}
-                Pendente {%endif%}</li>
+                {{movement.usuario.first_name}} {{movement.usuario.last_name}} em {{term.data_resposta}}
+                {% else %}
+                Pendente
+                {%endif%}
+            </li>
             {% if term.justificativa %}
-            <li class="list-group-item"><b>Justificativa:</b> {{term.justificativa}}</li>
+            <li class="list-group-item">
+                <b>Justificativa: </b>
+                {{term.justificativa}}
+            </li>
             {%endif%}
         </ul>
     </div>

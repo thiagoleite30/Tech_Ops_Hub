@@ -8,27 +8,56 @@
                     <h5 class="card-title">{{movement.get_tipo_display}} ID {{movement.id}}</h5>
                 </div>
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><b>Nome do Responsável:</b> {{movement.usuario.first_name}}
-                        {{movement.usuario.last_name}} ({{movement.usuario}})</li>
-                    <li class="list-group-item"><b>Matricula Responsável: </b>{{
-                        movement.usuario.profile.employee_id|pegar_matricula_empId }}</li>
-                    <li class="list-group-item"><b>Unidade Recebedora:</b>
-                        {{movement.centro_de_custo_recebedor.nome}}
-                        ({{movement.centro_de_custo_recebedor}})</li>
-                    <li class="list-group-item"><b>Entregue Por:</b> {{movement.usuario_cedente.first_name}}
-                        {{movement.usuario_cedente.last_name}} ({{movement.usuario_cedente}})</li>
-                    <li class="list-group-item"><b>Unidade Cedente:</b> {{movement.centro_de_custo_cedente.nome}}
-                        ({{movement.centro_de_custo_cedente}})</li>
-                    <li class="list-group-item"><b>Data Inicio:</b> {{movement.data_movimento}}</li>
-                    <li class="list-group-item"><b>Previsão de Término: </b>{% if movement.data_devolucao_prevista
-                        %}{{movement.data_devolucao_prevista}}{%else%}Não Informada{%endif%}
+                    <li class="list-group-item">
+                        <b>Nome do Responsável: </b>
+                        {{ movement.usuario.first_name }} {{ movement.usuario.last_name }} ({{ movement.usuario }})
                     </li>
-                    <li class="list-group-item"><b>Data de Conclusão: </b>{% if movement.data_devolucao_real
-                        %}{{movement.data_devolucao_real}}{%else%}-{%endif%}
+                    <li class="list-group-item">
+                        <b>Matricula Responsável: </b>
+                        {{ movement.usuario.profile.employee_id|pegar_matricula_empId }}
                     </li>
-                    <li class="list-group-item"><b>Chamado Interno:</b> {{movement.chamado_top_desk}}</li>
+                    <li class="list-group-item">
+                        <b>Unidade Recebedora: </b>
+                        {{ movement.centro_de_custo_recebedor.nome }} ({{ movement.centro_de_custo_recebedor }})
+                    </li>
+                    <li class="list-group-item">
+                        <b>Entregue Por: </b>
+                        {{ movement.usuario_cedente.first_name }} {{ movement.usuario_cedente.last_name }}
+                        ({{movement.usuario_cedente}})
+                    </li>
+                    <li class="list-group-item">
+                        <b>Unidade Cedente: </b>
+                        {{ movement.centro_de_custo_cedente.nome }} ({{ movement.centro_de_custo_cedente }})
+                    </li>
+                    <li class="list-group-item">
+                        <b>Data Inicio: </b>
+                        {{ movement.data_movimento }}
+                    </li>
+                    <li class="list-group-item">
+                        <b>Previsão de Término: </b>
+                        {% if movement.data_devolucao_prevista %}
+                        {{movement.data_devolucao_prevista}}
+                        {% else %}
+                        Não Informada
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item">
+                        <b>Data de Conclusão: </b>
+                        {% if movement.data_devolucao_real %}
+                        {{movement.data_devolucao_real}}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item">
+                        <b>Chamado Interno: </b>
+                        {{ movement.chamado_top_desk }}
+                    </li>
                     {% if movement.observacoes != None and movement.observacoes != '' %}
-                    <li class="list-group-item"><b>Observação:</b> {{movement.observacoes}}</li>
+                    <li class="list-group-item">
+                        <b>Observação: </b>
+                        {{ movement.observacoes }}
+                    </li>
                     {%endif%}
                 </ul>
             </div>

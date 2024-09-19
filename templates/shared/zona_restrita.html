@@ -11,16 +11,18 @@
 
 <body>
     <header>
-        <img src="{% static 'assets/Coruja_Confusa.jpg' %}" alt="Uma pessoa feliz no computador" class="logo">
+        <img src="{% static 'assets/Coruja_Confusa.jpg' %}" alt="Uma pessoa feliz no computador" class="responsive-img">
     </header>
     <main>
-        <h1>Ops... algo deu errado, {{request.user.first_name }}!</h1>
-        <div class="social-media">
-            <div class="social-media-details" style="margin-top: 100px;">
 
-                    <!--<img src="{% static 'assets/microsoft-logo.svg' %}" alt="icone para realizar autenticação com Microsoft" class="social-media-icon">-->
-                    <p >Você vai precisar de permissões adequadas para acessar as demais áreas. </br>Mas não se preocupe, procure o time de suporte para ajuda-lo(a).</p>
-                    <a href="{{ URL_LOGOUT }}">Clique aqui para sair</a>
+        <div class="social-media">
+
+            <div class="social-media-details" style="margin-top: 100px;">
+                <h1>Ops... algo deu errado, {{request.user.first_name }}!</h1>
+                <!--<img src="{% static 'assets/microsoft-logo.svg' %}" alt="icone para realizar autenticação com Microsoft" class="social-media-icon">-->
+                <p>Você vai precisar de permissões adequadas para acessar as demais áreas. </br>Mas não se preocupe,
+                    procure o time de suporte para ajuda-lo(a).</p>
+                <a href="{{ URL_LOGOUT }}">Clique aqui para sair</a>
             </div>
         </div>
     </main>

@@ -25,13 +25,25 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item"><b>ID Movimentação: </b>{{ termo.movimentacao.id }}</li>
                         <li class="list-group-item"><b>Tipo Movimentação: </b>{{ termo.movimentacao.get_tipo_display }}</li>
-                        <li class="list-group-item"><b>Status Movimentação: </b>{{ termo.movimentacao.get_status_display }}</li>
+                        
                         <li class="list-group-item"><b>Aprovador de TI: </b>{{ termo.aprovacao.aprovador.first_name}} {{ termo.aprovacao.aprovador.last_name}}</li>
                         <li class="list-group-item"><b>Usuário Responsável: </b>{{ termo.movimentacao.usuario.first_name }} {{ termo.movimentacao.usuario.last_name }} ({{ termo.movimentacao.usuario }})</li>
                         <li class="list-group-item"><b>Matricula Responsável: </b>{{ termo.movimentacao.usuario.profile.employee_id|pegar_matricula_empId }}</li>
-                        <li class="list-group-item"><b>Resposta do Usuário Responsável:</b> {% if termo.aceite_usuario != 'pendente' %}
+                        <li class="list-group-item">
+                            <b>Resposta do Usuário Responsável: </b>
+                            {% if termo.aceite_usuario != 'pendente' %}
                             {{termo.get_aceite_usuario_display}} por {{termo.movimentacao.usuario.first_name}} {{termo.movimentacao.usuario.last_name}} em {{termo.data_resposta}}{% else %}
-                            Pendente {%endif%}</li>
+                            Pendente
+                            {%endif%}
+                        </li>
+                        <li class="list-group-item">
+                            <b>
+                                Status Movimentação: 
+                            </b>
+                            <b>
+                                {{ termo.movimentacao.get_status_display }}
+                            </b>
+                        </li>
                     </ul>
                     <!--
                     <div class="card-body">

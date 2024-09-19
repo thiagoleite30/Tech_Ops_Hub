@@ -40,7 +40,7 @@ h1 {
     text-align: center;
 }
 
-p {
+p, a {
     font-size: 1.2rem;
     font-weight: 400;
     line-height: 2rem;
@@ -87,11 +87,43 @@ p {
     text-align: center;
     margin-top: 0.25rem; /* Menor margem superior */
     font-weight: 400;
+    display: flex;
     line-height: 1.25rem; /* Ajuste da altura da linha */
 }
 
 .responsive-img {
-    width: 100%;
     height: auto;
-    max-width: 100%;
+    max-width: 100vh;
+}
+
+@media (max-width: 600px) {
+    .responsive-img {
+        height: auto;
+        max-width: 30vh;
+    }
+
+    h1 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--offwhite);
+        text-align: center;
+    }
+
+    p, a {
+        font-size: 0.8rem;
+        font-weight: 400;
+        line-height: 2rem;
+        color: var(--offwhite);
+        margin-bottom: 0.625rem;
+    }
+
+    .social-media-details p {
+        color: var(--offwhite);
+        font-size: 0.8rem; /* Tamanho menor da fonte */
+        text-align: center;
+        margin-top: 0.25rem; /* Menor margem superior */
+        font-weight: 250;
+        line-height: 1.25rem; /* Ajuste da altura da linha */
+    }
 }
