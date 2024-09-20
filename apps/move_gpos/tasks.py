@@ -15,10 +15,16 @@ def rotina_checa_requisicoes():
     
 
 @shared_task
-def consulta_bd_mv():
+def consulta_bd_mv(**kwargs):
+    pos_number = kwargs.pop('pos_number', None)
     engine = create_engine(settings.CONNETION_URL)
     with engine.connect() as connection:
-        df_consulta = pd.read_sql_query(settings.SQL_QUERY_POS, connection)
+        if pos_number == None:
+            print(f'\n\nCONSULTA SEM ARGUMNETO! POS NUMBER {pos_number}')
+            df_consulta = pd.read_sql_query(settings.SQL_QUERY_POS, connection)
+        else:
+            print(f'\n\nCONSULTA COM ARGUMNETO! POS NUMBER {pos_number}')
+            df_consulta = pd.read_sql_query(f'{settings.SQL_QUERY_POS} AND CO.PosNumber = {pos_number}', connection)
     
     upload_gpos(df_consulta)
     print(f'Executada rotina de atualização de GPOS em: {datetime.now()}')

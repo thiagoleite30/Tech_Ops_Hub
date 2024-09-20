@@ -5,6 +5,7 @@ from django.contrib import messages
 import pandas as pd
 import requests
 
+from apps.move_gpos.tasks import consulta_bd_mv
 from apps.tech_assets.models import Asset, AssetInfo, AssetModel, AssetType, Location, Manufacturer
 from apps.move_gpos.models import GPOS, Request
 from apps.move_gpos.TopDesk.TopDesk import TopDesk
@@ -150,4 +151,6 @@ def verifica_requisicoes():
             if topdesk.get_status_call(requisicao.chamado):
                 requisicao.concluida = True
                 requisicao.data_conclusao = timezone.now()
+                consulta_bd_mv(pos_number=requisicao.gpos.pos_number)
                 requisicao.save()
+                
