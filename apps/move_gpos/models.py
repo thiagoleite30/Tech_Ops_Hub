@@ -57,10 +57,3 @@ class Request(models.Model):
             gpos = GPOS.objects.get(pk=self.gpos.id)
             gpos.blocked = True
             gpos.save()
-        else:
-            if self.concluida:
-                gpos = GPOS.objects.get(pk=self.gpos.id)
-                gpos.loja = self.loja_nova
-                gpos.pdv = self.pdv_novo
-                gpos.blocked = False
-                gpos.save()
