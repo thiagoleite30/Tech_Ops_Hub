@@ -7,24 +7,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'styles/login.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/login_new.css' %}">
     <title>Tech Ops Hub</title>
 </head>
 
 <body>
-    <header>
-        
-        <img src="{% static 'assets/coruja.jpg' %}" alt="Uma pessoa feliz no computador" class="responsive-img">
-    </header>
     <main>
-        <h1>Bem vindo(a) ao TechOps Hub</h1>
-        <div class="social-media">
-            <div class="social-media-details">
-                <a href="{{ URL_POS_CLICK_MS_LOGO }}">
-                    <img src="{% static 'assets/microsoft-logo.svg' %}" alt="icone para realizar autenticação com Microsoft" class="social-media-icon">
-                    <p>Clique aqui para entrar com uma conta Microsoft</p>
-                </a>
-            </div>
+        <div class="login-card">
+            <h2>Bem vindo(a) ao Tech Ops Hub</h2>
+            <button class="button-login" onclick="window.location.href='{{ URL_POS_CLICK_MS_LOGO }}'">
+                <img class="microsoft-logo" src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg"
+                    alt="Microsoft" width="20">
+                Entrar com conta Microsoft Aviva
+            </button>
+            <p style="color: #0a0a0a;">Utilize seu e-mail Aviva</p>
         </div>
     </main>
 </body>

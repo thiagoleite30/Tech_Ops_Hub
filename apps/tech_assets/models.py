@@ -133,7 +133,7 @@ class Asset(models.Model):
 
 
 class AssetInfo(models.Model):
-    ativo = models.ForeignKey(Asset, on_delete=models.CASCADE)
+    ativo = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='assetinfo')
     fabricante = models.ForeignKey(
         Manufacturer, on_delete=models.SET_NULL, null=True, blank=True)
     memoria = models.CharField(max_length=100, null=True, blank=True)

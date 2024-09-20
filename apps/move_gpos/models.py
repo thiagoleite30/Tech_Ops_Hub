@@ -14,7 +14,7 @@ class GPOS(models.Model):
     loja = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='loja_gpos', verbose_name="Loja")
     pdv = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='pdv_gpos', verbose_name="PDV")
     description = models.TextField(verbose_name="Descrição", blank=True, null=True)
-    active = models.BooleanField(default=True, verbose_name="Ativo")
+    active = models.BooleanField(default=True, db_index=True, verbose_name="Ativo")
     pos_number = models.IntegerField(verbose_name="Número do POS")
     only_pre_sales = models.BooleanField(default=False, verbose_name="Apenas Pré-Vendas")
     primary_pdv = models.BooleanField(default=False, verbose_name="PDV Primário")
@@ -23,10 +23,10 @@ class GPOS(models.Model):
     last_update_date = models.DateTimeField(auto_now=True, null=True, verbose_name="Última Atualização MV")
     username_last_user_logon = models.CharField(max_length=100, null=True, verbose_name="Último usuário a fazer logon")
     code_last_user_logon = models.CharField(max_length=100, null=True, verbose_name="Código do último usuário a fazer logon")
-    last_logon_date = models.DateTimeField(auto_now=False, null=True, verbose_name="Data último logon MV")
+    last_logon_date = models.DateTimeField(auto_now=False, null=True, db_index=True, verbose_name="Data último logon MV")
     computer_type = models.CharField(max_length=100, verbose_name="Tipo de Computador")
-    blocked = models.BooleanField(default=False) # Define se o GPOS estará disponível para uma nova troca ou não
-    is_mac = models.BooleanField(default=False) # Define se o GPOS é identificado com Mac ou IMEI
+    blocked = models.BooleanField(default=False, db_index=True) # Define se o GPOS estará disponível para uma nova troca ou não
+    is_mac = models.BooleanField(default=False, db_index=True) # Define se o GPOS é identificado com Mac ou IMEI
     
     class Meta:
         verbose_name = "GPOS"
