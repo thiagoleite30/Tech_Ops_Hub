@@ -281,8 +281,7 @@ CONNETION_URL = URL.create(
     query={"odbc_connect": CONNETION_STRING}
 )
 
-SQL_QUERY_POS = """
-SELECT 
+SQL_QUERY_POS = """SELECT 
     CO.Id AS Id,
     CO.Name AS ID_GPOS,
     SH2.Name AS Loja,
@@ -354,8 +353,7 @@ FROM
     LEFT JOIN MultiVendas.dbo.Shops SH2 
         ON SH2.Id = SH.Parent
 WHERE 
-    CO.ComputerType = 16
-"""
+    CO.ComputerType = 16"""
 
 
 # Configuração TopDesk
@@ -378,11 +376,11 @@ CELERY_BROKER_URL = str(os.getenv('RMQ_URL'))
 CELERY_BEAT_SCHEDULE = {
     'rodar_consulta_bd_mv': {
         'task': 'apps.move_gpos.tasks.consulta_bd_mv',
-        'schedule': 900.0,  # 900.0 15 minutos em segundos
+        'schedule': 1200.0,  # 1200.0 = 20 minutos em segundos
     },
     'rodar_rotina_checa_requisicoes': {
         'task': 'apps.move_gpos.tasks.rotina_checa_requisicoes',
-        'schedule': 300.0,  # 300.0 5 minutos em segundos
+        'schedule': 300.0,  # 300.0 = 5 minutos em segundos
     },
 }
 

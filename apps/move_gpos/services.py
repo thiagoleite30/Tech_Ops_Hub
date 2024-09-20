@@ -1,3 +1,4 @@
+import time
 from django.db import IntegrityError
 from django.utils import timezone
 
@@ -5,7 +6,6 @@ from django.contrib import messages
 import pandas as pd
 import requests
 
-from apps.move_gpos.tasks import consulta_bd_mv
 from apps.tech_assets.models import Asset, AssetInfo, AssetModel, AssetType, Location, Manufacturer
 from apps.move_gpos.models import GPOS, Request
 from apps.move_gpos.TopDesk.TopDesk import TopDesk
@@ -15,6 +15,7 @@ from django.conf import settings
 
 
 def upload_gpos(df):
+
     # Filtrando apenas as linhas que possuem um endereço MAC válido
     df = df[df['MacAddress'].notna() & (df['MacAddress'] != '')]
     df.dropna(subset=['Loja', 'Id', 'MacAddress', 'PosNumber', 'PDV' ], inplace=True)
@@ -22,13 +23,9 @@ def upload_gpos(df):
         tipo, created = AssetType.objects.get_or_create(nome='GPOS')
 
         fabricante, created = Manufacturer.objects.get_or_create(nome='Gertec')
-        print(f'DEBUG :: GET OR CREATE FABRICANTE :: CRIOU OU PEGOU O FABRICANTE {fabricante.nome}...')
-        print(f'\n\nDEBUG :: GET OR CREATE LOJA :: VAI CRIAR A LOJA {row["Loja"]} do GPOS {row["PosNumber"]} ID {row["Id"]}...')
         loja, created = Location.objects.get_or_create(nome=row['Loja'])
-        print(f'\nDEBUG :: GET OR CREATE LOJA :: CRIOU OU PEGOU A LOJA {loja.nome}...')
         pdv, created = Location.objects.update_or_create(
             nome=row['PDV'], defaults={'local_pai': loja})
-        print(f'DEBUG :: GET OR CREATE PDV :: CRIOU OU PEGOU A LOJA {pdv.nome}...')
         try:
             # Verifique se o AssetInfo já existe com o endereço MAC
             if AssetInfo.objects.filter(endereco_mac=row['MacAddress']).exists():
@@ -57,8 +54,6 @@ def upload_gpos(df):
                         endereco_mac=row['MacAddress'],
                     )
 
-            print(
-                f'DEBUG :: GET OR CREATE GPOS :: AGORA VAI CRIAR O GPOS ID {row["ID_GPOS"]}...')
             # Crie ou atualize o GPOS
             gpos, created = GPOS.objects.update_or_create(
                 id=int(row['Id']),
@@ -142,6 +137,7 @@ def dispara_fluxo(request, json_request):
 
 
 def verifica_requisicoes():
+    from apps.move_gpos.tasks import consulta_bd_mv
     topdesk = TopDesk()
 
     requisicoes = Request.objects.filter(concluida=False)
