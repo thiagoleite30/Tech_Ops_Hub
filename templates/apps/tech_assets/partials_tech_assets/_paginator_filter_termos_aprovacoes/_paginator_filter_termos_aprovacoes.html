@@ -1,0 +1,57 @@
+        <!-- Controles de Paginação -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; primeira</a>
+                <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}">anterior</a>
+                {% endif %}
+
+                <span class="current">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&q={{ query }}">próxima</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}">última &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const params = new URLSearchParams(window.location.search);
+        const status = params.getAll('status');
+
+        status.forEach(s => {
+            const btn = document.querySelector(`#btn-${s}`);
+            if (btn) {
+                btn.classList.add('active');
+            }
+        });
+    });
+
+    function toggleFilter(status, button) {
+        let currentUrl = new URL(window.location.href);
+        let params = currentUrl.searchParams;
+
+        let statusList = params.getAll('status');
+
+        if (statusList.includes(status)) {
+            statusList = statusList.filter(s => s !== status);
+            params.delete('status');
+            statusList.forEach(s => params.append('status', s));
+            button.classList.remove('active');
+        } else {
+            statusList.push(status);
+            params.append('status', status);
+            button.classList.add('active');
+        }
+
+        window.history.replaceState({}, '', `${currentUrl.pathname}?${params}`);
+
+        window.location.reload();
+    }
+</script>
+

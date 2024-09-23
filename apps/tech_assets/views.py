@@ -335,33 +335,25 @@ def novo_movimento(request):
 
 @login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
-# @cache_page(60 * 15) # 15 minutos de cache
 def ativos(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    # Defina a query inicial com select_related \
-        # Otimizando as consultas
     assets = Asset.objects.select_related('tipo').all()
 
-    # Filtrar os ativos que não estão disponíveis em estoque
     assets_unavailable = assets.exclude(
         status__in=['em_estoque']).values_list('id', flat=True)
 
-    # Subquery para ativos que já estão em carrinho
     subquery = AssetCart.objects.filter(ativo_id=OuterRef('pk')).values('pk')
+    
     assets_in_cart = assets.filter(
         Exists(subquery)).values_list('id', flat=True)
 
-    # Captura a query da URL valores após o q =
     query = request.GET.get('q', '')
 
-    # Criando mapeamento de status pré definidos
     STATUS_MAP = dict((v, k) for k, v in Asset.STATUS_CHOICES)
 
-    # Se houver uma query de busca, aplique filtros
     if query:
-        # Procurar status entre os mapeados
         status_codigo = next((codigo for status_legivel, codigo in STATUS_MAP.items(
         ) if query.lower() in status_legivel.lower()), None)
         assets = assets.filter(
@@ -372,7 +364,6 @@ def ativos(request):
             Q(tipo__nome__icontains=query)
         )
 
-    # Paginação
     paginator = Paginator(assets.order_by('id'), 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -434,19 +425,14 @@ def carrinho(request):
 
     query = request.GET.get('q', '')
 
-    # Obtenha o carrinho do usuário logado
     cart = get_object_or_404(Cart, usuario_sessao=user_instance)
 
-    # Recupere os itens do carrinho do usuario logado
     cart_items = AssetCart.objects.filter(carrinho=cart)
-
-    # Crie uma lista com is ids dos ativos no carrinho
+    
     ids_assets_in_cart = [item.ativo_id for item in cart_items]
 
-    # Busca na tabela asset todos os ids na lista acima
     assets = Asset.objects.filter(id__in=ids_assets_in_cart)
 
-    # Query pode ser alterada dependendo de como queremos consultar
     if query:
         assets = assets.filter(
             Q(nome__icontains=query) |
@@ -457,13 +443,11 @@ def carrinho(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Passe os dados para o template
     context = {
         'page_obj': page_obj,
         'query': query,
     }
 
-    # Redireciona para a lista de itens
     return render(request, 'apps/tech_assets/carrinho.html', context)
 
 
@@ -473,26 +457,21 @@ def add_carrinho(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    # Assume que o usuário está autenticado
     asset = get_object_or_404(Asset, id=asset_id)
     user_instance = get_object_or_404(User, username=request.user)
 
     if asset:
-        # Verifique se já existe um carrinho para este usuário ou crie um novo
         cart, created = Cart.objects.get_or_create(
             usuario_sessao=user_instance)
-
-        # Verifique se o asset já está no carrinho
+        
         asset_cart, created = AssetCart.objects.get_or_create(
             ativo=asset,
             carrinho=cart
         )
         if created:
-            # O asset foi adicionado ao carrinho
             print(f"Asset {asset_id} adicionado ao carrinho.")
             return redirect('ativos')
         else:
-            # O asset já estava no carrinho
             print(f"Asset {asset_id} já está no carrinho.")
             return redirect('ativos')
     return redirect('index')
@@ -504,13 +483,10 @@ def remove_do_carrinho(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    # Pega da tabela asset o ativo pelo id
     asset = get_object_or_404(Asset, id=asset_id)
 
-    # Pega a instancia do usuário logado
     user_instance = get_object_or_404(User, username=request.user)
 
-    # Se houver asset
     if asset:
         try:
             cart = get_object_or_404(Cart, usuario_sessao=user_instance)
@@ -532,10 +508,8 @@ def deleta_carrinho(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    # Pega a instancia do usuário logado
     user_instance = get_object_or_404(User, username=request.user)
 
-    # Se houver usuario
     if user_instance:
         try:
             cart = get_object_or_404(Cart, usuario_sessao=user_instance)
@@ -558,25 +532,22 @@ def aprovacoes(request):
 
     user_instance = get_object_or_404(User, username=request.user)
 
-    # Se houver usuario
     if user_instance:
         try:
             query = request.GET.get('q', '')
-            aprovacoes = Approval.objects.select_related('movimentacao').all()
+            aprovacoes = Approval.objects.all()
             default_status = ['pendente']
             status_aprovacao = request.GET.getlist('status')
 
-            # Query pode ser alterada dependendo de como queremos consultar
             if query:
                 aprovacoes = aprovacoes.filter(
-                    Q(aprovador__icontains=query) |
-                    Q(status_aprovacao__icontains=query) |
-                    Q(movimentacao__id__icontains=query) |
-                    Q(movimentacao__tipo__icontains=query) |
-                    Q(movimentacao__usuario__username__icontains=query) |
-                    Q(movimentacao__usuario__first_name__icontains=query) |
-                    Q(movimentacao__usuario__last_name__icontains=query)
-                )
+                    Q(id__icontains=query) |
+                    Q(aprovador__username__icontains=query) |
+                    Q(aprovador__first_name__icontains=query) |
+                    Q(aprovador__last_name__icontains=query) |
+                    Q(aprovador__profile__employee_id__icontains=query) |
+                    Q(movimentacao__id__icontains=query)
+                 )
 
             status_query = Q()
             if status_aprovacao:
@@ -588,14 +559,14 @@ def aprovacoes(request):
                 if 'pendente' in status_aprovacao:
                     status_query |= Q(status_aprovacao='pendente')
 
-            # Ordenar por status_aprovacao com 'pendente' primeiro
-            aprovacoes = aprovacoes.order_by(
+            aprovacoes = aprovacoes.filter(status_query).order_by(
                 Case(
                     When(status_aprovacao='pendente', then=Value(0)),
                     default=Value(1),
                     output_field=IntegerField()
                 ),
-                'status_aprovacao'
+                'status_aprovacao',
+                '-data_criacao',
             )
 
             paginator = Paginator(aprovacoes, 16)
@@ -794,7 +765,8 @@ def termos(request):
                     default=Value(1),
                     output_field=IntegerField()
                 ),
-                'aceite_usuario'
+                'aceite_usuario',
+                '-data_criacao',
             )
 
             paginator = Paginator(termos, 15)

@@ -19,7 +19,8 @@
             <div class="col-sm-3" style="padding-bottom: 10px;">
                 <div class="card {{ approval.status_aprovacao|checa_resposta_aprovacoes }} h-100">
                     <div class="card-body text-center">
-                        <h5 class="card-title"><a class="text-white" href="{% url 'aprovacao' approval.id %}">Aprovação Número:
+                        <h5 class="card-title"><a class="text-white" href="{% url 'aprovacao' approval.id %}">Aprovação
+                                Número:
                                 {{approval.id}}</a></h5>
                     </div>
                     <ul class="list-group list-group-flush">
@@ -58,67 +59,9 @@
             </div>
             {% endfor %}
         </div>
-        <!-- Controles de Paginação -->
-        <div class="pagination">
-            <span class="step-links">
-                {% if page_obj.has_previous %}
-                <a href="?page=1">&laquo; primeira</a>
-                <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}">anterior</a>
-                {% endif %}
 
-                <span class="current">
-                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
-                </span>
+        {% include
+        'apps/tech_assets/partials_tech_assets/_paginator_filter_termos_aprovacoes/_paginator_filter_termos_aprovacoes.html'
+        %}
 
-                {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}&q={{ query }}">próxima</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}">última &raquo;</a>
-                {% endif %}
-            </span>
-        </div>
-    </div>
-</main>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Inicializa os botões com base nos parâmetros da URL
-        const params = new URLSearchParams(window.location.search);
-        const status = params.getAll('status');
-
-        status.forEach(s => {
-            const btn = document.querySelector(`#btn-${s}`);
-            if (btn) {
-                btn.classList.add('active');
-            }
-        });
-    });
-
-    function toggleFilter(status, button) {
-        let currentUrl = new URL(window.location.href);
-        let params = currentUrl.searchParams;
-
-        // Obter todos os status ativos atualmente
-        let statusList = params.getAll('status');
-
-        // Verificar se o status já está nos parâmetros
-        if (statusList.includes(status)) {
-            // Se o status já está na lista, removê-lo (toggle off)
-            statusList = statusList.filter(s => s !== status);
-            params.delete('status');
-            statusList.forEach(s => params.append('status', s));
-            button.classList.remove('active');
-        } else {
-            // Se o status não está na lista, adicioná-lo (toggle on)
-            statusList.push(status);
-            params.append('status', status);
-            button.classList.add('active');
-        }
-
-        // Atualizar a URL sem recarregar a página
-        window.history.replaceState({}, '', `${currentUrl.pathname}?${params}`);
-
-        window.location.reload();
-    }
-</script>
-
-{% endblock %}
+        {% endblock %}
