@@ -160,7 +160,7 @@ def solicitacoes(request):
     if user_instance:
         try:
             query = request.GET.get('q', '')
-            solicitacoes = Request.objects.select_related('gpos', 'pdv_atual', 'loja_nova', 'pdv_novo', 'usuario').all()
+            solicitacoes = Request.objects.select_related('gpos', 'pdv_atual', 'loja_nova', 'pdv_novo', 'usuario').filter(usuario__username=user_instance)
             default_status = False
             status_solicitacao = request.GET.getlist('status')
 
