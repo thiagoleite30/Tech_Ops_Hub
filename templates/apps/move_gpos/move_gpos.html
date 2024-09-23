@@ -1,11 +1,10 @@
 {% extends 'shared/base.html' %} {% load static %} {% block content %}
-<main role="main" class="container">
+<main role="main" class="container-fluid">
     <div class="container-fluid" style="padding-top: 20px;">
         <div class="starter-template" style="justify-content: center; align-items: center;">
             <h1 style="text-align: center; color: #6c757d">MOVE GPOS</h1>
         </div>
-
-        <div class="container" style="padding: 20px; border-radius: 10px; justify-content: center; display: flex;">
+        <div class="row" style="padding: 20px; border-radius: 10px; justify-content: center;">
             <div class="col-sm-4" style="justify-content: center; display: flex;">
                 <div class="card h-100 text-center" style="border-style: none;">
                     <div class="card-body container_form_id" style="display: block;">
@@ -41,12 +40,11 @@
                         </a>
                     </div>
                 </div>
-            </div>
-            {% include 'apps/move_gpos/_ajuda_modal/_ajuda_modal.html' %}
+            </div> 
         </div>
     </div>
 </main>
-
+{% include 'apps/move_gpos/_ajuda_modal/_ajuda_modal.html' %}
 <!--
     <footer>
         <div class="container">
