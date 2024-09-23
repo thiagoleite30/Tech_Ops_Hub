@@ -36,6 +36,20 @@ class ManufacturerForms(forms.ModelForm):
 
         return instance
 
+    def clean_nome(self):
+        if 'nome' not in self.cleaned_data:
+            raise forms.ValidationError(
+                f'Campo "{nome}" não encontrado nos dados limpos.')
+        nome = self.cleaned_data['nome']
+        if nome:
+            nome_exist = [
+                t.nome for t in Manufacturer.objects.filter(nome__iexact=nome).exclude(id=self.instance.id)]
+            if nome_exist:
+                raise forms.ValidationError(
+                    f'O nome "{nome}" já está em uso com "{nome_exist[0]}".')
+
+        return nome
+
 
 class CostCenterForms(forms.ModelForm):
     form_name = 'Novo Centro de Custo'
@@ -108,7 +122,7 @@ class AssetTypeForms(forms.ModelForm):
         nome = self.cleaned_data['nome']
         if nome:
             nome_exist = [
-                t.nome for t in AssetType.objects.filter(nome__iexact=nome)]
+                t.nome for t in AssetType.objects.filter(nome__iexact=nome).exclude(id=self.instance.id)]
             if nome_exist:
                 raise forms.ValidationError(
                     f'O nome "{nome}" já está em uso com "{nome_exist[0]}".')

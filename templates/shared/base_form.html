@@ -27,14 +27,14 @@
             outro(a)</button>
         {% else %}
         <button name="save" type="submit" class="btn btn-secondary btn-lg">Salvar</button>
+        {% if url_return %}
+        <a href="{% url url_return %}" class="btn btn-outline-secondary btn-lg" style="padding: auto;">Cancelar</a>
+        {% endif %}
         {% if url_form == 'novo_movimento' %}
         <a href="{% url 'carrinho' %}" class="btn btn-outline-secondary btn-lg" style="padding: auto;">Cancelar</a>
         {% endif %}
         {% if url_form == 'upload_csv' %}
         <a href="{% url 'index' %}" class="btn btn-outline-secondary btn-lg" style="padding: auto;">Cancelar</a>
-        {% endif %}
-        {% if url_form == 'editar_acessorio' %}
-        <a href="{% url 'acessorios' %}" class="btn btn-outline-secondary btn-lg" style="padding: auto;">Cancelar</a>
         {% endif %}
         {% endif %}
     </div>

@@ -654,9 +654,13 @@ def editar_aprovacao(request, aprovacao_id):
                 request.POST, request.FILES, instance=aprovacao)
 
             if form.is_valid():
-                register_logentry(instance=form.save(), action=CHANGE,
-                                  user=request.user, modificacao='Editada Aprovação')
-                messages.success(request, 'Aprovação modificada com sucesso.')
+                if form.has_changed():
+                    register_logentry(instance=form.save(), action=CHANGE,
+                                    user=request.user, modificacao='Editada Aprovação')
+                    messages.success(request, 'Aprovação modificada com sucesso.')
+                else:
+                    messages.info(request, 'Nenhuma alteração foi feita')
+                
                 url = reverse('aprovacao', kwargs={
                               'aprovacao_id': aprovacao_id})
                 return redirect(url)
@@ -1093,16 +1097,20 @@ def editar_acessorio(request, id):
                 request.POST, request.FILES, instance=acessorio)
 
             if form.is_valid():
-                register_logentry(instance=form.save(), action=CHANGE,
-                                  user=request.user, modificacao='Editado Acessório')
-                messages.success(request, 'Acessório Salvo')
+                if form.has_changed():
+                    register_logentry(instance=form.save(), action=CHANGE,
+                                    user=request.user, modificacao='Editado Acessório')
+                    messages.success(request, 'Acessório Salvo')
+                else:
+                    messages.info(request, 'Nenhuma alteração foi feita')
 
                 return redirect('acessorios')
 
     context = {
         'form': form,
         'id': id,
-        'url_form': resolve(request.path_info).url_name
+        'url_form': resolve(request.path_info).url_name,
+        'url_return': 'acessorios'
     }
 
     return render(request, 'apps/tech_assets/editar.html', context)
@@ -1151,16 +1159,20 @@ def editar_fabricante(request, id):
                 request.POST, request.FILES, instance=fabricante)
 
             if form.is_valid():
-                register_logentry(instance=form.save(), action=CHANGE,
-                                  user=request.user, modificacao='Editado Registro do Fabricante')
-                messages.success(request, 'Fabricante Salvo')
+                if form.has_changed():
+                    register_logentry(instance=form.save(), action=CHANGE,
+                                    user=request.user, modificacao='Editado Registro do Fabricante')
+                    messages.success(request, 'Fabricante Salvo')
+                else:
+                    messages.info(request, 'Nenhuma alteração foi feita')
 
                 return redirect('fabricantes')
 
     context = {
         'form': form,
         'id': id,
-        'url_form': resolve(request.path_info).url_name
+        'url_form': resolve(request.path_info).url_name,
+        'url_return': 'fabricantes'
     }
 
     return render(request, 'apps/tech_assets/editar.html', context)
@@ -1178,9 +1190,8 @@ def centros_custo(request):
     if query:
         cc = cc.filter(
             Q(nome__icontains=query) |
-            Q(modelo__icontains=query) |
-            Q(tipo__icontains=query) |
-            Q(fabricante__nome__icontains=query)
+            Q(responsavel__icontains=query) |
+            Q(numero__icontains=query)
         )
 
     cc_lista = cc.order_by('id')
@@ -1206,19 +1217,23 @@ def editar_centro_custo(request, id):
     form = CostCenterForms(instance=cc)
     if cc:
         if request.method == 'POST':
-            form = AccessoryForms(request.POST, request.FILES, instance=cc)
+            form = CostCenterForms(request.POST, request.FILES, instance=cc)
 
             if form.is_valid():
-                register_logentry(instance=form.save(), action=CHANGE,
-                                  user=request.user, modificacao='Editado Registro de Centro de Custo')
-                messages.success(request, 'Centro de Custo Salvo')
-
+                if form.has_changed():
+                    register_logentry(instance=form.save(), action=CHANGE,
+                                    user=request.user, modificacao='Editado Registro de Centro de Custo')
+                    messages.success(request, 'Centro de Custo Salvo')
+                else:
+                    messages.info(request, 'Nenhuma alteração foi feita')
+                    
                 return redirect('centros_custo')
 
     context = {
         'form': form,
         'id': id,
-        'url_form': resolve(request.path_info).url_name
+        'url_form': resolve(request.path_info).url_name,
+        'url_return': 'centros_custo'
     }
 
     return render(request, 'apps/tech_assets/editar.html', context)
@@ -1265,16 +1280,20 @@ def editar_local(request, id):
             form = LocationForms(request.POST, request.FILES, instance=objeto)
 
             if form.is_valid():
-                register_logentry(instance=form.save(), action=CHANGE,
-                                  user=request.user, modificacao='Editado Registro de Local')
-                messages.success(request, 'Fabricante Salvo')
+                if form.has_changed():
+                    register_logentry(instance=form.save(), action=CHANGE,
+                                    user=request.user, modificacao='Editado Registro de Local')
+                    messages.success(request, 'Fabricante Salvo')
+                else:
+                    messages.info(request, 'Nenhuma alteração foi feita')
+                return redirect('locais')
 
-                return redirect('fabricantes')
 
     context = {
         'form': form,
         'id': id,
-        'url_form': resolve(request.path_info).url_name
+        'url_form': resolve(request.path_info).url_name,
+        'url_return': 'locais'
     }
 
     return render(request, 'apps/tech_assets/editar.html', context)
@@ -1324,16 +1343,19 @@ def editar_modelo(request, id):
                 request.POST, request.FILES, instance=objeto)
 
             if form.is_valid():
-                register_logentry(instance=form.save(), action=CHANGE,
-                                  user=request.user, modificacao='Editado Registro de Modelo de Ativo')
-                messages.success(request, 'Modelo de Ativo Salvo')
-
+                if form.has_changed():
+                    register_logentry(instance=form.save(), action=CHANGE,
+                                    user=request.user, modificacao='Editado Registro de Modelo de Ativo')
+                    messages.success(request, 'Modelo de Ativo Salvo')
+                else:
+                    messages.info(request, 'Nenhuma alteração foi feita')
                 return redirect('modelos_ativo')
 
     context = {
         'form': form,
         'id': id,
-        'url_form': resolve(request.path_info).url_name
+        'url_form': resolve(request.path_info).url_name,
+        'url_return': 'modelos_ativo'
     }
 
     return render(request, 'apps/tech_assets/editar.html', context)
@@ -1382,16 +1404,20 @@ def editar_tipo_ativo(request, id):
             form = AssetTypeForms(request.POST, request.FILES, instance=objeto)
 
             if form.is_valid():
-                register_logentry(instance=form.save(), action=CHANGE,
-                                  user=request.user, modificacao='Editado Registro de Tipo de Ativo')
-                messages.success(request, 'Tipo de Ativo Salvo')
+                if form.has_changed():
+                    register_logentry(instance=form.save(), action=CHANGE,
+                                    user=request.user, modificacao='Editado Registro de Tipo de Ativo')
+                    messages.success(request, 'Tipo de Ativo Salvo')
+                else:
+                    messages.info(request, 'Nenhuma alteração foi feita')
 
                 return redirect('tipos_ativo')
 
     context = {
         'form': form,
         'id': id,
-        'url_form': resolve(request.path_info).url_name
+        'url_form': resolve(request.path_info).url_name,
+        'url_return': 'tipos_ativo'
     }
 
     return render(request, 'apps/tech_assets/editar.html', context)
