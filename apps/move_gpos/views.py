@@ -1,14 +1,19 @@
+import traceback
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.models import User
 from django.urls import resolve
 from django.contrib.admin.models import ADDITION
 from django.contrib import messages
 from apps.move_gpos.forms import RequestForms
-from apps.move_gpos.models import GPOS
+from apps.move_gpos.models import GPOS, Request
 from apps.move_gpos.services import dispara_fluxo, dispara_fluxo_debug
 from apps.tech_assets.models import AssetInfo, Location
 from apps.tech_assets.services import register_logentry
 from django.contrib.auth.decorators import login_required
+from django.db.models import Exists, OuterRef, Q, Case, \
+    When, Value, IntegerField
+from django.core.paginator import Paginator
 from utils.decorators import group_required
 
 # Create your views here.
@@ -142,3 +147,67 @@ def requisicao_troca(request):
     }
 
     return render(request, 'apps/move_gpos/requisicao_troca.html', context)
+
+
+@login_required
+@group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='zona_restrita')
+def solicitacoes(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    user_instance = get_object_or_404(User, username=request.user)
+
+    if user_instance:
+        try:
+            query = request.GET.get('q', '')
+            solicitacoes = Request.objects.select_related('gpos', 'pdv_atual', 'loja_nova', 'pdv_novo', 'usuario').all()
+            default_status = False
+            status_solicitacao = request.GET.getlist('status')
+
+            if query:
+                solicitacoes = solicitacoes.filter(
+                    Q(id__icontains=query) |
+                    Q(chamado__icontains=query) |
+                    Q(gpos__ativo__nome__icontains=query) |
+                    Q(gpos__loja__nome__icontains=query) |
+                    Q(pdv_atual__nome__icontains=query) |
+                    Q(pdv_novo__nome__icontains=query) |
+                    Q(usuario__username__icontains=query) |
+                    Q(usuario__first_name__icontains=query) |
+                    Q(usuario__last_name__icontains=query)
+                 )
+
+            status_query = Q()
+            if status_solicitacao:
+                if 'concluido' in status_solicitacao:
+                    status_query |= Q(concluida=True)
+                if 'pendente' in status_solicitacao:
+                    status_query |= Q(concluida=False)
+
+            solicitacoes = solicitacoes.filter(status_query).order_by(
+                Case(
+                    When(concluida=False, then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField()
+                ),
+                'concluida',
+                '-data_inclusao',
+            )
+
+            paginator = Paginator(solicitacoes, 16)
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+
+            context = {
+                #'solicitacoes': solicitacoes,
+                'url_form': resolve(request.path_info).url_name,
+                'page_obj': page_obj,
+                'query': query,
+            }
+
+            return render(request, 'apps/move_gpos/solicitacoes.html', context)
+        except Exception as e:
+            print(f'ERROR :: SOLICITAÇÕES :: {e}')
+            traceback.print_exc()
+
+    return redirect('index')

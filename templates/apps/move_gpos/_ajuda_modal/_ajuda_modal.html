@@ -1,0 +1,36 @@
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Informações Pertinentes</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                {% include 'apps/move_gpos/_ajuda_modal/_ajuda_modal_text/_ajuda_modal_text.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Seleciona o checkbox e o link "Aceitar"
+    const checkbox = document.getElementById('defaultCheck2');
+    const acceptLink = document.getElementById('acceptLink');
+
+    // Função para verificar o estado do checkbox e adicionar/remover a classe 'disabled'
+    function toggleLinkState() {
+        if (checkbox.checked) {
+            acceptLink.classList.remove('disabled');
+        } else {
+            acceptLink.classList.add('disabled');
+        }
+    }
+
+    // Adiciona um event listener ao checkbox para verificar quando o estado mudar
+    checkbox.addEventListener('change', toggleLinkState);
+
+    // Chama a função inicialmente para garantir que o link esteja no estado correto
+    toggleLinkState();
+</script>

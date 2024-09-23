@@ -31,3 +31,10 @@ def checa_resposta_aprovacoes(value):
         return "bg-success"
     else:
         return "bg-primary"
+
+@register.filter
+def _move_gposcheca_status_solicitacoes(value):
+    if value:
+        return "bg-success"
+    else:
+        return "bg-primary"
