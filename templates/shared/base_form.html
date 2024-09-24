@@ -36,6 +36,9 @@
         {% if url_form == 'upload_csv' %}
         <a href="{% url 'index' %}" class="btn btn-outline-secondary btn-lg" style="padding: auto;">Cancelar</a>
         {% endif %}
+        {% if url_form == 'editar_aprovacao' %}
+        <a href="{% url 'aprovacao' id %}" class="btn btn-outline-secondary btn-lg" style="padding: auto;">Cancelar</a>
+        {% endif %}
         {% endif %}
     </div>
 </div>

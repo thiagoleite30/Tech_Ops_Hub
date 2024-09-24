@@ -19,7 +19,7 @@
             <div class="col-sm-3" style="padding-bottom: 10px;">
                 <div class="card {{ termo.aceite_usuario|checa_resposta_termos }} h-100" >
                     <div class="card-body text-center">
-                        <h5 class="card-title"><a class="text-white" href="{% url 'termo' termo.id %}">Termo Número:
+                        <h5 class="card-title"><a href="{% url 'termo' termo.id %}">Termo Número:
                                 {{termo.id}}</a></h5>
                     </div>
                     <ul class="list-group list-group-flush">
@@ -30,13 +30,6 @@
                         <li class="list-group-item"><b>Usuário Responsável: </b>{{ termo.movimentacao.usuario.first_name }} {{ termo.movimentacao.usuario.last_name }} ({{ termo.movimentacao.usuario }})</li>
                         <li class="list-group-item"><b>Matricula Responsável: </b>{{ termo.movimentacao.usuario.profile.employee_id|pegar_matricula_empId }}</li>
                         <li class="list-group-item">
-                            <b>Resposta do Usuário Responsável: </b>
-                            {% if termo.aceite_usuario != 'pendente' %}
-                            {{termo.get_aceite_usuario_display}} por {{termo.movimentacao.usuario.first_name}} {{termo.movimentacao.usuario.last_name}} em {{termo.data_resposta}}{% else %}
-                            Pendente
-                            {%endif%}
-                        </li>
-                        <li class="list-group-item">
                             <b>
                                 Status Movimentação: 
                             </b>
@@ -45,26 +38,15 @@
                             </b>
                         </li>
                     </ul>
-                    <!--
-                    <div class="card-body">
-                        {% if approvall.status_aprovacao == 'pendente' %}
-                        <div class="end-template container-fluid"
-                            style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-                            <a href="{% url 'aprova_movimentacao' approvall.id %}"
-                                class="btn btn-success btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}"
-                                style="margin-right: 10px;">Aprovar</a>
-                            <a href="{% url 'reprova_movimentacao' approvall.id %}"
-                                class="btn btn-danger btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}">Reprovar</a>
-                        </div>
-                        {%else%}
-                        <div class="end-template container-fluid"
-                            style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-                            <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aprovar</a>
-                            <a href="#" class="btn btn-danger btn-lg disabled">Reprovar</a>
-                        </div>
+                    <div class="card-body h-100">
+                        <h5 class="card-title">Resposta do Usuário Responsável: </h5>
+                        {% if termo.aceite_usuario != 'pendente' %}
+                        {{termo.get_aceite_usuario_display}} por <strong>{{termo.movimentacao.usuario.first_name}} {{termo.movimentacao.usuario.last_name}}</strong> em {{termo.data_resposta}}{% else %}
+                        Pendente
                         {%endif%}
-                    </div>-->
+                    </div>
                 </div>
+
             </div>
             {% endfor %}
         </div>

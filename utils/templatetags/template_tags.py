@@ -17,24 +17,24 @@ def pegar_matricula_empId(value):
 @register.filter
 def checa_resposta_termos(value):
     if value == 'recusado':
-        return "bg-danger"
+        return "border-danger mb-3"
     elif value == 'aceito':
-        return "bg-success"
+        return "border-success mb-3"
     else:
-        return "bg-primary"
+        return "border-primary mb-3"
 
 @register.filter
 def checa_resposta_aprovacoes(value):
     if value == 'reprovado':
-        return "bg-danger"
+        return "border-danger mb-3"
     elif value == 'aprovado':
-        return "bg-success"
+        return "border-success mb-3"
     else:
-        return "bg-primary"
+        return "border-primary mb-3"
 
 @register.filter
 def _move_gposcheca_status_solicitacoes(value):
     if value:
-        return "bg-success"
+        return "border-success mb-3"
     else:
-        return "bg-primary"
+        return "border-primary mb-3"

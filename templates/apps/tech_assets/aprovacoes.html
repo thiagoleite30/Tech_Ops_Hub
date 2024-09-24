@@ -17,9 +17,9 @@
             </div>
             {% for approval in page_obj %}
             <div class="col-sm-3" style="padding-bottom: 10px;">
-                <div class="card {{ approval.status_aprovacao|checa_resposta_aprovacoes }} h-100">
+                <div class="card {{ approval.status_aprovacao|checa_resposta_aprovacoes }}  h-100">
                     <div class="card-body text-center">
-                        <h5 class="card-title"><a class="text-white" href="{% url 'aprovacao' approval.id %}">Aprovação
+                        <h5 class="card-title"><a href="{% url 'aprovacao' approval.id %}">Aprovação
                                 Número:
                                 {{approval.id}}</a></h5>
                     </div>
@@ -32,29 +32,16 @@
                         <li class="list-group-item"><b>Usuário Responsável:
                             </b>{{approval.movimentacao.usuario.first_name}} {{approval.movimentacao.usuario.last_name}}
                             ({{approval.movimentacao.usuario}})</li>
-                        <li class="list-group-item"><b>Aprovador designado: </b>{{approval.aprovador}}</li>
-                        <li class="list-group-item"><b>Status: </b>{{approval.get_status_aprovacao_display}}</li>
+                        <li class="list-group-item"><b>Matricula Responsável: </b>{{ approval.movimentacao.usuario.profile.employee_id|pegar_matricula_empId }}</li>
+                        <li class="list-group-item"><b>Aprovador designado: </b>{{approval.aprovador.first_name}} {{approval.aprovador.last_name}}</li>
                     </ul>
-                    <!--
-                    <div class="card-body">
-                        {% if approval.status_aprovacao == 'pendente' %}
-                        <div class="end-template container-fluid"
-                            style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-                            <a href="{% url 'aprova_movimentacao' approval.id %}"
-                                class="btn btn-success btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}"
-                                style="margin-right: 10px;">Aprovar</a>
-                            <a href="{% url 'reprova_movimentacao' approval.id %}"
-                                class="btn btn-danger btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}">Reprovar</a>
-                        </div>
-                        {%else%}
-                        <div class="end-template container-fluid"
-                            style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-                            <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aprovar</a>
-                            <a href="#" class="btn btn-danger btn-lg disabled">Reprovar</a>
-                        </div>
+                    <div class="card-body h-100">
+                        <h5 class="card-title">Resposta do Aprovador Designado: </h5>
+                        {% if approval.status_aprovacao != 'pendente' %}
+                        {{approval.get_status_aprovacao_display}} por <strong>{{approval.aprovador.first_name}} {{approval.aprovador.last_name}}</strong> em {{approval.data_conclusao}}{% else %}
+                        Pendente
                         {%endif%}
                     </div>
-                    -->
                 </div>
             </div>
             {% endfor %}

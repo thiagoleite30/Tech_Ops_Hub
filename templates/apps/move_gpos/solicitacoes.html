@@ -18,7 +18,7 @@
                 <div class="card {{ solicitacao.concluida|_move_gposcheca_status_solicitacoes }} h-100">
                     <div class="card-body text-center">
                         <h5 class="card-title">
-                            <a class="text-white" href="#">
+                            <a href="#">
                                 Chamado: {{solicitacao.chamado}}
                             </a>
                         </h5>
@@ -27,14 +27,6 @@
                         <li class="list-group-item">
                             <b>GPOS: </b>
                             {{solicitacao.gpos.pos_number}}
-                        </li>
-                        <li class="list-group-item">
-                            <b>Antigo PDV: </b>
-                            {{solicitacao.pdv_atual}}
-                        </li>
-                        <li class="list-group-item">
-                            <b>Novo PDV: </b>
-                            {{solicitacao.pdv_novo}}
                         </li>
                         <li class="list-group-item">
                             <b>Usuário Solicitante: </b>
@@ -46,26 +38,10 @@
                             {{solicitacao.data_inclusao}}
                         </li>
                     </ul>
-                    <!--
-                    <div class="card-body">
-                        {% if solicitacao.status_aprovacao == 'pendente' %}
-                        <div class="end-template container-fluid"
-                            style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-                            <a href="{% url 'aprova_movimentacao' solicitacao.id %}"
-                                class="btn btn-success btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}"
-                                style="margin-right: 10px;">Aprovar</a>
-                            <a href="{% url 'reprova_movimentacao' solicitacao.id %}"
-                                class="btn btn-danger btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}">Reprovar</a>
-                        </div>
-                        {%else%}
-                        <div class="end-template container-fluid"
-                            style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-                            <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aprovar</a>
-                            <a href="#" class="btn btn-danger btn-lg disabled">Reprovar</a>
-                        </div>
-                        {%endif%}
+                    <div class="card-body h-100">
+                        <h5 class="card-title">Detalhes: </h5>
+                        <p>Solicitada movimentação do PDV <strong>{{solicitacao.pdv_atual.nome}}</strong> para o PDV <strong>{{solicitacao.pdv_novo.nome}}</strong></p>
                     </div>
-                    -->
                 </div>
             </div>
             {% endfor %}

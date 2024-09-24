@@ -1,4 +1,6 @@
 {% load static %}
+{% load template_tags %}
+
 <div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
     <h5 class="card-title">{{approval.movimentacao.get_tipo_display}} para {{approval.movimentacao.usuario.first_name}} {{approval.movimentacao.usuario.last_name}}</h5>
     <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
@@ -22,10 +24,10 @@
             <div class="end-template container-fluid"
                 style="display: flex; align-items: center; justify-content: center; padding: 20px;">
                 <a href="{% url 'aprova_movimentacao' approval.id %}"
-                    class="btn btn-success btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}"
+                    class="btn btn-success btn-lg {% if not 'Aprovadores TI' in user_groups %}disabled{% endif %}"
                     style="margin-right: 10px;">Aprovar</a>
                 <a href="{% url 'reprova_movimentacao' approval.id %}"
-                    class="btn btn-danger btn-lg {% if not is_aprovadores_ti_user %}disabled{% endif %}">Reprovar</a>
+                    class="btn btn-danger btn-lg {% if not 'Aprovadores TI' in user_groups %}disabled{% endif %}">Reprovar</a>
             </div>
             {%else%}
             <div class="end-template container-fluid"

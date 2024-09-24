@@ -668,7 +668,7 @@ def editar_aprovacao(request, aprovacao_id):
     context = {
         'form': form,
         'id': aprovacao,
-        'url_form': resolve(request.path_info).url_name
+        'url_form': resolve(request.path_info).url_name,
     }
 
     return render(request, 'apps/tech_assets/editar.html', context)
