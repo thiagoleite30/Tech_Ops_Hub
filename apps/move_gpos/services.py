@@ -15,7 +15,6 @@ from django.conf import settings
 
 
 def upload_gpos(df):
-
     # Filtrando apenas as linhas que possuem um endereço MAC válido
     df = df[df['MacAddress'].notna() & (df['MacAddress'] != '')]
     df.dropna(subset=['Loja', 'Id', 'MacAddress', 'PosNumber', 'PDV' ], inplace=True)
@@ -137,7 +136,7 @@ def dispara_fluxo(request, json_request):
 
 
 def verifica_requisicoes():
-    from apps.move_gpos.tasks import consulta_bd_mv
+    
     topdesk = TopDesk()
 
     requisicoes = Request.objects.filter(concluida=False)
@@ -145,6 +144,7 @@ def verifica_requisicoes():
     for requisicao in requisicoes:
         if requisicao.chamado != None:
             if topdesk.get_status_call(requisicao.chamado):
+                from apps.move_gpos.tasks import consulta_bd_mv
                 requisicao.concluida = True
                 requisicao.data_conclusao = timezone.now()
                 consulta_bd_mv(pos_number=requisicao.gpos.pos_number)

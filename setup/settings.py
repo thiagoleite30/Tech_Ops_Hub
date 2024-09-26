@@ -373,14 +373,17 @@ CELERY_BROKER_URL = str(os.getenv('RMQ_URL'))
 
 # Settings Schedule Celery
 
+from celery.schedules import crontab
+
 CELERY_BEAT_SCHEDULE = {
     'rodar_consulta_bd_mv': {
         'task': 'apps.move_gpos.tasks.consulta_bd_mv',
-        'schedule': 1200.0,  # 1200.0 = 20 minutos em segundos
+        'schedule': crontab(minute='*/30'),  # Executa a cada 30 minutos
     },
     'rodar_rotina_checa_requisicoes': {
         'task': 'apps.move_gpos.tasks.rotina_checa_requisicoes',
-        'schedule': 300.0,  # 300.0 = 5 minutos em segundos
+        'schedule': crontab(minute='*/5'),  # Executa a cada 20 minutos
+        #'schedule': 300.0,  # 300.0 = 5 minutos em segundos
     },
 }
 
