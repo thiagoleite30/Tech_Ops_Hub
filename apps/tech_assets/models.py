@@ -131,6 +131,15 @@ class Asset(models.Model):
     def __str__(self):
         return self.nome
 
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None  # Verifica se é uma nova instância
+        super(Asset, self).save(*args, **kwargs)
+
+        if is_new:
+            get, create = AssetInfo.objects.get_or_create(ativo=self)
+            
+            if create:
+                print(f'DEBUG :: Asset Save :: Create a new AssetInfo ID: {get.id}')
 
 class AssetInfo(models.Model):
     ativo = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='assetinfo')
@@ -139,14 +148,15 @@ class AssetInfo(models.Model):
     memoria = models.CharField(max_length=100, null=True, blank=True)
     armazenamento = models.CharField(max_length=100, null=True, blank=True)
     processador = models.CharField(max_length=100, null=True, blank=True)
-    so = models.CharField(max_length=100, null=True, blank=True)
-    versao_so = models.CharField(max_length=100, null=True, blank=True)
-    licenca_so = models.CharField(max_length=100, null=True, blank=True)
-    data_instalacao_so = models.DateField(null=True, blank=True)
+    plataforma = models.CharField(max_length=100, null=True, blank=True)
+    versao_plataforma = models.CharField(max_length=100, null=True, blank=True)
+    licenca_plataforma = models.CharField(max_length=100, null=True, blank=True)
+    data_instalacao_plataforma = models.DateField(null=True, blank=True)
     data_garantia = models.DateField(null=True, blank=True)
     endereco_mac = models.CharField(max_length=40, null=True, blank=True)
     ultimo_logon = models.DateField(null=True, blank=True)
     ultimo_scan = models.DateField(null=True, blank=True)
+    data_registro = models.DateField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return f'{self.ativo.nome}'

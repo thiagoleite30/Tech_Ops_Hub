@@ -423,7 +423,7 @@ class MovementForms(forms.ModelForm):
             'usuario_cedente': 'Usuário Cedente',
             'centro_de_custo_cedente': 'Centro de Custo Cedente',
             'usuario': 'Usuário Recebedor',
-            'centro_de_custo_recebedor': 'Centro de Custo Cedente',
+            'centro_de_custo_recebedor': 'Centro de Custo Recebedor',
             'data_movimento': 'Data de Início',
             'data_devolucao_prevista': 'Data de Devolução Prevista',
             'data_devolucao_real': 'Data de Devolução Real',
@@ -441,7 +441,7 @@ class MovementForms(forms.ModelForm):
             'data_devolucao_prevista': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'data_devolucao_real': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'date'}),
             'chamado_top_desk': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex.: I2305-XXX'}),
-            'observacoes': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Aqui você pode inserir qualquer observação sobre o empréstimo. Como por exemplo: justificativas, registros futuros e etc.'}),
+            'observacoes': forms.Textarea(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):

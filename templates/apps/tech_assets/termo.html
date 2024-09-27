@@ -26,6 +26,10 @@
                         <a class="nav-link " id="acessorios-tab" data-toggle="tab" href="#acessorios" role="tab"
                             aria-controls="acessorios" aria-selected="false">Acessórios</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if not return_term %}disabled{%endif%}" id="devolucao-tab" data-toggle="tab" href="#devolucao" role="tab"
+                            aria-controls="devolucao" aria-selected="false">Devolução</a>
+                    </li>
                 </ul>
             </div>
             <div class="card-body">
@@ -34,6 +38,7 @@
                     {% include 'apps/tech_assets/partials_tech_assets/_movement_tab_content/_movement_tab_content_list/_movement_tab_content_list.html' %}
                     {% include 'apps/tech_assets/partials_tech_assets/_assets_tab_content/_assets_tab_content.html' %}
                     {% include 'apps/tech_assets/partials_tech_assets/_accessorys_tab_content/_accessorys_tab_content.html' %}
+                    {% include 'apps/tech_assets/partials_tech_assets/_return_tab_content/_return_tab_content.html' %}
                 </div>
             </div>
         </div>

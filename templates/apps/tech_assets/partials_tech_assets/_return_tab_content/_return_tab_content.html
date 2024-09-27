@@ -1,0 +1,20 @@
+{% load static %} {% load template_tags %}
+<div class="tab-pane fade" id="devolucao" role="tabpanel" aria-labelledby="devolucao-tab">
+    <div class="card-body">
+        <h5 class="card-title">Detalhes de Devolução</h5>
+    </div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+            <b>Recebido por: </b>
+            {{return_term.usuario_recebedor.first_name}} {{return_term.usuario_recebedor.last_name}} ({{return_term.usuario_recebedor}})
+        </li>
+        <li class="list-group-item">
+            <b>Data Devolução: </b>
+            {{return_term.data_retorno}}
+        </li>
+        <li class="list-group-item">
+            <b>Observação: </b>
+            {{return_term.observacao}}
+        </li>
+    </ul>
+</div>

@@ -94,12 +94,13 @@ def get_employedId(user):
 
         social_token = SocialToken.objects.get(
             account_id=social_account.id).token
-        
+
         headers = {
             'Authorization': 'Bearer ' + social_token
         }
-        employedId = requests.get(f'https://graph.microsoft.com/beta/users/{user.email}', headers=headers)
-        
+        employedId = requests.get(
+            f'https://graph.microsoft.com/beta/users/{user.email}', headers=headers)
+
         if employedId.status_code == 200:
             return employedId.json()["employeeId"]
         else:
@@ -204,25 +205,7 @@ def upload_assets(csv_file, user):
             register_logentry(instance=modelo, action=ADDITION,
                               user=user, detalhe=f'Usando Import CSV')
 
-        """
-        try:
-            if not AssetModel.objects.filter(nome__iexact=row['modelo']).exists():
-                print(f"Processando: {row['modelo']}")
-                modelo, created = AssetModel.objects.get_or_create(
-                    nome=row['modelo'], tipo=tipo, fabricante=fabricante)
-                if created:
-                    register_logentry(
-                        instance=modelo, action=ADDITION, user=user, detalhe=f'Usando Import CSV')
-                print(f"Criado: {row['modelo']}")
-        except IntegrityError as e:
-            # Ignora o erro e continua o fluxo
-            print(f"Erro ao criar o tipo '{row['modelo']}': {e}")
-        except Exception as e:
-            print(f"Erro inesperado ao processar '{
-                  row['modelo']}' ativo {ativo.id}: {e}")
-        """
         # criando os objetos Asset e AssetInfo, tipos e fabricantes
-
         try:
             # Atualiza ou cria o Asset
             ativo, created = Asset.objects.update_or_create(

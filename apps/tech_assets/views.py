@@ -829,6 +829,9 @@ def termo(request, termo_id):
         ]
     else:
         acessorios_com_quantidade = []
+    
+    # Pegando o primeiro resultado de termo de devolução (feito assim pois só há um por termo)
+    devolucao = movimentacao.returned.first()
 
     if request.method == 'POST':
         if term_res.movimentacao.usuario != request.user:
@@ -851,6 +854,7 @@ def termo(request, termo_id):
         'term': term_res,
         'aprovall': aprovacao,
         'movement': movimentacao if movimentacao else None,
+        'return_term': devolucao,
         'assets': ativos_na_movimentacao,
         'accessorys': acessorios_com_quantidade,
         'ReturnTerm': ReturnTerm.objects.filter(movimentacao=movimentacao).exists()
@@ -1485,3 +1489,26 @@ def minhas_movimentacoes(request):
             print(f'ERROR :: TERMOS :: {e}')
 
     return redirect('index')
+
+@login_required
+@group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
+def get_type(request):
+    asset_type_queryset = AssetType.objects.all()
+
+    return JsonResponse(list(asset_type_queryset.values('id', 'nome')), safe=False)
+
+
+@login_required
+@group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
+def get_models(request):
+    asset_model_list = []
+    if request.GET.get('id_tipo'):
+        asset_type_id = request.GET.get('id_tipo')
+        asset_model_queryset = AssetModel.objects.filter(tipo=asset_type_id
+        ).select_related(
+            'tipo',
+            'fabricante'
+        )
+        asset_model_list = list(asset_model_queryset.values('id', 'nome'))
+
+        return JsonResponse(asset_model_list, safe=False)

@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <div class="form-group row">
     {% if url_form != 'upload_csv' %}
-    <label for="inputEmail3" class="col-sm-2 col-form-label" for="{{ field.id_for_label }}">{{field.label }}</label>
+    <label for="inputEmail3" class="col-sm-2 col-form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
     {%endif%}
     <div class="{% if url_form != 'upload_csv' %}col-sm-10{%else%}col-sm-12{%endif%}">
         {{ field }}
@@ -45,6 +45,7 @@
 
 <script>
     // Adiciona um novo formulário quando o botão é clicado
+    /*
     document.getElementById('add-form').addEventListener('click', function () {
         const container = document.getElementById('accessory-formset');
         const index = container.children.length;  // Obtém o índice do novo formulário
@@ -72,6 +73,39 @@
         // Popula as opções do select
         populateSelectOptions(index);
     });
+            */
+    document.addEventListener('DOMContentLoaded', function () {
+        const element = document.getElementById('add-form');
+        if (element) {
+            element.addEventListener('click', function () {
+                const container = document.getElementById('accessory-formset');
+                const index = container.children.length;  // Obtém o índice do novo formulário
+                const newForm = `
+            <div class="form-group row">
+                <label for="id_acessorio_${index}" class="col-sm-2 col-form-label">Acessório:</label>
+                <div class="col-sm-5">
+                    <select name="form-acessorio" id="id_acessorio_${index}" class="form-control" required>
+                    </select>
+                </div>
+                <label for="id_quantidade_${index}" class="col-sm-1 col-form-label">Quantidade:</label>
+                <div class="col-sm-2">
+                    <input type="number" name="form-quantidade" id="id_quantidade_${index}" class="form-control" min="1" required/>
+                </div>
+                <div class="col-sm-2">
+                    <button type="button" class="form-control btn btn-outline-danger"  onclick="removeForm(this)"><b>Remover</b> <span class="btn-icon fa fa-remove"></span></button>
+                </div>
+            </div>
+            <div class="form-group row"></div>
+        `;
+
+                // Adiciona o novo formulário ao container
+                container.insertAdjacentHTML('beforeend', newForm);
+
+                // Popula as opções do select
+                populateSelectOptions(index);
+            });
+        }
+    });
 
     // Função para popular as opções do select com dados do servidor
     function populateSelectOptions(index) {
@@ -94,4 +128,42 @@
     function removeForm(button) {
         button.closest('.form-group.row').remove();  // Remove o formulário mais próximo
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const tipoField = document.getElementById('id_tipo');
+
+        // checa se o campo existe no DOM
+        if (tipoField) {
+            tipoField.addEventListener('change', function () {
+                const AssetTypeId = this.value;
+                console.log("ID Tipo Selecionado:", AssetTypeId);
+
+                fetch(`/get_models/?id_tipo=${AssetTypeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Opções de modelos recebidas:", data);
+                        update_models_select(data)
+                    })
+                    .catch(error => console.error('Erro ao buscar Modelos:', error));
+            });
+        } else {
+            console.error('Campo com ID "id_tipo" não encontrado.');
+        }
+    });
+
+    function update_models_select(options) {
+        const pdvSelect = document.getElementById('id_modelo');
+        pdvSelect.innerHTML = '';
+
+
+        options.forEach(option => {
+            const newOption = document.createElement('option');
+            newOption.value = option.id;
+            newOption.text = option.nome;
+            pdvSelect.add(newOption);
+
+        });
+
+    }
+
 </script>

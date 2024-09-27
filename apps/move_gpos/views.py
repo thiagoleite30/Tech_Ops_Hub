@@ -29,6 +29,7 @@ def move_gpos(request):
 @login_required
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def get_pdvs(request):
+    pdvs_list = []
     if request.GET.get('gpos_id'):
         gpos_id = request.GET.get('gpos_id')
         gpos = GPOS.objects.get(pk=gpos_id)
