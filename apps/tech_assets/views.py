@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.template import RequestContext
 from apps.tech_assets.context_processors_add import user_groups_processor
+from apps.tech_assets.filters import AssetFilter
 from apps.tech_assets.models import Accessory, Approval, Asset, \
     AssetCart, AssetInfo, AssetModel, AssetType, Cart, CostCenter, \
     Location, Manufacturer, Movement, MovementAccessory, MovementAsset, \
@@ -332,7 +333,7 @@ def novo_movimento(request):
         'texto': 'Cancelar'
     })
 
-
+"""
 @login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def ativos(request):
@@ -373,6 +374,39 @@ def ativos(request):
         'page_obj': page_obj,
         'query': query,
         'assets_unavailable': list(assets_unavailable),
+    }
+    return render(request, 'apps/tech_assets/ativos.html', context)
+"""
+
+@login_required
+@group_required(['Suporte'], redirect_url='zona_restrita')
+def ativos(request):
+    assets = Asset.objects.select_related('tipo').all()
+    
+    assets_unavailable = assets.exclude(
+        status__in=['em_estoque']).values_list('id', flat=True)
+    
+    subquery = AssetCart.objects.filter(ativo_id=OuterRef('pk')).values('pk')
+    
+    assets_in_cart = assets.filter(
+        Exists(subquery)).values_list('id', flat=True)
+
+    assets_filter = AssetFilter(request.GET, queryset=assets)
+
+    paginator = Paginator(assets_filter.qs.order_by('id'), 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    query = request.GET.copy()
+    if 'page' in query:
+        del query['page']
+    
+    context = {
+        'assets_in_cart': list(assets_in_cart),
+        'page_obj': page_obj,
+        'filter': assets_filter,
+        'assets_unavailable': list(assets_unavailable),
+        'query': query.urlencode(),  # Adiciona os parâmetros de consulta ao contexto
     }
     return render(request, 'apps/tech_assets/ativos.html', context)
 

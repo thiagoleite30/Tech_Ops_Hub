@@ -1,10 +1,87 @@
 {% extends 'shared/base.html' %} {% load static %} {% block content %}
+
 <main role="main" class="container-fluid">
     <div class="container-fluid" style="padding-top: 20px;">
         <div class="starter-template" style="justify-content: center; align-items: center;">
             <h1 style="text-align: center; color:#6c757d" name="assets">Ativos Cadastrados</h1>
         </div>
         <div style="margin-bottom: 10px; display: flex; justify-content: flex-end;">
+        </div>
+        <div class="card-header">
+            <div class="accordion" id="accordionExample">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Filtros
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <form method="GET" class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="id_nome" class="form-label">{{ filter.form.nome.label }}</label>
+                                    <input type="text" class="form-control" id="id_nome" name="nome"
+                                        value="{% if filter.form.nome.value != None %}{{ filter.form.nome.value }}{% else %}{%endif%}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="id_patrimonio" class="form-label">Patrimônio</label>
+                                    <input type="text" class="form-control" id="id_patrimonio" name="patrimonio"
+                                        value="{% if filter.form.patrimonio.value != None %}{{ filter.form.patrimonio.value }}{% else %}{%endif%}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="id_tipo" class="form-label">{{ filter.form.tipo.label }}</label>
+                                    <select id="id_tipo" name="tipo" class="form-select">
+                                        <option value="" {% if not filter.form.tipo.value %}selected{% endif %}>
+                                            ----------
+                                        </option>
+                                        {% for opt in filter.form.tipo.field.queryset %}
+                                        <option value="{{ opt.pk }}" 
+                                        {% if opt.pk|stringformat:"s" in filter.form.tipo.value|stringformat:"s" %} selected{% endif %}>
+                                            {{ opt.nome }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="id_modelo" class="form-label">
+                                        {{ filter.form.modelo.label }}
+                                    </label>
+                                    <select id="id_modelo" name="modelo" class="form-select">
+                                        <option value="" {% if not filter.form.modelo.value %}selected{% endif %}>
+                                            ----------
+                                        </option>
+                                        {% for opt in filter.form.modelo.field.queryset %}
+                                        <option value="{{ opt.pk }}" 
+                                        {% if opt.pk|stringformat:"s" in filter.form.modelo.value|stringformat:"s" %} selected{% endif %}>
+                                            {{ opt.nome }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="id_numero_serie" class="form-label">
+                                        {{ filter.form.numero_serie.label }}
+                                    </label>
+                                    <input type="text" class="form-control" id="id_numero_serie" name="numero_serie"
+                                        value="{% if filter.form.numero_serie.value != None %}{{ filter.form.numero_serie.value }}{% else %}{%endif%}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="id_status" class="form-label">
+                                        {{ filter.form.status.label }}
+                                    </label>
+                                    <input type="text" class="form-control" id="id_status" name="status"
+                                        value="{% if filter.form.status.value != None %}{{ filter.form.status.value }}{% else %}{%endif%}">
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">Buscar</button>
+                                    <a href="{% url 'ativos' %}" type="button" class="btn btn-secondary">Limpar</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="table-container">
             <table id="assetsTable" class="table table-bordered">
@@ -17,7 +94,7 @@
                     <th scope="col">Status</th>
                     <th scope="col">Visualizar</th>
                     <th scope="col">Carrinho</th>
-                    
+
                 </thead>
                 <tbody>
                     {% for asset in page_obj %}
@@ -62,8 +139,8 @@
         <div class="pagination">
             <span class="step-links">
                 {% if page_obj.has_previous %}
-                <a href="?page=1">&laquo; primeira</a>
-                <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}">anterior</a>
+                <a href="?page=1&{{ query }}">&laquo; primeira</a>
+                <a href="?page={{ page_obj.previous_page_number }}&{{ query }}">anterior</a>
                 {% endif %}
 
                 <span class="current">
@@ -71,12 +148,11 @@
                 </span>
 
                 {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}&q={{ query }}">próxima</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}">última &raquo;</a>
+                <a href="?page={{ page_obj.next_page_number }}&{{ query }}">próxima</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&{{ query }}">última &raquo;</a>
                 {% endif %}
             </span>
         </div>
-
     </div>
 </main>
 

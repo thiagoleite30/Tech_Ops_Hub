@@ -65,6 +65,7 @@ THIRD_PARTY_APPS = [
     'allauth.socialaccount.providers.microsoft',
     'pwa',
     'debug_toolbar',
+    'django_filters',
 ]
 
 
