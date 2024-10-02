@@ -50,21 +50,6 @@ def index(request):
     if not user.is_authenticated:
         return redirect('login')
 
-    if request.session['employeeId'] != None and "_" in request.session['employeeId']:
-        matricula = request.session['employeeId'].split("_", 1)[1]
-        employee = Employee.objects.get(matricula=matricula)
-        if employee:
-            employee_user, created = UserEmployee.objects.update_or_create(
-                user=request.user,
-                defaults={
-                'employee': employee,
-                'emp_id': request.session['employeeId']
-                }
-            )
-
-            if created:
-                print(f'DEBUG :: CREATE EMPLOYEE USER {employee_user}')
-
     grupos = ['Move GPOS']
     if user.groups.filter(name__in=grupos).exists():
         return redirect('move_gpos')

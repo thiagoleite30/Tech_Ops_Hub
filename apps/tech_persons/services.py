@@ -34,7 +34,8 @@ def upload_employee(df):
 
             if created:
                 print(f'\nDEBUG :: CREATE EMPLOYEE {employee}')
-
+                
+            employee.save()
     
     except IntegrityError as e:
         print(f'\nERROR :: EMPLOYEE {e}')
