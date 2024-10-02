@@ -24,14 +24,14 @@ class Manufacturer(models.Model):
 class CostCenter(models.Model):
     nome = models.CharField(max_length=100, null=False)
     responsavel = models.CharField(max_length=100, null=True, blank=True)
-    numero = models.CharField(null=False, unique=True)
+    numero = models.CharField(null=True, blank=True)
 
     class Meta:
         verbose_name = 'Centro de Custo'
         verbose_name_plural = 'Centros de Custo'
 
     def __str__(self) -> str:
-        return self.numero
+        return self.nome
 
 
 class AssetType(models.Model):

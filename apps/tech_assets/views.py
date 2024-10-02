@@ -25,7 +25,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q, Case, \
     When, Value, IntegerField
 from django.core.paginator import Paginator
-from apps.tech_persons.models import Profile
+from apps.tech_persons.models import Employee, UserEmployee
 from utils.decorators import group_required
 from django.contrib import messages
 
@@ -50,11 +50,20 @@ def index(request):
     if not user.is_authenticated:
         return redirect('login')
 
-    # info_perfil = get_profile_info(request)
-    perfil, create = Profile.objects.get_or_create(user=request.user)
-    perfil.employee_id = request.session['employeeId']
+    if request.session['employeeId'] != None and "_" in request.session['employeeId']:
+        matricula = request.session['employeeId'].split("_", 1)[1]
+        employee = Employee.objects.get(matricula=matricula)
+        if employee:
+            employee_user, created = UserEmployee.objects.update_or_create(
+                user=request.user,
+                defaults={
+                'employee': employee,
+                'emp_id': request.session['employeeId']
+                }
+            )
 
-    perfil.save()
+            if created:
+                print(f'DEBUG :: CREATE EMPLOYEE USER {employee_user}')
 
     grupos = ['Move GPOS']
     if user.groups.filter(name__in=grupos).exists():

@@ -145,6 +145,12 @@ DATABASES = {
     }
 }
 
+# Configurações Staging
+
+TNS_NAME=str(os.getenv('TNS_NAME'))
+STAGING_USER=str(os.getenv('STAGING_USER'))
+STAGING_PASSWORD=str(os.getenv('STAGING_PASSWORD'))
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -384,7 +390,10 @@ CELERY_BEAT_SCHEDULE = {
     'rodar_rotina_checa_requisicoes': {
         'task': 'apps.move_gpos.tasks.rotina_checa_requisicoes',
         'schedule': crontab(minute='*/5'),  # Executa a cada 20 minutos
-        #'schedule': 300.0,  # 300.0 = 5 minutos em segundos
+    },
+    'rodar_consulta_staging_tb_fp': {
+        'task': 'apps.tech_persons.tasks.consulta_staging_tb_fp',
+        'schedule': crontab(minute=0, hour='*/3'),  # Execute a cada três horas: meia-noite,
     },
 }
 
