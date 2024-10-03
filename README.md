@@ -52,20 +52,82 @@ When you're ready to make this README your own, just edit this file and use the 
 
 Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
 
-## Name
-Choose a self-explaining name for your project.
+## Tech Ops Hub
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+## Descrição do projeto
+Tech Ops Hub é um conjunto de microaplicações destinadas a facilitar as operações do departamento de TI. Ele centraliza a gestão de ativos, usuários e processos, integrando diferentes ferramentas e fluxos para otimizar a gestão e a movimentação de dispositivos de TI.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+### Funcionalidades
+
+1. Tech Assets:
+
+    - Gerencia o ciclo de vida de ativos de TI, como notebooks, monitores, celulares, e outros dispositivos.
+
+    - Permite a geração de movimentações, incluindo:
+
+        - Empréstimos: Cadastrar e acompanhar ativos emprestados.
+        - Baixas: Registrar a retirada ou o descarte de ativos.
+        - Transferências: Gerir a mudança de ativos entre departamentos ou usuários.
+
+
+2. Tech Persons:
+
+    - Integra dados de associados à plataforma para vinculação com usuários.
+    - Gera informações relevantes para documentações de movimentações, como as requisições de empréstimo e transferência.
+    - Facilita a gestão de perfis e informações de usuários vinculados aos ativos.
+
+
+3. Move GPOS:
+
+    - Apresenta um formulário de requisição de movimentação de dispositivos GPOS (terminais de pagamento).
+    - O usuário pode solicitar a movimentação dos dispositivos para novos locais.
+    - Integra-se com o Power Automate para execução automatizada do fluxo de movimentação.
+    - Permite o acompanhamento de solicitações em tempo real.
+
 
 ## Visuals
 Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## Instalação
+Para instalar e executar o projeto localmente, siga os passos abaixo:
+
+### Pré-requisitos
+
+    - Python 3.10 >
+    - Django 5.1
+    - PostgresSQL (recomendado) 
+
+### Passos para Instalação
+
+    1. Clone o repositório
+
+    `git clone https://github.com/seu-usuario/tech-ops-hub.git`
+
+    2. Acesse o diretório do projeto:
+
+    `cd tech-ops-hub`
+
+    3. Crie e ative um ambiente virtual:
+
+```
+    python -m venv venv
+    source venv/bin/activate  # Para sistemas Unix
+    venv\Scripts\activate  # Para Windows
+```
+    4. Instale as dependências:
+
+    `pip install -r requirements.txt`
+
+    5. Configure o banco de dados no arquivo settings.py.
+
+    6. Aplique as migrações:
+
+    `python manage.py migrate`
+
+    7. Inicie o servidor de desenvolvimento:
+
+    `python manage.py runserver`
+
 
 ## Usage
 Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
