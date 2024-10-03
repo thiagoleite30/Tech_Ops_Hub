@@ -24,8 +24,6 @@ from django.core.paginator import Paginator
 from utils.decorators import group_required
 from django.contrib import messages
 
-from allauth.account.decorators import verified_email_required
-
 # from django.views.decorators.cache import cache_page
 
 # Create your views here.
@@ -39,8 +37,8 @@ def login(request):
 def zona_restrita(request):
     return render(request, 'shared/zona_restrita.html')
 
-@verified_email_required
-#@login_required
+
+@login_required
 @group_required(['Suporte', 'Basico', 'Move GPOS'], redirect_url='zona_restrita')
 def index(request):
     user = request.user
