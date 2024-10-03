@@ -32,7 +32,7 @@
                         <li class="list-group-item"><b>Usuário Responsável:
                             </b>{{approval.movimentacao.usuario.first_name}} {{approval.movimentacao.usuario.last_name}}
                             ({{approval.movimentacao.usuario}})</li>
-                        <li class="list-group-item"><b>Matricula Responsável: </b>{{ approval.movimentacao.usuario.profile.employee_id|pegar_matricula_empId }}</li>
+                        <li class="list-group-item"><b>Matricula Responsável: </b>{{ approval.movimentacao.usuario.user_employee.employee.matricula }}</li>
                         <li class="list-group-item"><b>Aprovador designado: </b>{{approval.aprovador.first_name}} {{approval.aprovador.last_name}}</li>
                     </ul>
                     <div class="card-body h-100">

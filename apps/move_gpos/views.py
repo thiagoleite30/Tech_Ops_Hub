@@ -10,7 +10,7 @@ from apps.move_gpos.models import GPOS, Request
 from apps.move_gpos.services import dispara_fluxo, dispara_fluxo_debug
 from apps.tech_assets.models import AssetInfo, Location
 from apps.tech_assets.services import register_logentry
-from django.contrib.auth.decorators import login_required
+from allauth.account.decorators import verified_email_required
 from django.db.models import Exists, OuterRef, Q, Case, \
     When, Value, IntegerField
 from django.core.paginator import Paginator
@@ -19,14 +19,14 @@ from utils.decorators import group_required
 # Create your views here.
 
 
-@login_required
+@verified_email_required
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def move_gpos(request):
 
     return render(request, 'apps/move_gpos/move_gpos.html')
 
 
-@login_required
+@verified_email_required
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def get_pdvs(request):
     pdvs_list = []
@@ -67,7 +67,7 @@ def get_pdvs(request):
     return JsonResponse(pdvs_list, safe=False)
 
 
-@login_required
+@verified_email_required
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def get_gpos(request):
     gpos_queryset = GPOS.objects.filter(
@@ -87,7 +87,7 @@ def get_gpos(request):
     return JsonResponse(gpos_list, safe=False)
 
 
-@login_required
+@verified_email_required
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def requisicao_troca(request):
     if not request.user.is_authenticated:
@@ -150,7 +150,7 @@ def requisicao_troca(request):
     return render(request, 'apps/move_gpos/requisicao_troca.html', context)
 
 
-@login_required
+@verified_email_required
 @group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='zona_restrita')
 def solicitacoes(request):
     if not request.user.is_authenticated:

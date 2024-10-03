@@ -28,7 +28,7 @@
                         
                         <li class="list-group-item"><b>Aprovador de TI: </b>{{ termo.aprovacao.aprovador.first_name}} {{ termo.aprovacao.aprovador.last_name}}</li>
                         <li class="list-group-item"><b>Usuário Responsável: </b>{{ termo.movimentacao.usuario.first_name }} {{ termo.movimentacao.usuario.last_name }} ({{ termo.movimentacao.usuario }})</li>
-                        <li class="list-group-item"><b>Matricula Responsável: </b>{{ termo.movimentacao.usuario.profile.employee_id|pegar_matricula_empId }}</li>
+                        <li class="list-group-item"><b>Matricula Responsável: </b>{{ termo.movimentacao.usuario.user_employee.employee.matricula }}</li>
                         <li class="list-group-item">
                             <b>
                                 Status Movimentação: 
