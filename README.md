@@ -92,41 +92,41 @@ Depending on what you are making, it can be a good idea to include screenshots o
 Para instalar e executar o projeto localmente, siga os passos abaixo:
 
 ### Pré-requisitos
-
     - Python 3.10 >
     - Django 5.1
     - PostgresSQL (recomendado) 
 
 ### Passos para Instalação
 
-    1. Clone o repositório
+#### Clone o repositório
 
-    `git clone https://github.com/seu-usuario/tech-ops-hub.git`
+`git clone https://github.com/seu-usuario/tech-ops-hub.git`
 
-    2. Acesse o diretório do projeto:
+#### Acesse o diretório do projeto:
 
-    `cd tech-ops-hub`
+`cd tech-ops-hub`
 
-    3. Crie e ative um ambiente virtual:
+#### Crie e ative um ambiente virtual:
 
-```
-    python -m venv venv
-    source venv/bin/activate  # Para sistemas Unix
-    venv\Scripts\activate  # Para Windows
-```
-    4. Instale as dependências:
+`python -m venv venv`
 
-    `pip install -r requirements.txt`
+`source venv/bin/activate  # Para sistemas Unix`
 
-    5. Configure o banco de dados no arquivo settings.py.
+`venv\Scripts\activate  # Para Windows`
 
-    6. Aplique as migrações:
+#### Instale as dependências:
 
-    `python manage.py migrate`
+`pip install -r requirements.txt`
 
-    7. Inicie o servidor de desenvolvimento:
+#### Configure o banco de dados no arquivo settings.py.
 
-    `python manage.py runserver`
+#### Aplique as migrações:
+
+`python manage.py migrate`
+
+#### Inicie o servidor de desenvolvimento:
+
+`python manage.py runserver`
 
 
 ## Usage
