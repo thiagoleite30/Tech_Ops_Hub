@@ -28,4 +28,4 @@ class UserEmployee(models.Model):
         max_length=100, blank=True, null=True)  # Campo para employeeId
 
     def __str__(self):
-        return self.user.username
+        return str(self.user.username)

@@ -43,16 +43,9 @@ def get_profile_info(request):
         else:
             foto = request.session['profile_photo']
         
-        if 'employeeId' not in request.session:
-            employeeId = get_employedId(request.user)
-            request.session['employeeId'] = employeeId
-        else:
-            employeeId = request.session['employeeId']
-        
     else:
         foto = None
-        employeeId = None
-    return {'profile_photo': foto, 'employeeId': employeeId}
+    return {'profile_photo': foto}
 
 # Controles permissivos
 
@@ -65,37 +58,3 @@ def user_groups_processor(request):
         groups = []
     
     return {'user_groups': groups}
-
-"""
-def is_administradores_user(request):
-    is_admin = False
-    user = request.user
-    if user.is_authenticated:
-        is_admin = user.groups.filter(name='Administradores').exists()
-    return {'is_admin_user': is_admin}
-
-
-def is_aprovadores_ti_user(request):
-    is_aprovadores_ti_user = False
-    user = request.user
-    if user.is_authenticated:
-        is_aprovadores_ti_user = user.groups.filter(
-            name='Aprovadores TI').exists()
-    return {'is_aprovadores_ti_user': is_aprovadores_ti_user}
-
-def is_suporte_user(request):
-    is_suporte_user = False
-    user = request.user
-    if request.user.is_authenticated:
-        is_suporte_user = user.groups.filter(
-            name='Suporte').exists()
-    return {'is_suporte_user': is_suporte_user}
-
-def is_mvgpos_user(request):
-    is_mvgpos_user = False
-    user = request.user
-    if request.user.is_authenticated:
-        is_mvgpos_user = user.groups.filter(
-            name='Move GPOS').exists()
-    return {'is_mvgpos_user': is_mvgpos_user}
-"""

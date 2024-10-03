@@ -1,13 +1,9 @@
 import traceback
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.template import RequestContext
 from apps.tech_assets.context_processors_add import user_groups_processor
 from apps.tech_assets.filters import AssetFilter
-from apps.tech_assets.models import Accessory, Approval, Asset, \
-    AssetCart, AssetInfo, AssetModel, AssetType, Cart, CostCenter, \
-    Location, Manufacturer, Movement, MovementAccessory, MovementAsset, \
-    Maintenance, ReturnTerm, Termo
+from apps.tech_assets.models import *
 from django.shortcuts import get_object_or_404, render, redirect
 
 from apps.tech_assets.services import register_logentry, upload_assets, \
@@ -25,7 +21,6 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q, Case, \
     When, Value, IntegerField
 from django.core.paginator import Paginator
-from apps.tech_persons.models import Employee, UserEmployee
 from utils.decorators import group_required
 from django.contrib import messages
 

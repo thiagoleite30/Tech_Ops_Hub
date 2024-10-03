@@ -264,7 +264,7 @@ class MovementAsset(models.Model):
     return_condition = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
-        return self.ativo.nome
+        return str(self.ativo.nome)
 
     def marcar_como_devolvido(self):
         self.devolvido = True
@@ -303,7 +303,7 @@ class Cart(models.Model):
     ultima_alteracao = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
 class AssetCart(models.Model):
@@ -311,7 +311,7 @@ class AssetCart(models.Model):
     carrinho = models.ForeignKey(Cart, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
 class Maintenance(models.Model):
@@ -400,7 +400,7 @@ class NetworkDevice(models.Model):
         verbose_name_plural = 'Dispositivos de Rede'
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
 class Approval(models.Model):
@@ -421,7 +421,7 @@ class Approval(models.Model):
     data_conclusao = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f'{self.id}'
+        return str(self.id)
         # return f'Apovação criada para analise do aprovador {self.aprovador.username}'
 
     def save(self, *args, **kwargs):

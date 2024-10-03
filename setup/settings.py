@@ -209,22 +209,26 @@ AUTHORITY = str(os.getenv('AUTHORITY'))
 # Allauth e configurações especificas do provedor microsoft
 
 SOCIALACCOUNT_PROVIDERS = {
-    "microsoft": {
-        "APPS": [
+    'microsoft': {
+        'EMAIL_AUTHENTICATION': True,
+        'APPS': [
             {
-                "client_id": str(os.getenv('CLIENT_ID')),
-                "secret": str(os.getenv('CLIENT_SECRET')),
-                "settings": {
-                    "tenant": str(os.getenv('TENANT_ID')),
+                'client_id': str(os.getenv('CLIENT_ID')),
+                'secret': str(os.getenv('CLIENT_SECRET')),
+                'settings': {
+                    'tenant': str(os.getenv('TENANT_ID')),
                     # Optional: override URLs (use base URLs without path)
                     # "login_url": "https://login.microsoftonline.com",
                     # "graph_url": "https://graph.microsoft.com",
                 }
             }
         ],
-        # 'REDIRECT_URI': 'http://localhost:8000/accounts/microsoft/login/callback/',
+        #'REDIRECT_URI': '/',
     }
 }
+SOCIALACCOUNT_AUTO_SIGNUP = True
+#SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
 SOCIALACCOUNT_STORE_TOKENS = True  # Para que o model guarde o social token
 
