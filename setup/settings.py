@@ -218,8 +218,8 @@ SOCIALACCOUNT_PROVIDERS = {
                 'settings': {
                     'tenant': str(os.getenv('TENANT_ID')),
                     # Optional: override URLs (use base URLs without path)
-                    # "login_url": "https://login.microsoftonline.com",
-                    # "graph_url": "https://graph.microsoft.com",
+                    "login_url": "https://login.microsoftonline.com",
+                    "graph_url": "https://graph.microsoft.com",
                 }
             }
         ],
@@ -227,14 +227,22 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 SOCIALACCOUNT_AUTO_SIGNUP = True
-#SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+# Configuração para obrigar a verificação de e-mail
+ACCOUNT_EMAIL_REQUIRED = True  # E-mail é obrigatório
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # Verificação de e-mail obrigatória
+#ACCOUNT_AUTHENTICATION_METHOD = 'email'  # Autenticar via e-mail
+#ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3  # Defina o prazo de expiração do link de confirmação
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True  # Logar automaticamente após a confirmação de e-mail
 
 SOCIALACCOUNT_STORE_TOKENS = True  # Para que o model guarde o social token
 
 LOGIN_URL = str(os.getenv('URL_REDIRECT_POSLOGOUT'))
 
 LOGIN_REDIRECT_URL = '/'  # ou a URL para onde deseja redirecionar após o login
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/'
 
 # Altera o comportamento de, após login social do provedor, ir para uma tela padrão do Allauth. Vai direto pro URL definido acima
 SOCIALACCOUNT_LOGIN_ON_GET = True
