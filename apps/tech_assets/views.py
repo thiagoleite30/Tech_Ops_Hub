@@ -14,17 +14,17 @@ from apps.tech_assets.forms import AccessoryForms, ApprovalForms, \
     AssetModelForms, CSVUploadForm, DynamicAccessoryFormSet, \
     MovementForms, AssetForms, MaintenanceForms, \
     LocationForms, ManufacturerForms, CostCenterForms, \
-    AssetTypeForms, ReturnTermForms, TermoForms
+    AssetTypeForms, ReturnTermForms, TermoForms, LoginForms
 from django.urls import resolve, reverse
 from django.contrib.auth.models import User
 from allauth.account.decorators import verified_email_required
+from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q, Case, \
     When, Value, IntegerField
 from django.core.paginator import Paginator
 from utils.decorators import group_required
-from django.contrib import messages
-
-
+from django.contrib import messages, auth
+from django.urls import reverse
 
 # from django.views.decorators.cache import cache_page
 
@@ -32,14 +32,44 @@ from django.contrib import messages
 
 
 def login(request):
-    return render(request, 'shared/login.html')
+
+    form = LoginForms()
+
+    if request.method == 'POST':
+        form = LoginForms(request.POST)
+        if form.is_valid():
+            nome_login = form.cleaned_data.get('nome_login')
+            senha = form.cleaned_data.get('senha')
+
+            usuario = auth.authenticate(
+                request,
+                username=nome_login,
+                password=senha
+            )
+            if usuario is not None:
+                auth.login(request, usuario)
+                return redirect('index')
+            else:
+                form.add_error(None, "Usuário ou senha inválidos.")
+
+    return render(request, 'shared/login.html', {"form": form, "url": "login"})
+
+@login_required
+def logout(request):
+    tipo_login = request.session.get('type_login', None)
+    auth.logout(request)
+    print(f'DEBUG :: LOGOUT :: TIPO LOGIN :: {tipo_login}')
+    if tipo_login == 'social':
+        print(f'DEBUG :: LOGOUT :: É SOCIAL LOGOUT')
+        return redirect('https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=' + request.build_absolute_uri(reverse('logout')))
+    return redirect('login')
 
 
-@verified_email_required
+@login_required
 def zona_restrita(request):
     return render(request, 'shared/zona_restrita.html')
 
-@verified_email_required
+@login_required
 @group_required(['Suporte', 'Basico', 'Move GPOS'], redirect_url='zona_restrita')
 def index(request):
     user = request.user
@@ -53,7 +83,7 @@ def index(request):
     return render(request, 'apps/tech_assets/index.html')
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_fabricante(request):
     if not request.user.is_authenticated:
@@ -77,7 +107,7 @@ def cadastro_fabricante(request):
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_modelo(request):
     if not request.user.is_authenticated:
@@ -101,7 +131,7 @@ def cadastro_modelo(request):
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_acessorio(request):
     if not request.user.is_authenticated:
@@ -125,7 +155,7 @@ def cadastro_acessorio(request):
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_centro_custo(request):
     if not request.user.is_authenticated:
@@ -149,7 +179,7 @@ def cadastro_centro_custo(request):
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_tipo_ativo(request):
     if not request.user.is_authenticated:
@@ -173,7 +203,7 @@ def cadastro_tipo_ativo(request):
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 # @group_required('Admin', redirect_url='zona_restrita')
 def cadastro_local(request):
@@ -198,7 +228,7 @@ def cadastro_local(request):
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_manutencao(request, asset_id):
     if not request.user.is_authenticated:
@@ -231,7 +261,7 @@ def cadastro_manutencao(request, asset_id):
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name, 'asset_id': asset_id})
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def concluir_manutencao(request, asset_id):
     if not request.user.is_authenticated:
@@ -242,7 +272,7 @@ def concluir_manutencao(request, asset_id):
     return redirect('ativos')
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def cadastro_ativo(request):
     if not request.user.is_authenticated:
@@ -266,7 +296,7 @@ def cadastro_ativo(request):
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def get_accessory_options(request):
     options = list(Accessory.objects.all().values('id'))
@@ -277,7 +307,7 @@ def get_accessory_options(request):
     return JsonResponse(options, safe=False)
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def novo_movimento(request):
     if not request.user.is_authenticated:
@@ -324,7 +354,7 @@ def novo_movimento(request):
     })
 
 """
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def ativos(request):
     if not request.user.is_authenticated:
@@ -368,7 +398,7 @@ def ativos(request):
     return render(request, 'apps/tech_assets/ativos.html', context)
 """
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def ativos(request):
     assets = Asset.objects.select_related('tipo').all()
@@ -401,7 +431,7 @@ def ativos(request):
     return render(request, 'apps/tech_assets/ativos.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def ativo(request, asset_id):
     if not request.user.is_authenticated:
@@ -439,7 +469,7 @@ def ativo(request, asset_id):
     return render(request, 'apps/tech_assets/ativo.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def carrinho(request):
 
@@ -475,7 +505,7 @@ def carrinho(request):
     return render(request, 'apps/tech_assets/carrinho.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def add_carrinho(request, asset_id):
     if not request.user.is_authenticated:
@@ -501,7 +531,7 @@ def add_carrinho(request, asset_id):
     return redirect('index')
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def remove_do_carrinho(request, asset_id):
     if not request.user.is_authenticated:
@@ -526,7 +556,7 @@ def remove_do_carrinho(request, asset_id):
     return redirect('index')
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def deleta_carrinho(request):
     if not request.user.is_authenticated:
@@ -548,7 +578,7 @@ def deleta_carrinho(request):
     return redirect('index')
 
 
-@verified_email_required
+@login_required
 @group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='zona_restrita')
 def aprovacoes(request):
     if not request.user.is_authenticated:
@@ -611,7 +641,7 @@ def aprovacoes(request):
     return redirect('index')
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Aprovadores TI'], redirect_url='zona_restrita')
 def aprovacao(request, aprovacao_id):
     if not request.user.is_authenticated:
@@ -656,7 +686,7 @@ def aprovacao(request, aprovacao_id):
     return render(request, 'apps/tech_assets/aprovacao.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte', 'Administradores', 'Aprovadores TI'], redirect_url='zona_restrita')
 def editar_aprovacao(request, aprovacao_id):
     if not request.user.is_authenticated:
@@ -698,7 +728,7 @@ def editar_aprovacao(request, aprovacao_id):
     return render(request, 'apps/tech_assets/editar.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Aprovadores TI'], redirect_url='zona_restrita')
 def aprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
@@ -724,7 +754,7 @@ def aprova_movimentacao(request, aprovacao_id):
     return redirect('aprovacoes')
 
 
-@verified_email_required
+@login_required
 @group_required(['Aprovadores TI'], redirect_url='zona_restrita')
 def reprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
@@ -751,7 +781,7 @@ def reprova_movimentacao(request, aprovacao_id):
     return redirect('aprovacoes')
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte', 'TH'], redirect_url='zona_restrita')
 def termos(request):
     if not request.user.is_authenticated:
@@ -816,7 +846,7 @@ def termos(request):
     return redirect('index')
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte', 'TH', 'Basico'], redirect_url='zona_restrita')
 def termo(request, termo_id):
     if not request.user.is_authenticated:
@@ -887,7 +917,7 @@ def termo(request, termo_id):
     return render(request, 'apps/tech_assets/termo.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Aprovadores TI', 'Basico'], redirect_url='zona_restrita')
 def aceita_termo(request, termo_id):
     if not request.user.is_authenticated:
@@ -925,7 +955,7 @@ def aceita_termo(request, termo_id):
     return redirect(url)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Aprovadores TI', 'Basico'], redirect_url='zona_restrita')
 def recusa_termo(request, termo_id):
     if not request.user.is_authenticated:
@@ -966,7 +996,7 @@ def recusa_termo(request, termo_id):
     return redirect(url)
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def get_assets_return_options(request):
     options = list(MovementAsset.objects.all().values('id'))
@@ -977,7 +1007,7 @@ def get_assets_return_options(request):
     return JsonResponse(options, safe=False)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte', 'TH'], redirect_url='zona_restrita')
 def devolucao(request, termo_id):
     if not request.user.is_authenticated:
@@ -1061,7 +1091,7 @@ def devolucao(request, termo_id):
     return render(request, 'apps/tech_assets/devolucao.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores'], redirect_url='zona_restrita')
 def cadastro_ativos_csv(request):
     if not request.user.is_authenticated:
@@ -1081,7 +1111,7 @@ def cadastro_ativos_csv(request):
     return render(request, 'apps/tech_assets/cadastro.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def acessorios(request):
     if not request.user.is_authenticated:
@@ -1111,7 +1141,7 @@ def acessorios(request):
     return render(request, 'apps/tech_assets/acessorios.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_acessorio(request, id):
     if not request.user.is_authenticated:
@@ -1144,7 +1174,7 @@ def editar_acessorio(request, id):
     return render(request, 'apps/tech_assets/editar.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def fabricantes(request):
     if not request.user.is_authenticated:
@@ -1173,7 +1203,7 @@ def fabricantes(request):
     return render(request, 'apps/tech_assets/fabricantes.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_fabricante(request, id):
     if not request.user.is_authenticated:
@@ -1206,7 +1236,7 @@ def editar_fabricante(request, id):
     return render(request, 'apps/tech_assets/editar.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def centros_custo(request):
     if not request.user.is_authenticated:
@@ -1235,7 +1265,7 @@ def centros_custo(request):
     return render(request, 'apps/tech_assets/centros_custo.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_centro_custo(request, id):
     if not request.user.is_authenticated:
@@ -1267,7 +1297,7 @@ def editar_centro_custo(request, id):
     return render(request, 'apps/tech_assets/editar.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def locais(request):
     if not request.user.is_authenticated:
@@ -1295,7 +1325,7 @@ def locais(request):
     return render(request, 'apps/tech_assets/locais.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_local(request, id):
     if not request.user.is_authenticated:
@@ -1327,7 +1357,7 @@ def editar_local(request, id):
     return render(request, 'apps/tech_assets/editar.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def modelos_ativo(request):
     if not request.user.is_authenticated:
@@ -1357,7 +1387,7 @@ def modelos_ativo(request):
     return render(request, 'apps/tech_assets/modelos_ativo.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_modelo(request, id):
     if not request.user.is_authenticated:
@@ -1389,7 +1419,7 @@ def editar_modelo(request, id):
     return render(request, 'apps/tech_assets/editar.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def tipos_ativo(request):
     if not request.user.is_authenticated:
@@ -1419,7 +1449,7 @@ def tipos_ativo(request):
     return render(request, 'apps/tech_assets/tipos_ativo.html', context)
 
 
-@verified_email_required
+@login_required
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_tipo_ativo(request, id):
     if not request.user.is_authenticated:
@@ -1451,7 +1481,7 @@ def editar_tipo_ativo(request, id):
     return render(request, 'apps/tech_assets/editar.html', context)
 
 
-@verified_email_required
+@login_required
 # @group_required(['Basico'], redirect_url='zona_restrita')
 def minhas_movimentacoes(request):
     if not request.user.is_authenticated:
@@ -1514,7 +1544,7 @@ def minhas_movimentacoes(request):
 
     return redirect('index')
 
-@verified_email_required
+@login_required
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def get_type(request):
     asset_type_queryset = AssetType.objects.all()
@@ -1522,7 +1552,7 @@ def get_type(request):
     return JsonResponse(list(asset_type_queryset.values('id', 'nome')), safe=False)
 
 
-@verified_email_required
+@login_required
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def get_models(request):
     asset_model_list = []

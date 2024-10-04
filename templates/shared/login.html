@@ -16,30 +16,49 @@
 <body>
     <main>
         <div class="login-card">
-            <form class="row g-3 needs-validation" novalidate>
+            <form class="row g-3 needs-validation" action="{%   url 'login' %}" method="POST" novalidate>
+                {% csrf_token %}
                 <legend>Bem vindo(a) ao Tech Ops Hub</legend>
                 <div class="mb-3">
-                    <label for="exampleInputEmail1" class="form-label">Usuário/E-mail</label>
+                    {{ form.nome_login.label_tag }}
                     <div class="input-group has-validation">
-                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
-                            required>
+                        {{ form.nome_login }}
+                        {% if form.nome_login.errors %}
+                        <div id="validationServerUsernameFeedback" class="invalid-feedback">
+                            {{ form.nome_login.errors.0 }}
+                        </div>
+                        {% else %}
                         <div id="validationServerUsernameFeedback" class="invalid-feedback">
                             Por favor, insira um usuário/e-mail válido!
                         </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label for="exampleInputPassword1" class="form-label">Senha</label>
+                    {{ form.senha.label_tag }}
                     <div class="input-group has-validation">
-                        <input type="password" class="form-control" id="exampleInputPassword1" required>
+                        {{ form.senha }}
+                        {% if form.senha.errors %}
+                        <div id="validationServerUsernameFeedback" class="invalid-feedback">
+                            {{ form.senha.errors.0 }}
+                        </div>
+                        {% else %}
                         <div id="validationServerUsernameFeedback" class="invalid-feedback">
                             Por favor, insira uma senha válida!
                         </div>
+                        {% endif %}
+                        
                     </div>
                 </div>
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ form.non_field_errors.0 }}
+                </div>
+                {% endif %}
                 <div class="d-grid gap-2">
                     <button class="btn btn-primary" type="submit">Entrar</button>
-                    <p style="color: #0a0a0a; text-align: center;">Ou utilize seu e-mail Aviva clicando no botão abaixo</p>
+                    <p style="color: #0a0a0a; text-align: center;">Ou utilize seu e-mail Aviva clicando no botão abaixo
+                    </p>
                     <button class="button-login " type="button"
                         onclick="window.location.href='{{ URL_POS_CLICK_MS_LOGO }}'">
                         <img class="microsoft-logo"
@@ -80,4 +99,17 @@
             }, false)
         })
     })()
+</script>
+
+<!--  Tira os alerts da tela  -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var alertMessages = document.querySelectorAll('.alert');
+        alertMessages.forEach(function (alertMessage) {
+            setTimeout(function () {
+                alertMessage.style.display = 'none';
+            }, 3000);  // 3000 milissegundos = 3 segundos
+        });
+    });
+
 </script>

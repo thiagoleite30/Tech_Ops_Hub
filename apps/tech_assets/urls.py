@@ -1,5 +1,5 @@
 from django.urls import include, path
-from apps.tech_assets.views import zona_restrita, index, login, cadastro_fabricante, \
+from apps.tech_assets.views import zona_restrita, index, login, logout, cadastro_fabricante, \
     cadastro_centro_custo, cadastro_tipo_ativo, cadastro_local, \
     cadastro_manutencao, cadastro_ativo, ativos, novo_movimento, \
     carrinho, add_carrinho, remove_do_carrinho, cadastro_modelo, \
@@ -17,6 +17,7 @@ from apps.tech_assets.views import zona_restrita, index, login, cadastro_fabrica
 urlpatterns = [
     path('', index, name='index'),
     path('login', login, name='login'),
+    path('logout', logout, name='logout'),
     path('zona_restrita', zona_restrita, name='zona_restrita'),
     path('cadastro_fabricante/', cadastro_fabricante, name='cadastro_fabricante'),
     path('fabricantes/', fabricantes, name='fabricantes'),
