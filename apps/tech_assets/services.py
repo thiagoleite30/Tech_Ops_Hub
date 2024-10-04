@@ -191,17 +191,15 @@ def upload_assets(csv_file, user):
 
     # criando os assets, assetinfo, modelo, tipos e fabricantes
     for index, row in df.iterrows():
-        tipo, created = AssetType.objects.update_or_create(nome=row['tipo'])
+        tipo, created = AssetType.objects.get_or_create(nome=row['tipo'])
         if created:
             register_logentry(instance=tipo, action=ADDITION,
                               user=user, detalhe=f'Usando Import CSV')
-        fabricante, created = Manufacturer.objects.update_or_create(
-            nome=row['fabricante'])
+        fabricante, created = Manufacturer.objects.get_or_create(nome=row['fabricante'])
         if created:
             register_logentry(instance=fabricante, action=ADDITION,
                               user=user, detalhe=f'Usando Import CSV')
-        modelo, created = AssetModel.objects.update_or_create(
-            nome=row['modelo'], tipo=tipo, fabricante=fabricante)
+        modelo, created = AssetModel.objects.update_or_create(nome=row['modelo'], defaults={'tipo': tipo, 'fabricante': fabricante})
         if created:
             register_logentry(instance=modelo, action=ADDITION,
                               user=user, detalhe=f'Usando Import CSV')
