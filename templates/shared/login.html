@@ -8,21 +8,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/login_new.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <title>Tech Ops Hub</title>
 </head>
 
 <body>
     <main>
         <div class="login-card">
-            <h2>Bem vindo(a) ao Tech Ops Hub</h2>
-            <button class="button-login" onclick="window.location.href='{{ URL_POS_CLICK_MS_LOGO }}'">
-                <img class="microsoft-logo" src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg"
-                    alt="Microsoft" width="20">
-                Entrar com conta Microsoft Aviva
-            </button>
-            <p style="color: #0a0a0a;">Utilize seu e-mail Aviva</p>
+            <form class="row g-3 needs-validation" action="{%   url 'login' %}" method="POST" novalidate>
+                {% csrf_token %}
+                <legend>Bem vindo(a) ao Tech Ops Hub</legend>
+                <div class="mb-3">
+                    {{ form.nome_login.label_tag }}
+                    <div class="input-group has-validation">
+                        {{ form.nome_login }}
+                        {% if form.nome_login.errors %}
+                        <div id="validationServerUsernameFeedback" class="invalid-feedback">
+                            {{ form.nome_login.errors.0 }}
+                        </div>
+                        {% else %}
+                        <div id="validationServerUsernameFeedback" class="invalid-feedback">
+                            Por favor, insira um usuário/e-mail válido!
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    {{ form.senha.label_tag }}
+                    <div class="input-group has-validation">
+                        {{ form.senha }}
+                        {% if form.senha.errors %}
+                        <div id="validationServerUsernameFeedback" class="invalid-feedback">
+                            {{ form.senha.errors.0 }}
+                        </div>
+                        {% else %}
+                        <div id="validationServerUsernameFeedback" class="invalid-feedback">
+                            Por favor, insira uma senha válida!
+                        </div>
+                        {% endif %}
+                        
+                    </div>
+                </div>
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ form.non_field_errors.0 }}
+                </div>
+                {% endif %}
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" type="submit">Entrar</button>
+                    <p style="color: #0a0a0a; text-align: center;">Ou utilize seu e-mail Aviva clicando no botão abaixo
+                    </p>
+                    <button class="button-login " type="button"
+                        onclick="window.location.href='{{ URL_POS_CLICK_MS_LOGO }}'">
+                        <img class="microsoft-logo"
+                            src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft"
+                            width="20">
+                        Entrar com conta microsoft aviva
+                    </button>
+                </div>
+            </form>
+
         </div>
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>
+
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (() => {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        const forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+
+<!--  Tira os alerts da tela  -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var alertMessages = document.querySelectorAll('.alert');
+        alertMessages.forEach(function (alertMessage) {
+            setTimeout(function () {
+                alertMessage.style.display = 'none';
+            }, 3000);  // 3000 milissegundos = 3 segundos
+        });
+    });
+
+</script>

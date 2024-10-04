@@ -9,6 +9,30 @@ from apps.tech_assets.models import Accessory, Approval, Asset, \
 
 
 
+class LoginForms(forms.Form):
+    nome_login = forms.CharField(
+        label="Usuário",
+        required=True,
+        max_length=100,
+        widget=forms.TextInput(
+            # passando estilos e class do bootstrap por aqui
+            attrs={
+                "class": "form-control",
+            }
+        )
+    )
+    senha = forms.CharField(
+        label="Senha",
+        required=True,
+        max_length=50,
+        widget=forms.PasswordInput(
+            # passando estilos e class do bootstrap por aqui
+            attrs={
+                "class": "form-control",
+            }
+        )
+    )
+
 class ManufacturerForms(forms.ModelForm):
     form_name = 'Novo Fabricante'
     

@@ -14,15 +14,17 @@ from apps.tech_assets.forms import AccessoryForms, ApprovalForms, \
     AssetModelForms, CSVUploadForm, DynamicAccessoryFormSet, \
     MovementForms, AssetForms, MaintenanceForms, \
     LocationForms, ManufacturerForms, CostCenterForms, \
-    AssetTypeForms, ReturnTermForms, TermoForms
+    AssetTypeForms, ReturnTermForms, TermoForms, LoginForms
 from django.urls import resolve, reverse
 from django.contrib.auth.models import User
+from allauth.account.decorators import verified_email_required
 from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q, Case, \
     When, Value, IntegerField
 from django.core.paginator import Paginator
 from utils.decorators import group_required
-from django.contrib import messages
+from django.contrib import messages, auth
+from django.urls import reverse
 
 # from django.views.decorators.cache import cache_page
 
@@ -30,13 +32,42 @@ from django.contrib import messages
 
 
 def login(request):
-    return render(request, 'shared/login.html')
+
+    form = LoginForms()
+
+    if request.method == 'POST':
+        form = LoginForms(request.POST)
+        if form.is_valid():
+            nome_login = form.cleaned_data.get('nome_login')
+            senha = form.cleaned_data.get('senha')
+
+            usuario = auth.authenticate(
+                request,
+                username=nome_login,
+                password=senha
+            )
+            if usuario is not None:
+                auth.login(request, usuario)
+                return redirect('index')
+            else:
+                form.add_error(None, "Usuário ou senha inválidos.")
+
+    return render(request, 'shared/login.html', {"form": form, "url": "login"})
+
+@login_required
+def logout(request):
+    tipo_login = request.session.get('type_login', None)
+    auth.logout(request)
+    print(f'DEBUG :: LOGOUT :: TIPO LOGIN :: {tipo_login}')
+    if tipo_login == 'social':
+        print(f'DEBUG :: LOGOUT :: É SOCIAL LOGOUT')
+        return redirect('https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=' + request.build_absolute_uri(reverse('logout')))
+    return redirect('login')
 
 
 @login_required
 def zona_restrita(request):
     return render(request, 'shared/zona_restrita.html')
-
 
 @login_required
 @group_required(['Suporte', 'Basico', 'Move GPOS'], redirect_url='zona_restrita')

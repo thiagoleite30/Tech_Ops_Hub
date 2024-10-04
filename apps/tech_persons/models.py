@@ -22,7 +22,7 @@ class Employee(models.Model):
         return f'{self.matricula}'
 
 class UserEmployee(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_employee')
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     emp_id = models.CharField(
         max_length=100, blank=True, null=True)  # Campo para employeeId

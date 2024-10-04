@@ -80,6 +80,17 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
+# Email backend
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp-mail.outlook.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = str(os.getenv('EMAIL_BACKEND'))  # Seu e-mail do Gmail
+EMAIL_HOST_PASSWORD = str(os.getenv('PASS_BACKEND'))  # Sua senha do Gmail ou senha do app se 2FA estiver habilitado
+DEFAULT_FROM_EMAIL = f'No-Reply Aviva <{EMAIL_HOST_USER}>'
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -226,9 +237,21 @@ SOCIALACCOUNT_PROVIDERS = {
         #'REDIRECT_URI': '/',
     }
 }
-SOCIALACCOUNT_AUTO_SIGNUP = True
+#SOCIALACCOUNT_AUTO_SIGNUP = True
 #SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
-SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+#SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+ACCOUNT_ADAPTER = 'apps.tech_persons.adapters.MyAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'apps.tech_persons.adapters.MySocialAccountAdapter'
+
+
+# Configuração para obrigar a verificação de e-mail
+#ACCOUNT_EMAIL_REQUIRED = True  # E-mail é obrigatório
+#ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # Verificação de e-mail obrigatória
+#ACCOUNT_AUTHENTICATION_METHOD = 'email'  # Autenticar via e-mail
+#ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3  # Defina o prazo de expiração do link de confirmação
+#ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True  # Logar automaticamente após a confirmação de e-mail
+#ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/' # URL de redirecionamento
 
 SOCIALACCOUNT_STORE_TOKENS = True  # Para que o model guarde o social token
 
@@ -243,7 +266,7 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 ACCOUNT_LOGOUT_ON_GET = True
 
 # ou a URL para onde deseja redirecionar após o logout - aqui tá indo pra index
-LOGOUT_REDIRECT_URL = f'''https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={LOGIN_URL}'''
+#LOGOUT_REDIRECT_URL = f'''https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={LOGIN_URL}'''
 
 URL_POS_CLICK_MS_LOGO = str(os.getenv('URL_POS_CLICK_MS_LOGO'))
 
