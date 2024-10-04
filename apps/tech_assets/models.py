@@ -50,7 +50,7 @@ class AssetType(models.Model):
 class AssetModel(models.Model):
     tipo = models.ForeignKey(
         AssetType, on_delete=models.CASCADE, null=True, blank=True)
-    nome = models.CharField(max_length=100, null=False, blank=False)
+    nome = models.CharField(max_length=100, null=False, blank=False, unique=True)
     fabricante = models.ForeignKey(
         Manufacturer, on_delete=models.CASCADE, null=True, blank=True)
     descricao = models.TextField(max_length=400, null=True, blank=True)
