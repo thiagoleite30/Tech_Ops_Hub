@@ -15,7 +15,7 @@
                             aria-controls="perfil" aria-selected="true">Perfil</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info"
+                        <a class="nav-link {% if not asset_infos %}disabled{%endif%}" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info"
                             aria-selected="false">Mais Informações</a>
                     </li>
                     <li class="nav-item">

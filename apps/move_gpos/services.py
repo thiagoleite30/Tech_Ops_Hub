@@ -44,13 +44,18 @@ def upload_gpos(df):
                 if row['PrimaryPDV']:
                     ativo.localizacao = pdv
                     ativo.save()
-
+                
                 if created:
                     # Criar AssetInfo
-                    ativo_info = AssetInfo.objects.create(
-                        ativo=ativo,
-                        fabricante=fabricante,
-                        endereco_mac=row['MacAddress'],
+                    ativo_info = AssetInfo.objects.update_or_create(
+                        nome=row['ID_GPOS'],
+                        defaults={
+                            'ativo': ativo,
+                            'fabricante': fabricante,
+                            'endereco_mac': row['MacAddress'],
+                            'ultimo_logon': timezone.make_aware(row['DATA_ULTIMO_LOGON']) if not pd.isna(row['DATA_ULTIMO_LOGON']) else None,
+                            'ultimo_scan': timezone.now()
+                        }
                     )
 
             # Crie ou atualize o GPOS

@@ -3,17 +3,16 @@ from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.contrib.auth import get_user_model
 
 class MyAccountAdapter(DefaultAccountAdapter):
-    def save_user(self, request, user, form, commit=True):
+    def save_user(self, request, user, form):
         print(f'DEBUG :: ENTROU NO SAVE USER DO ADAPTER :: USER {user}')
-        #user = super().save_user(request, user, form, commit=False)
+
         email = form.cleaned_data.get('email')
         User = get_user_model()
         # Verifica se o e-mail já existe no banco de dados
         if User.objects.filter(email=email).exists():
-            # Se o usuário com esse e-mail já existir, pode lançar uma exceção ou retornar o usuário existente
-            existing_user = User.objects.get(email=email)
-            return existing_user 
-        # Caso o usuário com esse e-mail não exista, o processo de criação continua
+            as_user = User.objects.get(email=email)
+            return as_user 
+        # Se não tiver usuário com email então cria um novo com as informações do login social
         user = super().save_user(request, user, form, commit=False)
         user.email = email
         user.save()

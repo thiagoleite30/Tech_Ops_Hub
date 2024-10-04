@@ -1,129 +1,64 @@
 @import url('https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
-:root {
-    --background-color: #01080E;
-    --offwhite: #E1E1E1;
-    --font-family: "Prompt", sans-serif;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: var(--font-family);
-    background-color: var(--background-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: row;
-    height: 100vh;
-    gap: 1rem;
-    overflow: hidden;
+  font-family: Arial, sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+    to right,
+    #0a0a0a,
+    #28292b
+  );
 }
 
-main {
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.logo {
-    margin-top: 0.45rem;
-    height: 45rem;
-    width: 40.03rem;
-}
-
-h1 {
-    font-size: 2rem;
-    font-weight: 600;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: var(--offwhite);
-    text-align: center;
-}
-
-p, a {
-    font-size: 1.2rem;
-    font-weight: 400;
-    line-height: 2rem;
-    color: var(--offwhite);
-    margin-bottom: 0.625rem;
-}
-
-.social-media {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: row;
-    margin-top: -3.5rem;
-    gap: 5rem;
-}
-
-.social-media-details {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.social-media-icon {
-    height: 10rem;
-    width: 10rem;
-    margin-top: 5rem;
-    margin-bottom: 0.5rem; /* Ajusta a margem inferior */
-    margin-left: 0.5rem; /* Adiciona uma margem à esquerda */
-    margin-right: 0.5rem; /* Adiciona uma margem à direita */
-}
-
-.social-media-details a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-decoration: none; /* Remove o sublinhado do link */
-}
-
-.social-media-details p {
-    color: var(--offwhite);
-    font-size: 1rem; /* Tamanho menor da fonte */
-    text-align: center;
-    margin-top: 0.25rem; /* Menor margem superior */
-    font-weight: 400;
-    display: flex;
-    line-height: 1.25rem; /* Ajuste da altura da linha */
-}
-
-.responsive-img {
-    height: auto;
-    max-width: 100vh;
+.login-card {
+  background-color: white;
+  padding: 45px;
+  margin: 15px;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 450px;
+  text-align: none;
 }
 
 @media (max-width: 600px) {
-    .responsive-img {
-        height: auto;
-        max-width: 30vh;
+    .login-card {
+        padding: 20px;
     }
+}
 
-    h1 {
-        font-size: 1.2rem;
-        font-weight: 600;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: var(--offwhite);
-        text-align: center;
-    }
+.login-card h2 {
+  margin-bottom: 20px;
+}
 
-    p, a {
-        font-size: 0.8rem;
-        font-weight: 400;
-        line-height: 2rem;
-        color: var(--offwhite);
-        margin-bottom: 0.625rem;
-    }
+.login-card .button-login {
+  width: 100%;
+  padding: 10px;
+  background-color: #0a0a0a;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
 
-    .social-media-details p {
-        color: var(--offwhite);
-        font-size: 0.8rem; /* Tamanho menor da fonte */
-        text-align: center;
-        margin-top: 0.25rem; /* Menor margem superior */
-        font-weight: 250;
-        line-height: 1.25rem; /* Ajuste da altura da linha */
-    }
+.login-card .button-login:hover {
+  background-color: #1e1e1f;
+}
+
+.login-card p {
+  margin-top: 20px;
+}
+
+.microsoft-logo {
+  margin-right: 10px;
+  vertical-align: middle;
 }

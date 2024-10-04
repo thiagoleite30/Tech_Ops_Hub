@@ -1,13 +1,15 @@
 from django.conf import settings
+from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
 import requests
 from allauth.socialaccount.models import SocialAccount, SocialToken
 import base64
 
-from apps.tech_assets.models import Approval, Asset, AssetInfo, AssetModel, AssetType, Movement, Maintenance, Manufacturer
+from apps.tech_assets.models import Approval, Asset, AssetInfo, AssetModel, AssetType, LogonInAsset, Movement, Maintenance, Manufacturer
 import pandas as pd
 
 
@@ -170,7 +172,6 @@ def concluir_manutencao_service(asset_id, user):
 
 def upload_assets(csv_file, user):
     df = pd.read_csv(csv_file, sep=';')
-
     df = df[df['numero_serie'].notna() & (df['numero_serie'] != '')]
     df.dropna(subset=['numero_serie', 'nome', 'tipo', 'modelo'], inplace=True)
     filtered_df = df[df['nome'].str.match(r'(?i)^(RQR|CDS|RQE)')]
@@ -230,10 +231,10 @@ def upload_assets(csv_file, user):
                     'memoria': row['memoria'],
                     'armazenamento': row['armazenamento'],
                     'processador': row['processador'],
-                    'so': row['so'],
-                    'versao_so': row['versao_so'],
-                    'licenca_so': row['licenca_so'],
-                    'data_instalacao_so': row['data_instalacao_so'] if not pd.isna(row['data_instalacao_so']) else None,
+                    'plataforma': row['so'],
+                    'versao_plataforma': row['versao_so'],
+                    'licenca_plataforma': row['licenca_so'],
+                    'data_instalacao_plataforma': row['data_instalacao_so'] if not pd.isna(row['data_instalacao_so']) else None,
                     'data_garantia': row['data_garantia'] if not pd.isna(row['data_garantia']) else None,
                     'endereco_mac': row['endereco_mac'],
                     'ultimo_logon': row['ultimo_logon'] if not pd.isna(row['ultimo_logon']) else None,
@@ -242,12 +243,33 @@ def upload_assets(csv_file, user):
             )
 
             # Registrar o log
+            """
             if created:
                 register_logentry(instance=ativo_info, action=ADDITION,
                                   user=user, modificacao='Usando Import CSV')
             else:
                 register_logentry(instance=ativo_info, action=CHANGE,
                                   user=user, modificacao='Usando Import CSV')
+            """
+
+            User = get_user_model()
+
+            if User.objects.filter(username=row['username']).exists():
+                user_logon = User.objects.get(username=row['username'])
+            else:
+                user_logon = None
+
+            print(f'DEBUG :: DATA ULTIMO LOGON :: {ativo_info.ultimo_logon}')
+
+            logon_in_asset, created = LogonInAsset.objects.get_or_create(
+                ativo=ativo,
+                data_logon=ativo_info.ultimo_logon,
+                defaults={
+                    'user': user_logon,
+                    'user_name': row['username'],
+                    'data_logon': ativo_info.ultimo_logon if ativo_info.ultimo_logon else None,
+                }
+            )
 
         except IntegrityError as e:
             # Ignora o erro e continua o fluxo

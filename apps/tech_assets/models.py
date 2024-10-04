@@ -154,13 +154,18 @@ class AssetInfo(models.Model):
     data_instalacao_plataforma = models.DateField(null=True, blank=True)
     data_garantia = models.DateField(null=True, blank=True)
     endereco_mac = models.CharField(max_length=40, null=True, blank=True)
-    ultimo_logon = models.DateField(null=True, blank=True)
-    ultimo_scan = models.DateField(null=True, blank=True)
-    data_registro = models.DateField(auto_now_add=True, null=True, blank=True)
+    ultimo_logon = models.DateTimeField(null=True, blank=True)
+    ultimo_scan = models.DateTimeField(null=True, blank=True)
+    data_registro = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return f'{self.ativo.nome}'
 
+class LogonInAsset(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='logon_user')
+    user_name = models.CharField(max_length=100, null=True, blank=True)
+    ativo = models.ForeignKey(Asset, on_delete=models.SET_NULL, null=True, related_name='logon_asset')
+    data_logon = models.DateTimeField(null=True, blank=True)
 
 class Movement(models.Model):
     STATUS_CHOICES = [

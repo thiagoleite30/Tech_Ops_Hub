@@ -1,10 +1,11 @@
 {% load static %} {% load template_tags %}
 <div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
-    <h5 class="card-title">Termo de {{movement.get_tipo_display}} para o responsável "{{movement.usuario.first_name}}
-        {{movement.usuario.last_name}}"</h5>
+    <h5 class="card-title">
+        Termo de {{movement.get_tipo_display}} para o responsável "{{movement.usuario.first_name}} {{movement.usuario.last_name}}"
+    </h5>
     <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
         <ul class="list-group list-group-flush">
-            <li class="list-group-item">
+            <li class="list-group-item" >
                 <b>Matricula Responsável: </b>
                 {{ movement.usuario.user_employee.employee.matricula }}
             </li>
@@ -47,7 +48,7 @@
     <div class="card-body">
         <!-- Button trigger modal -->
         <a type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop"
-            style="width: 30%;">
+            style="width: 100%;">
             Termos e Condições de Aceite da movimentação
         </a>
     </div>
@@ -65,7 +66,7 @@
         -->
         {% if not ReturnTerm and not term.aceite_usuario == 'recusado'  %}
         {% if 'TH' in user_groups or 'Suporte' in user_groups or 'Administradores' in user_groups and movement.tipo == 'emprestimo' %}
-        <a href="{% url 'devolucao' term.id %}" class="btn btn-outline-secondary" style="width: 30%;">Iniciar
+        <a href="{% url 'devolucao' term.id %}" class="btn btn-outline-secondary" style="width: 100%;">Iniciar
             Devolução</a>
         {%endif%}
         {%endif%}

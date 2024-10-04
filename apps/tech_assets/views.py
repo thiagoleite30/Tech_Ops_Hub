@@ -438,7 +438,8 @@ def ativo(request, asset_id):
         return redirect('login')
 
     asset = get_object_or_404(Asset, pk=asset_id)
-    asset_infos = AssetInfo.objects.get(ativo=asset)
+    asset_infos = AssetInfo.objects.filter(ativo=asset).first()
+    #asset_infos = get_object_or_404(AssetInfo, ativo=asset)
     maintenances = Maintenance.objects.filter(
         ativo_id=asset_id).select_related('ativo')
 
