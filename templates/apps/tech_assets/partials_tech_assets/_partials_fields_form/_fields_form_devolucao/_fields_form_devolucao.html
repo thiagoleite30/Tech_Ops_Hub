@@ -6,7 +6,7 @@
         <div class="col-sm-10">
             <select class="form-select" name="assets" multiple aria-label="multiple select example">
                 {% for asset in movement_assets %}
-                <option value="{{ asset.id }}">{{ asset }}</option>
+                <option value="{{ asset.id }}" selected>{{ asset }}</option>
                 {%endfor%}
             </select>
         </div>

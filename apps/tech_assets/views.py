@@ -2,7 +2,7 @@ import traceback
 from django.http import JsonResponse
 from django.shortcuts import render
 from apps.tech_assets.context_processors_add import user_groups_processor
-from apps.tech_assets.filters import AssetFilter
+from apps.tech_assets.filters import AccessoryFilter, ApprovalFilter, AssetFilter, AssetModelFilter, CostCenterFilter, LocationFilter, ManufacturerFilter, TermoFilter
 from apps.tech_assets.models import *
 from django.shortcuts import get_object_or_404, render, redirect
 
@@ -353,50 +353,6 @@ def novo_movimento(request):
         'texto': 'Cancelar'
     })
 
-"""
-@login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
-def ativos(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-
-    assets = Asset.objects.select_related('tipo').all()
-
-    assets_unavailable = assets.exclude(
-        status__in=['em_estoque']).values_list('id', flat=True)
-
-    subquery = AssetCart.objects.filter(ativo_id=OuterRef('pk')).values('pk')
-    
-    assets_in_cart = assets.filter(
-        Exists(subquery)).values_list('id', flat=True)
-
-    query = request.GET.get('q', '')
-
-    STATUS_MAP = dict((v, k) for k, v in Asset.STATUS_CHOICES)
-
-    if query:
-        status_codigo = next((codigo for status_legivel, codigo in STATUS_MAP.items(
-        ) if query.lower() in status_legivel.lower()), None)
-        assets = assets.filter(
-            Q(nome__icontains=query) |
-            Q(patrimonio__icontains=query) |
-            Q(numero_serie__icontains=query) |
-            Q(status__icontains=status_codigo if status_codigo else query) |
-            Q(tipo__nome__icontains=query)
-        )
-
-    paginator = Paginator(assets.order_by('id'), 15)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        'assets_in_cart': list(assets_in_cart),
-        'page_obj': page_obj,
-        'query': query,
-        'assets_unavailable': list(assets_unavailable),
-    }
-    return render(request, 'apps/tech_assets/ativos.html', context)
-"""
 
 @login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
@@ -578,7 +534,6 @@ def deleta_carrinho(request):
 
     return redirect('index')
 
-
 @login_required
 @group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='zona_restrita')
 def aprovacoes(request):
@@ -589,20 +544,9 @@ def aprovacoes(request):
 
     if user_instance:
         try:
-            query = request.GET.get('q', '')
-            aprovacoes = Approval.objects.all()
-            default_status = ['pendente']
+            aprovacoes = Approval.objects.select_related(
+                'movimentacao', 'aprovador').all()
             status_aprovacao = request.GET.getlist('status')
-
-            if query:
-                aprovacoes = aprovacoes.filter(
-                    Q(id__icontains=query) |
-                    Q(aprovador__username__icontains=query) |
-                    Q(aprovador__first_name__icontains=query) |
-                    Q(aprovador__last_name__icontains=query) |
-                    Q(aprovador__profile__employee_id__icontains=query) |
-                    Q(movimentacao__id__icontains=query)
-                 )
 
             status_query = Q()
             if status_aprovacao:
@@ -624,13 +568,20 @@ def aprovacoes(request):
                 '-data_criacao',
             )
 
-            paginator = Paginator(aprovacoes, 16)
+            obj_filter = ApprovalFilter(request.GET, queryset=aprovacoes)
+
+            paginator = Paginator(obj_filter.qs, 15)
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
+
+            query = request.GET.copy()
+            if 'page' in query:
+                del query['page']
 
             context = {
                 'aprovacoes': aprovacoes,
                 'url_form': resolve(request.path_info).url_name,
+                'filter': obj_filter,
                 'page_obj': page_obj,
                 'query': query,
             }
@@ -789,24 +740,12 @@ def termos(request):
         return redirect('login')
 
     user_instance = get_object_or_404(User, username=request.user)
-    # Se houver usuario
+
     if user_instance:
         try:
-            query = request.GET.get('q', '')
             termos = Termo.objects.select_related(
                 'movimentacao', 'aprovacao').all()
             status_termos = request.GET.getlist('status')
-
-            # Query pode ser alterada dependendo de como queremos consultar
-            if query:
-                termos = termos.filter(
-                    Q(movimentacao__id__icontains=query) |
-                    Q(movimentacao__tipo__icontains=query) |
-                    Q(movimentacao__usuario__username__icontains=query) |
-                    Q(movimentacao__usuario__first_name__icontains=query) |
-                    Q(movimentacao__usuario__last_name__icontains=query) |
-                    Q(movimentacao__usuario__profile__employee_id__icontains=query)
-                )
 
             status_query = Q()
             if status_termos:
@@ -828,13 +767,20 @@ def termos(request):
                 '-data_criacao',
             )
 
-            paginator = Paginator(termos, 15)
+            obj_filter = TermoFilter(request.GET, queryset=termos)
+
+            paginator = Paginator(obj_filter.qs, 15)
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
+
+            query = request.GET.copy()
+            if 'page' in query:
+                del query['page']
 
             context = {
                 'termos': termos,
                 'url_form': resolve(request.path_info).url_name,
+                'filter': obj_filter,
                 'page_obj': page_obj,
                 'query': query,
             }
@@ -845,7 +791,6 @@ def termos(request):
             traceback.print_exc()
 
     return redirect('index')
-
 
 @login_required
 @group_required(['Administradores', 'Suporte', 'TH', 'Basico'], redirect_url='zona_restrita')
@@ -1097,6 +1042,7 @@ def devolucao(request, termo_id):
 def cadastro_ativos_csv(request):
     if not request.user.is_authenticated:
         return redirect('login')
+    
     form = CSVUploadForm()
     if request.method == 'POST':
         form = CSVUploadForm(request.POST, request.FILES)
@@ -1117,27 +1063,23 @@ def cadastro_ativos_csv(request):
 def acessorios(request):
     if not request.user.is_authenticated:
         return redirect('login')
-
+    
     acessorios = Accessory.objects.select_related('fabricante').all()
+    
+    obj_filter = AccessoryFilter(request.GET, queryset=acessorios)
 
-    query = request.GET.get('q', '')
-    if query:
-        acessorios = acessorios.filter(
-            Q(nome__icontains=query) |
-            Q(modelo__icontains=query) |
-            Q(tipo__icontains=query) |
-            Q(fabricante__nome__icontains=query)
-        )
-
-    acessorios_lista = acessorios.order_by('id')
-
-    paginator = Paginator(acessorios_lista, 15)
+    paginator = Paginator(obj_filter.qs.order_by('id'), 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    query = request.GET.copy()
+    if 'page' in query:
+        del query['page']
+
     context = {
         'page_obj': page_obj,
-        'query': query,
+        'filter': obj_filter,
+        'query': query.urlencode(),
     }
     return render(request, 'apps/tech_assets/acessorios.html', context)
 
@@ -1180,26 +1122,23 @@ def editar_acessorio(request, id):
 def fabricantes(request):
     if not request.user.is_authenticated:
         return redirect('login')
-
     fabricantes = Manufacturer.objects.all()
 
-    query = request.GET.get('q', '')
-    if query:
-        fabricantes = fabricantes.filter(
-            Q(nome__icontains=query) |
-            Q(telefone__icontains=query) |
-            Q(email__icontains=query)
-        )
+    obj_filter = ManufacturerFilter(request.GET, queryset=fabricantes)
 
-    fabricantes_lista = fabricantes.order_by('id')
 
-    paginator = Paginator(fabricantes_lista, 15)
+    paginator = Paginator(obj_filter.qs.order_by('id'), 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    query = request.GET.copy()
+    if 'page' in query:
+        del query['page']
+
     context = {
         'page_obj': page_obj,
-        'query': query,
+        'filter': obj_filter,
+        'query': query.urlencode(),
     }
     return render(request, 'apps/tech_assets/fabricantes.html', context)
 
@@ -1245,23 +1184,20 @@ def centros_custo(request):
 
     cc = CostCenter.objects.all()
 
-    query = request.GET.get('q', '')
-    if query:
-        cc = cc.filter(
-            Q(nome__icontains=query) |
-            Q(responsavel__icontains=query) |
-            Q(numero__icontains=query)
-        )
+    obj_filter = CostCenterFilter(request.GET, queryset=cc)
 
-    cc_lista = cc.order_by('id')
-
-    paginator = Paginator(cc_lista, 15)
+    paginator = Paginator(obj_filter.qs.order_by('id'), 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    query = request.GET.copy()
+    if 'page' in query:
+        del query['page']
+
     context = {
         'page_obj': page_obj,
-        'query': query,
+        'filter': obj_filter,
+        'query': query.urlencode(),
     }
     return render(request, 'apps/tech_assets/centros_custo.html', context)
 
@@ -1303,25 +1239,22 @@ def editar_centro_custo(request, id):
 def locais(request):
     if not request.user.is_authenticated:
         return redirect('login')
-
     objetos = Location.objects.all().prefetch_related('local_pai')
 
-    query = request.GET.get('q', '')
-    if query:
-        objetos = objetos.filter(
-            Q(nome__icontains=query) |
-            Q(local_pai__nome__icontains=query)
-        )
+    obj_filter = LocationFilter(request.GET, queryset=objetos)
 
-    objetos_lista = objetos.order_by('id')
-
-    paginator = Paginator(objetos_lista, 15)
+    paginator = Paginator(obj_filter.qs.order_by('id'), 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    query = request.GET.copy()
+    if 'page' in query:
+        del query['page']
+
     context = {
         'page_obj': page_obj,
-        'query': query,
+        'filter': obj_filter,
+        'query': query.urlencode(),
     }
     return render(request, 'apps/tech_assets/locais.html', context)
 
@@ -1330,8 +1263,7 @@ def locais(request):
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_local(request, id):
     if not request.user.is_authenticated:
-        return redirect('login')
-
+        return redirect('login')    
     objeto = get_object_or_404(Location, pk=id)
     form = LocationForms(instance=objeto)
     if objeto:
@@ -1366,24 +1298,20 @@ def modelos_ativo(request):
 
     objetos = AssetModel.objects.select_related('tipo', 'fabricante').all()
 
-    query = request.GET.get('q', '')
-    if query:
-        objetos = objetos.filter(
-            Q(nome__icontains=query) |
-            Q(descricao__icontains=query) |
-            Q(tipo__nome__icontains=query) |
-            Q(fabricante__nome__icontains=query)
-        )
+    obj_filter = AssetModelFilter(request.GET, queryset=objetos)
 
-    objetos_lista = objetos.order_by('id')
-
-    paginator = Paginator(objetos_lista, 15)
+    paginator = Paginator(obj_filter.qs.order_by('id'), 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    query = request.GET.copy()
+    if 'page' in query:
+        del query['page']
+
     context = {
         'page_obj': page_obj,
-        'query': query,
+        'filter': obj_filter,
+        'query': query.urlencode(),
     }
     return render(request, 'apps/tech_assets/modelos_ativo.html', context)
 
@@ -1428,24 +1356,20 @@ def tipos_ativo(request):
 
     objetos = AssetType.objects.all()
 
-    query = request.GET.get('q', '')
-    if query:
-        objetos = objetos.filter(
-            Q(nome__icontains=query) |
-            Q(descricao__icontains=query) |
-            Q(tipo__nome__icontains=query) |
-            Q(fabricante__nome__icontains=query)
-        )
+    obj_filter = AssetModelFilter(request.GET, queryset=objetos)
 
-    objetos_lista = objetos.order_by('id')
-
-    paginator = Paginator(objetos_lista, 15)
+    paginator = Paginator(obj_filter.qs.order_by('id'), 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    query = request.GET.copy()
+    if 'page' in query:
+        del query['page']
+
     context = {
         'page_obj': page_obj,
-        'query': query,
+        'filter': obj_filter,
+        'query': query.urlencode(),
     }
     return render(request, 'apps/tech_assets/tipos_ativo.html', context)
 

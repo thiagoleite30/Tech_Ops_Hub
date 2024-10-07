@@ -654,6 +654,8 @@ class TermoForms(forms.ModelForm):
         }
 
 class CSVUploadForm(forms.Form):
+    form_name = 'Upload CSV'
+
     csv_file = forms.FileField(label='CSV File')
 
     csv_file = forms.FileField(

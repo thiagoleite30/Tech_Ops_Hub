@@ -4,8 +4,69 @@
         <div class="starter-template" style="justify-content: center; align-items: center;">
             <h1 style="text-align: center; color:#6c757d" name="assets">Acessórios Cadastrados</h1>
         </div>
-        <div style="margin-bottom: 10px; display: flex; justify-content: flex-end;">
+        <hr/>
+        <div class="card-header">
+            <div class="accordion" id="accordionExample">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Filtros
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <form method="GET" class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="id_nome" class="form-label">{{ filter.form.nome.label }}</label>
+                                    <input type="text" class="form-control" id="id_nome" name="nome"
+                                        value="{% if filter.form.nome.value != None %}{{ filter.form.nome.value }}{% else %}{%endif%}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_tipo" class="form-label">
+                                        {{ filter.form.tipo.label }}
+                                    </label>
+                                    <select id="id_tipo" name="tipo" class="form-select">
+                                        {% for opt in filter.form.tipo.field.choices %}
+                                        <option value="{{ opt.0 }}"
+                                        {% if opt.0|stringformat:"s" in filter.form.tipo.value|stringformat:"s" %} selected{% endif %}>
+                                            {{ opt.1 }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_modelo" class="form-label">{{ filter.form.modelo.label }}</label>
+                                    <input type="text" class="form-control" id="id_modelo" name="modelo"
+                                        value="{% if filter.form.modelo.value != None %}{{ filter.form.modelo.value }}{% else %}{%endif%}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_fabricante" class="form-label">{{ filter.form.fabricante.label }}</label>
+                                    <select id="id_fabricante" name="fabricante" class="form-select">
+                                        <option value="" {% if not filter.form.fabricante.value %}selected{% endif %}>
+                                            ---------
+                                        </option>
+                                        {% for opt in filter.form.fabricante.field.queryset %}
+                                        <option value="{{ opt.pk }}" 
+                                        {% if opt.pk|stringformat:"s" in filter.form.fabricante.value|stringformat:"s" %}
+                                         selected
+                                         {% endif %}>
+                                            {{ opt.nome }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">Buscar</button>
+                                    <a href="{% url 'acessorios' %}" type="button" class="btn btn-secondary">Limpar</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
         <div class="table-container">
             <table id="accessoryTable" class="table table-bordered">
                 <thead class="thead-dark">

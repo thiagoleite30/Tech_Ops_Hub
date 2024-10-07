@@ -1,5 +1,17 @@
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Upload CSV</button>
-</form>
+
+<main role="main" class="container">
+    <div class="container-fluid" style="padding-top: 20px;">
+        <div class="starter-template" style="justify-content: center; align-items: center;">
+            <h1 style="text-align: center; color: #6c757d;" name="asset_form">{{form.form_name}}</h1>
+        </div>
+        <hr/>
+        <div class="container container_form_id"
+            style="border: 2px; padding: 20px; border-radius: 10px;">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Upload CSV</button>
+            </form>
+        </div>
+    </div>
+</main>

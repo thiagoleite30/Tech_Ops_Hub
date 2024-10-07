@@ -4,6 +4,87 @@
         <div class="starter-template" style="justify-content: center; align-items: center;">
             <h1 style="text-align: center; color:#6c757d" name="assets">Termos de Responsabilidade</h1>
         </div>
+        <hr/>
+        {% if url_form != 'minhas_movimentacoes' %}
+        <div class="card-header">
+            <div class="accordion" id="accordionExample">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Filtros
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <form method="GET" class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="id_responsavel" class="form-label">{{ filter.form.responsavel.label }}</label>
+                                    <input type="text" class="form-control" id="id_responsavel" name="responsavel"
+                                        value="{% if filter.form.responsavel.value != None %}{{ filter.form.responsavel.value }}{% else %}{%endif%}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_matricula" class="form-label">{{ filter.form.matricula.label }}</label>
+                                    <input type="text" class="form-control" id="id_matricula" name="matricula"
+                                        value="{% if filter.form.matricula.value != None %}{{ filter.form.matricula.value }}{% else %}{%endif%}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_aceite_usuario" class="form-label">
+                                        {{ filter.form.aceite_usuario.label }}
+                                    </label>
+                                    <select id="id_aceite_usuario" name="aceite_usuario" class="form-select">
+                                        {% for opt in filter.form.aceite_usuario.field.choices %}
+                                        <option value="{{ opt.0 }}"
+                                        {% if opt.0|stringformat:"s" in filter.form.aceite_usuario.value|stringformat:"s" %} selected{% endif %}>
+                                            {{ opt.1 }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_numero" class="form-label">{{ filter.form.numero.label }}</label>
+                                    <input type="number" class="form-control" id="id_numero" name="numero"
+                                        value="{% if filter.form.numero.value != None %}{{ filter.form.numero.value }}{% else %}{%endif%}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_chamado" class="form-label">{{ filter.form.chamado.label }}</label>
+                                    <input type="text" class="form-control" id="id_chamado" name="chamado"
+                                        value="{% if filter.form.chamado.value != None %}{{ filter.form.chamado.value }}{% else %}{%endif%}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_centro_custo" class="form-label">{{ filter.form.centro_custo.label }}</label>
+                                    <input type="text" class="form-control" id="id_centro_custo" name="centro_custo"
+                                        value="{% if filter.form.centro_custo.value != None %}{{ filter.form.centro_custo.value }}{% else %}{%endif%}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_ativo" class="form-label">{{ filter.form.ativo.label }}</label>
+                                    <input type="text" class="form-control" id="id_ativo" name="ativo"
+                                        value="{% if filter.form.ativo.value != None %}{{ filter.form.ativo.value }}{% else %}{%endif%}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="id_tipo" class="form-label">
+                                        {{ filter.form.tipo.label }}
+                                    </label>
+                                    <select id="id_tipo" name="tipo" class="form-select">
+                                        {% for opt in filter.form.tipo.field.choices %}
+                                        <option value="{{ opt.0 }}"
+                                        {% if opt.0|stringformat:"s" in filter.form.tipo.value|stringformat:"s" %} selected{% endif %}>
+                                            {{ opt.1 }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">Buscar</button>
+                                    <a href="{% url 'termos' %}" type="button" class="btn btn-secondary">Limpar</a>
+                                </div>
+                            </form>                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         <div class="row">
             <div class="container-fluid" style="justify-content: center; display: flex; margin: 10px;">
                 <p class="d-inline-flex gap-1">

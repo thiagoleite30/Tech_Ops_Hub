@@ -10,10 +10,16 @@
             {% if approval.status_aprovacao == 'aprovado' %}
             <li class="list-group-item"><b>Data Aprovação:</b> {{approval.data_conclusao}}</li>
             {%endif%}
-            <li class="list-group-item"><b>Aprovador:</b> {{approval.aprovador}}
+            <li class="list-group-item">
+                <b>Aprovador: </b>
+                {{approval.aprovador}}
+                <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-placement="right" data-bs-trigger="hover focus"
+                        data-bs-content="Altere o aprovador designado para esta movimentação clicando aqui.">
                  <a type="button" href="{% url 'editar_aprovacao' approval.id %}" class="btn btn-change {% if approval.status_aprovacao != 'pendente' %}disabled{%endif%}" title="Alterar Aprovador" style="border: none;">
                     <i class="fas fa-sync-alt"></i>
-                </a></li>
+                </a>
+                </span>
+            </li>
             <li class="list-group-item" style="font-size: 15pt;"><b>Status:</b>
                 <b>{{approval.get_status_aprovacao_display}}</b>
             </li>

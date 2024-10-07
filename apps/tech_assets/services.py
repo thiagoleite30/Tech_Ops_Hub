@@ -178,13 +178,13 @@ def upload_assets(csv_file, user):
     df = filtered_df.reset_index(drop=True)
     try:
         # Processamento das datas
-        df['data_instalacao_so'] = pd.to_datetime(df['data_instalacao_so'], errors='coerce', utc=True)
+        df['data_instalacao_so'] = pd.to_datetime(df['data_instalacao_so'], format='%d/%m/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
         df['data_instalacao_so'] = df['data_instalacao_so'].dt.tz_convert('America/Sao_Paulo')
-        df['data_garantia'] = pd.to_datetime(df['data_garantia'], errors='coerce', utc=True)
+        df['data_garantia'] = pd.to_datetime(df['data_garantia'], format='%d/%m/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
         df['data_garantia'] = df['data_garantia'].dt.tz_convert('America/Sao_Paulo')
-        df['ultimo_logon'] = pd.to_datetime(df['ultimo_logon'], errors='coerce', utc=True)
+        df['ultimo_logon'] = pd.to_datetime(df['ultimo_logon'], format='%d/%m/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
         df['ultimo_logon'] = df['ultimo_logon'].dt.tz_convert('America/Sao_Paulo')
-        df['ultimo_scan'] = pd.to_datetime(df['ultimo_scan'], errors='coerce', utc=True)
+        df['ultimo_scan'] = pd.to_datetime(df['ultimo_scan'], format='%d/%m/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
         df['ultimo_scan'] = df['ultimo_scan'].dt.tz_convert('America/Sao_Paulo')
     except Exception as e:
         print(f'Erro ao converter informações de data!')
