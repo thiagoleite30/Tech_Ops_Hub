@@ -1,4 +1,4 @@
-from .models import Approval, Cart, AssetCart
+from .models import Approval, Cart, AssetCart, Termo
 from django.contrib.auth.models import User
 from apps.tech_assets.services import get_user_photo_microsoft, get_employedId
 from django.conf import settings
@@ -23,9 +23,17 @@ def get_url_logout(request):
 
 def verifica_movimentacoes(request):
     if request.user.is_authenticated:
-        minhas_movimentacoes = Approval.objects.filter(movimentacao__usuario=request.user).exists()
+        minhas_movimentacoes = Termo.objects.select_related(
+                'movimentacao', 'aprovacao').filter(movimentacao__usuario=request.user).exists()
+        print(f'\n\nDEBUG :: VERIFICA MOVIMENTACOES MINHAS :: {minhas_movimentacoes}')
         return {'minhas_movimentacoes': minhas_movimentacoes}
     return {'minhas_movimentacoes': False}
+
+def verifica_minhas_aprovacoes_pendentes(request):
+    if request.user.is_authenticated:
+        minhas_aprovacoes_pendentes = Approval.objects.filter(movimentacao__usuario=request.user, status_aprovacao='pendente').exists()
+        return {'minhas_aprovacoes_pendentes': minhas_aprovacoes_pendentes}
+    return {'minhas_aprovacoes_pendentes': False}
 
 def verifica_aprovacoes_pendentes(request):
     if request.user.is_authenticated:

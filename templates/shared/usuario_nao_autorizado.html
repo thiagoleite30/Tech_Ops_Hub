@@ -16,9 +16,8 @@
         <div class="login-card">
             <h1><img alt="" width="32" height="32" class="rounded-circle me-2"
                     src="{% static 'assets/info_user.svg' %}"/> Ops... algo deu errado, {{request.user.first_name }}!</h1>
-            <p>Você precisa de algumas permissões para acessar esta e outras áreas. Mas não se preocupe,
-                procure o time de suporte para ajuda-lo(a).</p>
-            <p style="text-align: center;"><a href="{{ URL_LOGOUT }}">Clique aqui para sair</a></p>
+            <p>Seu usuário não possui vínculo com nossa base de associados. Favor entrar em contato com o Suporte.</p>
+            <p style="text-align: center;"><a href="{% url 'login' %}">Clique aqui para sair</a></p>
         </div>
 
     </main>

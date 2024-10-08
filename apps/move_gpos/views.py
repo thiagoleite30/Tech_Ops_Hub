@@ -152,7 +152,7 @@ def requisicao_troca(request):
 
 
 @login_required
-@group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='zona_restrita')
+@group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def solicitacoes(request):
     if not request.user.is_authenticated:
         return redirect('login')

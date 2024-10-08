@@ -22,6 +22,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q, Case, \
     When, Value, IntegerField
 from django.core.paginator import Paginator
+from apps.tech_persons.models import UserEmployee
 from utils.decorators import group_required
 from django.contrib import messages, auth
 from django.urls import reverse
@@ -70,11 +71,19 @@ def zona_restrita(request):
     return render(request, 'shared/zona_restrita.html')
 
 @login_required
+def usuario_nao_autorizado(request):
+    auth.logout(request)
+    return render(request, 'shared/usuario_nao_autorizado.html')
+
+@login_required
 @group_required(['Suporte', 'Basico', 'Move GPOS'], redirect_url='zona_restrita')
 def index(request):
     user = request.user
     if not user.is_authenticated:
         return redirect('login')
+    
+    if not UserEmployee.objects.filter(user=user).exists():
+        return redirect('usuario_nao_autorizado')
 
     grupos = ['Move GPOS']
     if user.groups.filter(name__in=grupos).exists():
@@ -803,7 +812,7 @@ def termo(request, termo_id):
     print(f'DEBUG :: TERMO :: LISTA DE GRUPOS :: {grupos}')
     if term_res.movimentacao.usuario != request.user and not set(['Administradores', 'Suporte', 'TH']) & set(grupos):
         messages.warning(request, 'Você não possui permissão para acessar este termo.')
-        return redirect('minhas_movimentacoes')
+        return redirect('index')
     
     aprovacao = get_object_or_404(Approval, id=term_res.aprovacao_id)
     #movimentacao = get_object_or_404(Movement, pk=aprovacao.movimentacao.id)
@@ -880,7 +889,8 @@ def aceita_termo(request, termo_id):
             grupos = user_groups_processor(request)['user_groups']
             if term_res.movimentacao.usuario != request.user:
                 messages.warning(request, 'Você não é o usuário responsável por este termo.')
-                return redirect('minhas_movimentacoes')
+                url = reverse('termo', kwargs={'termo_id': termo_id})
+                return redirect(url)
 
             movimentacao = term_res.movimentacao
 
@@ -1468,6 +1478,66 @@ def minhas_movimentacoes(request):
             print(f'ERROR :: TERMOS :: {e}')
 
     return redirect('index')
+
+
+@login_required
+# @group_required(['Basico'], redirect_url='zona_restrita')
+def aprovacoes_pendentes(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    user_instance = get_object_or_404(User, username=request.user)
+
+    if user_instance:
+        try:
+            aprovacoes = Approval.objects.select_related(
+                'movimentacao', 'aprovador').filter(movimentacao__usuario=user_instance, status_aprovacao='pendente')
+            status_aprovacao = request.GET.getlist('status')
+
+            status_query = Q()
+            if status_aprovacao:
+
+                if 'aprovado' in status_aprovacao:
+                    status_query |= Q(status_aprovacao='aprovado')
+                if 'reprovado' in status_aprovacao:
+                    status_query |= Q(status_aprovacao='reprovado')
+                if 'pendente' in status_aprovacao:
+                    status_query |= Q(status_aprovacao='pendente')
+
+            aprovacoes = aprovacoes.filter(status_query).order_by(
+                Case(
+                    When(status_aprovacao='pendente', then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField()
+                ),
+                'status_aprovacao',
+                '-data_criacao',
+            )
+
+            obj_filter = ApprovalFilter(request.GET, queryset=aprovacoes)
+
+            paginator = Paginator(obj_filter.qs, 15)
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+
+            query = request.GET.copy()
+            if 'page' in query:
+                del query['page']
+
+            context = {
+                'aprovacoes': aprovacoes,
+                'url_form': resolve(request.path_info).url_name,
+                'filter': obj_filter,
+                'page_obj': page_obj,
+                'query': query,
+            }
+
+            return render(request, 'apps/tech_assets/aprovacoes_pendentes.html', context)
+        except Exception as e:
+            print(f'ERROR :: APROVACOES :: {e}')
+
+    return redirect('index')
+
 
 @login_required
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')

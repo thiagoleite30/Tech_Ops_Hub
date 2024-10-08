@@ -72,13 +72,11 @@
                         {%endif%}
                         {% if 'Suporte' in user_groups or 'Administradores' in user_groups or 'Aprovadores TI' in user_groups or 'TH' in user_groups %}
                         <a class="dropdown-item" href="{% url 'termos' %}">Termos</a>
-                        <div class="dropdown-divider"></div>
                         {%endif%}
-                        <a class="dropdown-item {% if minhas_movimentacoes %}disabled{%endif%}" href="{% url 'minhas_movimentacoes' %}">Minhas Movimentações</a>
                     </div>
                 </li>
                 </span>
-                
+
                 {% if 'Move GPOS' in user_groups or 'Suporte' in user_groups or 'Administradores' in user_groups %}
                 <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-placement="right"
                 data-bs-trigger="hover focus"
@@ -122,7 +120,6 @@
                         <div class="cart-icon-container disabled">
                             <i class="fa fa-shopping-cart"
                                 style="margin-left: 8px; font-size: 25px; color: rgb(82, 82, 82);"></i>
-                            <!--<span class="cart-count">0</span>-->
                         </div>
                     </a>
                     {% endif %}
@@ -163,6 +160,17 @@
                     <li><a class="dropdown-item" href="#">New project...</a></li>
                     <li><a class="dropdown-item" href="#">Settings</a></li>-->
                     <li><a class="dropdown-item" href="#">Matricula: {{ user.user_employee.employee.matricula }}</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li>
+                        <a class="dropdown-item {% if not minhas_aprovacoes_pendentes %}disabled{%endif%}" href="{% url 'aprovacoes_pendentes' %}">
+                            Aprovações Pendentes
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item {% if not minhas_movimentacoes %}disabled{%endif%}" href="{% url 'minhas_movimentacoes' %}">Minhas Movimentações</a>
+                    </li>
                     <li>
                         <hr class="dropdown-divider">
                     </li>

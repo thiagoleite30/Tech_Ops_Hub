@@ -19,7 +19,7 @@ class Employee(models.Model):
     ultima_alteracao = models.DateField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
-        return f'{self.matricula}'
+        return f'{self.matricula} - {self.nome}'
 
 class UserEmployee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_employee')
