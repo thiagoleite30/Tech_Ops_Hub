@@ -112,7 +112,7 @@
                     <a class="nav-link" href="{% url 'carrinho' %}"
                         style="margin-bottom: 0; margin-right: 20px; display: flex; align-items: baseline;">
                         <div class="cart-icon-container">
-                            <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 25px; color: grey;"></i>
+                            <i class="fa fa-shopping-cart" style="margin-left: 8px; font-size: 25px; color: #bababa;"></i>
                             <span class="cart-count">{{cart_item_count}}</span>
                         </div>
                     </a>
@@ -152,7 +152,7 @@
                     <strong>{{ request.user.first_name }}</strong>
                     {% else %}
                     <img alt="" width="32" height="32" class="rounded-circle me-2"
-                        src="{% static 'assets/perfil.png' %}" />
+                        src="{% static 'assets/avatar.svg' %}" />
                     <strong>{{ request.user.first_name }}</strong>
                     {% endif %}
 

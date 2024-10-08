@@ -187,17 +187,19 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
     integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
     crossorigin="anonymous"></script>
-<!---->
+
 <script src="{% static 'assets/dist/js/bootstrap.bundle.min.js' %}"></script>
 
 
-<!--  Tira os alerts da tela  -->
 <script>
+    // Para permitir que o balão de ajuda surja ao mover sobre ele e/ou clicar
     $(document).ready(function () {
         $('[data-bs-toggle="popover"]').popover({
-            html: true, // Se você quiser permitir HTML no conteúdo
+            html: true,
         });
     });
+
+    // Retira os alertas da tela conforme tempo definido
     document.addEventListener('DOMContentLoaded', function () {
         var alertMessages = document.querySelectorAll('.alert');
         alertMessages.forEach(function (alertMessage) {
@@ -207,16 +209,16 @@
         });
     });
 
+    // Manipulador de tema
     document.addEventListener("DOMContentLoaded", function () {
         const themeToggleButtons = document.querySelectorAll("[data-bs-theme-value]");
         const storedTheme = localStorage.getItem("theme");
 
-        // Função para aplicar o tema
         function applyTheme(theme) {
             if (theme === "auto") {
                 const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
                 document.body.setAttribute("data-bs-theme", prefersDarkScheme.matches ? "dark" : "light");
-                // Listener para mudanças no sistema
+
                 prefersDarkScheme.addEventListener("change", () => {
                     document.body.setAttribute("data-bs-theme", prefersDarkScheme.matches ? "dark" : "light");
                 });
@@ -225,7 +227,7 @@
             }
         }
 
-        // Aplica o tema armazenado, ou padrão "auto"
+        // Aplica o tema armazenado no cache de sessão, ou padrão "auto"
         applyTheme(storedTheme || "auto");
 
         // Ao clicar em um botão de tema, atualiza o tema e armazena a preferência
@@ -238,3 +240,4 @@
         });
     });
 </script>
+<!---->
