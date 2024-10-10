@@ -58,7 +58,7 @@ def upload_gpos(df):
                         }
                     )
             
-            User = get_user_model()
+            
 
             # Crie ou atualize o GPOS
             gpos, created = GPOS.objects.update_or_create(
@@ -88,22 +88,25 @@ def upload_gpos(df):
             else:
                 print(
                     f'DEBUG :: CREATE GPOS :: SOMENTE PEGOU O GPOS {gpos.id}  {row["ID_GPOS"]}...')
+
+            if not row['DATA_ULTIMO_LOGON'].isnull():
+                User = get_user_model()
                 
-            if User.objects.filter(username=row['LastUserLogon']).exists():
-                user_logon = User.objects.get(username=row['LastUserLogon'])
-            else:
-                user_logon = None
+                if User.objects.filter(username=row['LastUserLogon']).exists():
+                    user_logon = User.objects.get(username=row['LastUserLogon'])
+                else:
+                    user_logon = None
 
 
-            logon_in_asset, _ = LogonInAsset.objects.get_or_create(
-                ativo=ativo,
-                data_logon=ativo_info.ultimo_logon,
-                defaults={
-                    'user': user_logon,
-                    'user_name': row['LastUserLogon'],
-                    'data_logon': timezone.make_aware(row['DATA_ULTIMO_LOGON']) if not pd.isna(row['DATA_ULTIMO_LOGON']) else None,
-                }
-            )
+                logon_in_asset, _ = LogonInAsset.objects.get_or_create(
+                    ativo=ativo,
+                    data_logon=ativo_info.ultimo_logon,
+                    defaults={
+                        'user': user_logon,
+                        'user_name': row['LastUserLogon'],
+                        'data_logon': timezone.make_aware(row['DATA_ULTIMO_LOGON']) if not pd.isna(row['DATA_ULTIMO_LOGON']) else None,
+                    }
+                )
 
         except IntegrityError as e:
             # Ignora erros de integridade e continua o fluxo
