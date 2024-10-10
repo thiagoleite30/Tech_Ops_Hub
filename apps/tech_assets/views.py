@@ -407,6 +407,7 @@ def ativo(request, asset_id):
     #asset_infos = get_object_or_404(AssetInfo, ativo=asset)
     maintenances = Maintenance.objects.filter(
         ativo_id=asset_id).select_related('ativo')
+    ultimo_logon = LogonInAsset.objects.filter(ativo=asset).order_by('-data_logon').first()
 
     if maintenances:
         for maintenance in maintenances:
@@ -423,6 +424,7 @@ def ativo(request, asset_id):
     context = {
         'asset': asset,
         'asset_infos': asset_infos if asset_infos else None,
+        'ultimo_logon': ultimo_logon if asset_infos else None,
         'maintenances':  maintenances if maintenances else None,
         'is_loan': Movement.objects.filter(ativos=asset).exists(),
         'page_obj_movements': page_obj_movements,

@@ -36,7 +36,10 @@
             <li class="list-group-item"><b>Data de Instalação do SO:</b> {{asset_infos.data_instalacao_plataforma}}
             </li>
             <li class="list-group-item"><b>Fim de Garantia:</b> {{ asset_infos.data_garantia }}</li>
-            <li class="list-group-item"><b>Último Logon:</b> {{ asset_infos.ultimo_logon }}</li>
+            <li class="list-group-item">
+                <b>Último Logon: </b>
+                {{ asset_infos.ultimo_logon }} (usuário: {{ ultimo_logon.user_name }})
+            </li>
             <li class="list-group-item"><b>Último Scan Lansweeper:</b> {{asset_infos.ultimo_scan}}</li>
         </ul>
     </div>
