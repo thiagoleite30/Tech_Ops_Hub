@@ -19,10 +19,10 @@ class FileUploadViewSet(viewsets.ModelViewSet):
                 return Response({'error': 'Nenhum arquivo enviado'}, status=status.HTTP_400_BAD_REQUEST)
             
             try:
-                #upload_assets(file)
-                df = pd.read_csv(file, sep=';')
+                upload_assets(file)
+                #df = pd.read_csv(file, sep=';')
 
-                print(df)
+                #print(df)
 
                 return Response({"message": "Arquivo CSV processado e enviado com sucesso."}, status=status.HTTP_201_CREATED)
 
