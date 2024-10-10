@@ -49,10 +49,8 @@ def upload_gpos(df):
                 if created:
                     # Criar AssetInfo
                     ativo_info = AssetInfo.objects.update_or_create(
-                        id=ativo.id,
+                        ativo=ativo,
                         defaults={
-                            'nome': row['ID_GPOS'],
-                            'ativo': ativo,
                             'fabricante': fabricante,
                             'endereco_mac': row['MacAddress'],
                             'ultimo_logon': timezone.make_aware(row['DATA_ULTIMO_LOGON']) if not pd.isna(row['DATA_ULTIMO_LOGON']) else None,
