@@ -6,12 +6,13 @@ from django.contrib import messages
 import pandas as pd
 import requests
 
-from apps.tech_assets.models import Asset, AssetInfo, AssetModel, AssetType, Location, Manufacturer
+from apps.tech_assets.models import Asset, AssetInfo, AssetModel, AssetType, Location, LogonInAsset, Manufacturer
 from apps.move_gpos.models import GPOS, Request
 from apps.move_gpos.TopDesk.TopDesk import TopDesk
 from apps.tech_assets.services import register_logentry
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.conf import settings
+from django.contrib.auth import get_user_model
 
 
 def upload_gpos(df):
@@ -48,8 +49,9 @@ def upload_gpos(df):
                 if created:
                     # Criar AssetInfo
                     ativo_info = AssetInfo.objects.update_or_create(
-                        nome=row['ID_GPOS'],
+                        id=ativo.id,
                         defaults={
+                            'nome': row['ID_GPOS'],
                             'ativo': ativo,
                             'fabricante': fabricante,
                             'endereco_mac': row['MacAddress'],
@@ -57,6 +59,24 @@ def upload_gpos(df):
                             'ultimo_scan': timezone.now()
                         }
                     )
+            
+            User = get_user_model()
+
+            if User.objects.filter(username=row['username']).exists():
+                user_logon = User.objects.get(username=row['username'])
+            else:
+                user_logon = None
+
+
+            logon_in_asset, _ = LogonInAsset.objects.get_or_create(
+                ativo=ativo,
+                data_logon=ativo_info.ultimo_logon,
+                defaults={
+                    'user': user_logon,
+                    'user_name': row['LastUserLogon'],
+                    'data_logon': timezone.make_aware(row['DATA_ULTIMO_LOGON']) if not pd.isna(row['DATA_ULTIMO_LOGON']) else None,
+                }
+            )
 
             # Crie ou atualize o GPOS
             gpos, created = GPOS.objects.update_or_create(

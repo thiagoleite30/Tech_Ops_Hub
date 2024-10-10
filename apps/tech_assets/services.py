@@ -1,16 +1,21 @@
-from django.conf import settings
-from django.utils import timezone
+import os
+import base64
+import requests
+import pandas as pd
+from allauth.socialaccount.models import SocialAccount, SocialToken
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django.contrib.admin.models import LogEntry, ADDITION, \
+      CHANGE
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
-import requests
-from allauth.socialaccount.models import SocialAccount, SocialToken
-import base64
 
-from apps.tech_assets.models import Approval, Asset, AssetInfo, AssetModel, AssetType, LogonInAsset, Movement, Maintenance, Manufacturer
-import pandas as pd
+
+
+
+from apps.tech_assets.models import Asset, AssetInfo, AssetModel, \
+      AssetType, LogonInAsset, Movement, Maintenance, Manufacturer
+
 
 
 def register_logentry(instance, action, **kwargs):
@@ -50,12 +55,6 @@ def register_logentry(instance, action, **kwargs):
         action_flag=action,
         change_message=details
     )
-
-
-# def create_approval(instance):
-#    Approval.objects.create(
-#        emprestimo_id=instance,
-#    )
 
 
 def get_user_photo_microsoft(user):
@@ -189,25 +188,17 @@ def upload_assets(csv_file, user):
     except Exception as e:
         print(f'Erro ao converter informações de data!')
 
-    # criando os assets, assetinfo, modelo, tipos e fabricantes
+    # Criando os assets, assetinfo, modelo, tipos e fabricantes
     for index, row in df.iterrows():
-        tipo, created = AssetType.objects.get_or_create(nome=row['tipo'])
-        if created:
-            register_logentry(instance=tipo, action=ADDITION,
-                              user=user, detalhe=f'Usando Import CSV')
-        fabricante, created = Manufacturer.objects.get_or_create(nome=row['fabricante'])
-        if created:
-            register_logentry(instance=fabricante, action=ADDITION,
-                              user=user, detalhe=f'Usando Import CSV')
-        modelo, created = AssetModel.objects.update_or_create(nome=row['modelo'], defaults={'tipo': tipo, 'fabricante': fabricante})
-        if created:
-            register_logentry(instance=modelo, action=ADDITION,
-                              user=user, detalhe=f'Usando Import CSV')
+        tipo, _ = AssetType.objects.get_or_create(nome=row['tipo'])
 
-        # criando os objetos Asset e AssetInfo, tipos e fabricantes
+        fabricante, _ = Manufacturer.objects.get_or_create(nome=row['fabricante'])
+
+        modelo, _ = AssetModel.objects.update_or_create(nome=row['modelo'], defaults={'tipo': tipo, 'fabricante': fabricante})
+
+        # Criando os objetos Asset e AssetInfo, tipos e fabricantes
         try:
-            # Atualiza ou cria o Asset
-            ativo, created = Asset.objects.update_or_create(
+            ativo, _ = Asset.objects.update_or_create(
                 numero_serie=row['numero_serie'],
                 defaults={
                     'nome': row['nome'],
@@ -216,13 +207,7 @@ def upload_assets(csv_file, user):
                 }
             )
 
-            # Registrar o log
-            if created:
-                register_logentry(instance=ativo, action=ADDITION,
-                                  user=user, modificacao='Usando Import CSV')
-
-            # Atualiza ou cria o AssetInfo
-            ativo_info, created = AssetInfo.objects.update_or_create(
+            ativo_info, _ = AssetInfo.objects.update_or_create(
                 ativo=ativo,
                 defaults={
                     'fabricante': fabricante,
@@ -240,16 +225,6 @@ def upload_assets(csv_file, user):
                 }
             )
 
-            # Registrar o log
-            """
-            if created:
-                register_logentry(instance=ativo_info, action=ADDITION,
-                                  user=user, modificacao='Usando Import CSV')
-            else:
-                register_logentry(instance=ativo_info, action=CHANGE,
-                                  user=user, modificacao='Usando Import CSV')
-            """
-
             User = get_user_model()
 
             if User.objects.filter(username=row['username']).exists():
@@ -257,7 +232,6 @@ def upload_assets(csv_file, user):
             else:
                 user_logon = None
 
-            print(f'DEBUG :: DATA ULTIMO LOGON :: {ativo_info.ultimo_logon}')
 
             logon_in_asset, created = LogonInAsset.objects.get_or_create(
                 ativo=ativo,
@@ -275,3 +249,9 @@ def upload_assets(csv_file, user):
         except Exception as e:
             print(f"""Erro inesperado ao processar '{
                   row['modelo']}' ativo {ativo.id}: {e}""")
+
+
+def read_file():
+    full_path = os.path.join(r'\\10.94.1.49\Thiago',r'web50repecef7965a477415281b850050f8b6615 (5).csv')
+    df = pd.read_csv(full_path, sep=';')
+    print(df)
