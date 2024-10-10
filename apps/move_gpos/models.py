@@ -50,8 +50,8 @@ class Request(models.Model):
     usuario = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return str(self)
-
+        return str(self.id)
+    
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Verifica se é uma nova instância
         super(Request, self).save(*args, **kwargs)
