@@ -169,7 +169,7 @@ def concluir_manutencao_service(asset_id, user):
     return False
 
 
-def upload_assets(csv_file, user):
+def upload_assets(csv_file):
     df = pd.read_csv(csv_file, sep=';')
     df = df[df['numero_serie'].notna() & (df['numero_serie'] != '')]
     df.dropna(subset=['numero_serie', 'nome', 'tipo', 'modelo'], inplace=True)
