@@ -49,12 +49,15 @@ DJANGO_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 LOCAL_APPS = [
     'apps.move_gpos.apps.MoveGposConfig',
     'apps.tech_assets.apps.TechAssetsConfig',
     'apps.tech_persons.apps.TechPersonsConfig',
+    'apps.tech_api.apps.TechApiConfig',
     'utils.apps.UtilsConfig',
 ]
 
@@ -79,6 +82,16 @@ AUTHENTICATION_BACKENDS = [
     # `allauth` specific authentication methods, such as login by email
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 
 # Email backend
 
@@ -247,7 +260,7 @@ ACCOUNT_ADAPTER = 'apps.tech_persons.adapters.MyAccountAdapter'
 SOCIALACCOUNT_ADAPTER = 'apps.tech_persons.adapters.MySocialAccountAdapter'
 
 
-# Configuração para obrigar a verificação de e-mail
+# Configuração para obrigar a verificação de e-mail para permitir logon (TESTE)
 #ACCOUNT_EMAIL_REQUIRED = True  # E-mail é obrigatório
 #ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # Verificação de e-mail obrigatória
 #ACCOUNT_AUTHENTICATION_METHOD = 'email'  # Autenticar via e-mail
