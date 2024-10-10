@@ -89,7 +89,7 @@ def upload_gpos(df):
                 print(
                     f'DEBUG :: CREATE GPOS :: SOMENTE PEGOU O GPOS {gpos.id}  {row["ID_GPOS"]}...')
 
-            if not row['DATA_ULTIMO_LOGON'].isnull():
+            if not pd.isnull(row['DATA_ULTIMO_LOGON']):
                 User = get_user_model()
                 
                 if User.objects.filter(username=row['LastUserLogon']).exists():
