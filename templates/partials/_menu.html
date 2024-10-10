@@ -44,7 +44,8 @@
                 </li>
                 </span>
                 {%endif%}
-
+                
+                {% if 'Suporte' in user_groups or 'Administradores' in user_groups or 'TH' in user_groups %}
                 <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-placement="right"
                 data-bs-trigger="hover focus"
                 data-bs-content="Área para visualizações em geral.">
@@ -76,6 +77,7 @@
                     </div>
                 </li>
                 </span>
+                {%endif%}
 
                 {% if 'Move GPOS' in user_groups or 'Suporte' in user_groups or 'Administradores' in user_groups %}
                 <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-placement="right"
