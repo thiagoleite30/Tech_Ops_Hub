@@ -1,0 +1,51 @@
+{% load template_tags %}
+<div class="row">
+    <h1 style="text-align: center; color:#6c757d" name="assets">Movimentações em Alerta!</h1>
+    <div id="carouselExampleInterval" class="carousel carousel-dark slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% get_cards_per_slide as cards_per_slide %}
+            {% for obj_movement in alerts_movements %}
+            {% if forloop.first or forloop.counter0|divisibleby:cards_per_slide %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="10000">
+                    <div class="row justify-content-center g-3">
+            {% endif %}
+
+                        <div class="col-sm-2">
+                            <div class="card border-warning mb-3" style="max-width: 18rem;">
+                                <div class="card-header">
+                                    <h5 class="card-title text-center">
+                                        <a href="{% url 'termo' obj_movement.id %}">Movimentação {{ obj_movement.id }}</a>
+                                    </h5>
+                                </div>
+                                <div class="card-body ">
+                                    <h5 class="card-title">Detalhe:</h5>
+                                    <p>
+                                        O responsável matrícula {{ obj_movement.usuario.user_employee.employee.matricula }}
+                                        encontra-se com a seguinte situação:
+                                        situação "{{ obj_movement.usuario.user_employee.employee.situacao }}"; contudo sua
+                                        movimentação do
+                                        tipo "{{ obj_movement.get_tipo_display }}" ainda não foi concluída/finalizada.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    {% if forloop.counter0|add:1|divisibleby:cards_per_slide or forloop.last %}
+                        </div>
+                    </div>
+                    {% endif %}
+            {% endfor %}
+        </div>
+        <!-- Controles do Carousel -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval"
+            data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval"
+            data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>

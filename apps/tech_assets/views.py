@@ -88,8 +88,20 @@ def index(request):
     grupos = ['Move GPOS']
     if user.groups.filter(name__in=grupos).exists():
         return redirect('move_gpos')
+    
+    alerts_movements = Movement.objects.filter(
+        usuario__user_employee__employee__situacao='Demitido',
+        tipo='emprestimo',
+        status__in=['concluido','pendente_aprovacao', 'pendente_entrega', 'em_andamento', 'atrasado']
+        )
+    
+    print(f'DEBUG :: INDEX :: {alerts_movements.count}')
 
-    return render(request, 'apps/tech_assets/index.html')
+    context = {
+        'alerts_movements': alerts_movements,
+    }
+
+    return render(request, 'apps/tech_assets/index.html', context)
 
 
 @login_required
