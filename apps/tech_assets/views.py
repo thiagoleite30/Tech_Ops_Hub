@@ -92,7 +92,7 @@ def index(request):
     alerts_movements = Movement.objects.filter(
         usuario__user_employee__employee__situacao='Demitido',
         tipo='emprestimo',
-        status__in=['concluido','pendente_aprovacao', 'pendente_entrega', 'em_andamento', 'atrasado']
+        status__in=['pendente_aprovacao', 'pendente_entrega', 'em_andamento', 'atrasado']
         )
     
     print(f'DEBUG :: INDEX :: {alerts_movements.count}')
