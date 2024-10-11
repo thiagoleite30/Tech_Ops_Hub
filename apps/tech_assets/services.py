@@ -183,7 +183,7 @@ def upload_assets(csv_file):
         df['data_garantia'] = df['data_garantia'].dt.tz_convert('America/Sao_Paulo')
         df['ultimo_logon'] = pd.to_datetime(df['ultimo_logon'], format='%m/%d/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
         df['ultimo_logon'] = df['ultimo_logon'].dt.tz_convert('America/Sao_Paulo')
-        df['ultimo_scan'] = pd.to_datetime(df['ultimo_scan'], format='%m/%d/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
+        df['ultimo_scan'] = pd.to_datetime(df['ultimo_scan'], format='%d/%m/%Y %I:%M:%S', errors='coerce', utc=False)
         df['ultimo_scan'] = df['ultimo_scan'].dt.tz_convert('America/Sao_Paulo')
     except Exception as e:
         print(f'Erro ao converter informações de data!')
