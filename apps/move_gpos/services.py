@@ -18,7 +18,8 @@ from django.contrib.auth import get_user_model
 def upload_gpos(df):
     # Filtrando apenas as linhas que possuem um endereço MAC válido
     df = df[df['MacAddress'].notna() & (df['MacAddress'] != '')]
-    df.dropna(subset=['Loja', 'Id', 'MacAddress', 'PosNumber', 'PDV' ], inplace=True)
+    df.dropna(subset=['Loja', 'Id', 'MacAddress',
+              'PosNumber', 'PDV'], inplace=True)
     for index, row in df.iterrows():
         tipo, created = AssetType.objects.get_or_create(nome='GPOS')
 
@@ -27,38 +28,27 @@ def upload_gpos(df):
         pdv, created = Location.objects.update_or_create(
             nome=row['PDV'], defaults={'local_pai': loja})
         try:
-            # Verifique se o AssetInfo já existe com o endereço MAC
-            if AssetInfo.objects.filter(endereco_mac=row['MacAddress']).exists():
-                ativo_info = AssetInfo.objects.get(
-                    endereco_mac=row['MacAddress'])
-                ativo = ativo_info.ativo
-            else:
-                # Se não existir, crie o Asset e o AssetInfo
-                ativo, created = Asset.objects.update_or_create(
-                    nome=row['ID_GPOS'],
-                    defaults={
-                        'numero_serie': row['MacAddress'],
-                        'tipo': tipo,
-                    }
+            # Se não existir, crie o Asset o save() do asset já cria o AssetInfo
+            ativo, _ = Asset.objects.update_or_create(
+                nome=row['ID_GPOS'],
+                defaults={
+                    'numero_serie': row['MacAddress'],
+                    'tipo': tipo,
+                })
 
-                )
-                if row['PrimaryPDV']:
-                    ativo.localizacao = pdv
-                    ativo.save()
-                
-                if created:
-                    # Criar AssetInfo
-                    ativo_info = AssetInfo.objects.update_or_create(
-                        ativo=ativo,
-                        defaults={
-                            'fabricante': fabricante,
-                            'endereco_mac': row['MacAddress'],
-                            'ultimo_logon': timezone.make_aware(row['DATA_ULTIMO_LOGON']) if not pd.isna(row['DATA_ULTIMO_LOGON']) else None,
-                            'ultimo_scan': timezone.now()
-                        }
-                    )
-            
-            
+            if row['PrimaryPDV']:
+                ativo.localizacao = pdv
+                ativo.save()
+
+            ativo_info = AssetInfo.objects.update_or_create(
+                ativo=ativo,
+                defaults={
+                    'fabricante': fabricante,
+                    'endereco_mac': row['MacAddress'],
+                    'ultimo_logon': timezone.make_aware(row['DATA_ULTIMO_LOGON']) if not pd.isna(row['DATA_ULTIMO_LOGON']) else None,
+                    'ultimo_scan': timezone.now()
+                }
+            )
 
             # Crie ou atualize o GPOS
             gpos, created = GPOS.objects.update_or_create(
@@ -81,32 +71,6 @@ def upload_gpos(df):
                     'blocked': True if Request.objects.filter(gpos__id=int(row['Id']), concluida=False).exists() else False
                 }
             )
-
-            if created:
-                print(
-                    f'DEBUG :: CREATE GPOS :: CRIOU O GPOS ID {gpos.id} {row["ID_GPOS"]}...')
-            else:
-                print(
-                    f'DEBUG :: CREATE GPOS :: SOMENTE PEGOU O GPOS {gpos.id}  {row["ID_GPOS"]}...')
-
-            if not pd.isnull(row['DATA_ULTIMO_LOGON']):
-                User = get_user_model()
-                
-                if User.objects.filter(username=row['LastUserLogon']).exists():
-                    user_logon = User.objects.get(username=row['LastUserLogon'])
-                else:
-                    user_logon = None
-
-
-                logon_in_asset, _ = LogonInAsset.objects.get_or_create(
-                    ativo=ativo,
-                    data_logon=ativo_info.ultimo_logon,
-                    defaults={
-                        'user': user_logon,
-                        'user_name': row['LastUserLogon'],
-                        'data_logon': timezone.make_aware(row['DATA_ULTIMO_LOGON']) if not pd.isna(row['DATA_ULTIMO_LOGON']) else None,
-                    }
-                )
 
         except IntegrityError as e:
             # Ignora erros de integridade e continua o fluxo
@@ -162,7 +126,7 @@ def dispara_fluxo(request, json_request):
 
 
 def verifica_requisicoes():
-    
+
     topdesk = TopDesk()
 
     requisicoes = Request.objects.filter(concluida=False)
@@ -175,4 +139,3 @@ def verifica_requisicoes():
                 requisicao.data_conclusao = timezone.now()
                 consulta_bd_mv(pos_number=requisicao.gpos.pos_number)
                 requisicao.save()
-                
