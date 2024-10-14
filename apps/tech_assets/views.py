@@ -1,6 +1,8 @@
 import traceback
+from django.utils import timezone
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.urls import resolve, reverse
 from apps.tech_assets.context_processors_add import user_groups_processor
 from apps.tech_assets.filters import AccessoryFilter, ApprovalFilter, AssetFilter, AssetModelFilter, CostCenterFilter, LocationFilter, ManufacturerFilter, TermoFilter
 from apps.tech_assets.models import *
@@ -15,18 +17,15 @@ from apps.tech_assets.forms import AccessoryForms, ApprovalForms, \
     MovementForms, AssetForms, MaintenanceForms, \
     LocationForms, ManufacturerForms, CostCenterForms, \
     AssetTypeForms, ReturnTermForms, TermoForms, LoginForms
-from django.urls import resolve, reverse
 from django.contrib.auth.models import User
 from allauth.account.decorators import verified_email_required
 from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q, Case, \
-    When, Value, IntegerField
+    When, Value, IntegerField, F
 from django.core.paginator import Paginator
 from apps.tech_persons.models import UserEmployee
 from utils.decorators import group_required
 from django.contrib import messages, auth
-from django.urls import reverse
-
 # from django.views.decorators.cache import cache_page
 
 # Create your views here.
@@ -55,6 +54,7 @@ def login(request):
 
     return render(request, 'shared/login.html', {"form": form, "url": "login"})
 
+
 @login_required
 def logout(request):
     tipo_login = request.session.get('type_login', None)
@@ -70,10 +70,12 @@ def logout(request):
 def zona_restrita(request):
     return render(request, 'shared/zona_restrita.html')
 
+
 @login_required
 def usuario_nao_autorizado(request):
     auth.logout(request)
     return render(request, 'shared/usuario_nao_autorizado.html')
+
 
 @login_required
 @group_required(['Suporte', 'Basico', 'Move GPOS'], redirect_url='zona_restrita')
@@ -81,24 +83,62 @@ def index(request):
     user = request.user
     if not user.is_authenticated:
         return redirect('login')
-    
+
     if not UserEmployee.objects.filter(user=user).exists():
         return redirect('usuario_nao_autorizado')
 
     grupos = ['Move GPOS']
     if user.groups.filter(name__in=grupos).exists():
         return redirect('move_gpos')
-    
-    alerts_movements = Movement.objects.filter(
+
+    alerts_movements = Movement.objects.select_related(
+        'usuario',
+        'centro_de_custo_recebedor',
+    ).annotate(
+        termo_id=F('termo_movimentacao__id')
+    ).filter(
+        termo_movimentacao__isnull=False,
+        termo_movimentacao__aceite_usuario__in=['aceito'],
         usuario__user_employee__employee__situacao='Demitido',
         tipo='emprestimo',
-        status__in=['pendente_aprovacao', 'pendente_entrega', 'em_andamento', 'atrasado']
-        )
-    
-    print(f'DEBUG :: INDEX :: {alerts_movements.count}')
+    ).exclude(
+        status__in=['concluido']
+    ).distinct()
+
+    pending_movements = Movement.objects.select_related(
+        'usuario',
+        'centro_de_custo_recebedor',
+    ).filter(
+        returned__status=True,
+        termo_movimentacao__isnull=False,
+        termo_movimentacao__aceite_usuario__in=['aceito']
+    ).filter(
+        Q(movementasset__devolvido=False) |
+        Q(movementaccessory__quantidade__gt=F(
+            'movementaccessory__quantidade_devolvida'))
+    ).annotate(
+        termo_id=F('termo_movimentacao__id')
+    ).distinct()
+
+    late_returns = Movement.objects.select_related(
+        'usuario',
+        'centro_de_custo_recebedor',
+    ).exclude(
+        status__in=['concluido']
+    ).filter(
+        termo_movimentacao__isnull=False,
+        termo_movimentacao__aceite_usuario__in=['aceito']
+    ).filter(
+        Q(data_devolucao_prevista__lt=timezone.now()) &
+        Q(data_devolucao_prevista__isnull=False)
+    ).annotate(
+        termo_id=F('termo_movimentacao__id')
+    ).distinct()
 
     context = {
         'alerts_movements': alerts_movements,
+        'pending_movements': pending_movements,
+        'late_returns': late_returns
     }
 
     return render(request, 'apps/tech_assets/index.html', context)
@@ -379,12 +419,12 @@ def novo_movimento(request):
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def ativos(request):
     assets = Asset.objects.select_related('tipo').all()
-    
+
     assets_unavailable = assets.exclude(
         status__in=['em_estoque']).values_list('id', flat=True)
-    
+
     subquery = AssetCart.objects.filter(ativo_id=OuterRef('pk')).values('pk')
-    
+
     assets_in_cart = assets.filter(
         Exists(subquery)).values_list('id', flat=True)
 
@@ -397,7 +437,7 @@ def ativos(request):
     query = request.GET.copy()
     if 'page' in query:
         del query['page']
-    
+
     context = {
         'assets_in_cart': list(assets_in_cart),
         'page_obj': page_obj,
@@ -416,10 +456,11 @@ def ativo(request, asset_id):
 
     asset = get_object_or_404(Asset, pk=asset_id)
     asset_infos = AssetInfo.objects.filter(ativo=asset).first()
-    #asset_infos = get_object_or_404(AssetInfo, ativo=asset)
+    # asset_infos = get_object_or_404(AssetInfo, ativo=asset)
     maintenances = Maintenance.objects.filter(
         ativo_id=asset_id).select_related('ativo')
-    ultimo_logon = LogonInAsset.objects.filter(ativo=asset).order_by('-data_logon').first()
+    ultimo_logon = LogonInAsset.objects.filter(
+        ativo=asset).order_by('-data_logon').first()
 
     if maintenances:
         for maintenance in maintenances:
@@ -462,7 +503,7 @@ def carrinho(request):
     cart = get_object_or_404(Cart, usuario_sessao=user_instance)
 
     cart_items = AssetCart.objects.filter(carrinho=cart)
-    
+
     ids_assets_in_cart = [item.ativo_id for item in cart_items]
 
     assets = Asset.objects.filter(id__in=ids_assets_in_cart)
@@ -497,7 +538,7 @@ def add_carrinho(request, asset_id):
     if asset:
         cart, created = Cart.objects.get_or_create(
             usuario_sessao=user_instance)
-        
+
         asset_cart, created = AssetCart.objects.get_or_create(
             ativo=asset,
             carrinho=cart
@@ -556,6 +597,7 @@ def deleta_carrinho(request):
             print(f'ERROR :: DELETA CARRINHO :: {e}')
 
     return redirect('index')
+
 
 @login_required
 @group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='zona_restrita')
@@ -685,11 +727,12 @@ def editar_aprovacao(request, aprovacao_id):
             if form.is_valid():
                 if form.has_changed():
                     register_logentry(instance=form.save(), action=CHANGE,
-                                    user=request.user, modificacao='Editada Aprovação')
-                    messages.success(request, 'Aprovação modificada com sucesso.')
+                                      user=request.user, modificacao='Editada Aprovação')
+                    messages.success(
+                        request, 'Aprovação modificada com sucesso.')
                 else:
                     messages.info(request, 'Nenhuma alteração foi feita')
-                
+
                 url = reverse('aprovacao', kwargs={
                               'aprovacao_id': aprovacao_id})
                 return redirect(url)
@@ -815,6 +858,7 @@ def termos(request):
 
     return redirect('index')
 
+
 @login_required
 @group_required(['Administradores', 'Suporte', 'TH', 'Basico'], redirect_url='zona_restrita')
 def termo(request, termo_id):
@@ -825,11 +869,12 @@ def termo(request, termo_id):
     grupos = user_groups_processor(request)['user_groups']
     print(f'DEBUG :: TERMO :: LISTA DE GRUPOS :: {grupos}')
     if term_res.movimentacao.usuario != request.user and not set(['Administradores', 'Suporte', 'TH']) & set(grupos):
-        messages.warning(request, 'Você não possui permissão para acessar este termo.')
+        messages.warning(
+            request, 'Você não possui permissão para acessar este termo.')
         return redirect('index')
-    
+
     aprovacao = get_object_or_404(Approval, id=term_res.aprovacao_id)
-    #movimentacao = get_object_or_404(Movement, pk=aprovacao.movimentacao.id)
+    # movimentacao = get_object_or_404(Movement, pk=aprovacao.movimentacao.id)
     movimentacao = aprovacao.movimentacao
     form = TermoForms(instance=term_res)
 
@@ -852,7 +897,7 @@ def termo(request, termo_id):
         ]
     else:
         acessorios_com_quantidade = []
-    
+
     # Pegando o primeiro resultado de termo de devolução (feito assim pois só há um por termo)
     devolucao = movimentacao.returned.first()
 
@@ -899,10 +944,11 @@ def aceita_termo(request, termo_id):
             if term_res.status_resposta != False:
                 messages.warning(request, 'Este termo já foi respondido.')
                 return redirect(url)
-            
+
             grupos = user_groups_processor(request)['user_groups']
             if term_res.movimentacao.usuario != request.user:
-                messages.warning(request, 'Você não é o usuário responsável por este termo.')
+                messages.warning(
+                    request, 'Você não é o usuário responsável por este termo.')
                 url = reverse('termo', kwargs={'termo_id': termo_id})
                 return redirect(url)
 
@@ -941,13 +987,14 @@ def recusa_termo(request, termo_id):
 
             grupos = user_groups_processor(request)['user_groups']
             if term_res.movimentacao.usuario != request.user:
-                messages.warning(request, 'Você não é o usuário responsável por este termo.')
+                messages.warning(
+                    request, 'Você não é o usuário responsável por este termo.')
                 return redirect('minhas_movimentacoes')
 
             # Busca a movimentação ligada ao termo/fluxo
-            #movimentacao = get_object_or_404(Movement, pk=term_res.movimentacao.id)
+            # movimentacao = get_object_or_404(Movement, pk=term_res.movimentacao.id)
             movimentacao = term_res.movimentacao
-            
+
             if movimentacao:
                 if request.user != movimentacao.usuario:
                     messages.warning(
@@ -985,7 +1032,7 @@ def devolucao(request, termo_id):
 
     termo = get_object_or_404(Termo, pk=termo_id)
     movimentacao = termo.movimentacao
-    
+
     url = reverse('termo', kwargs={'termo_id': termo_id})
 
     if not termo.status_resposta:
@@ -1066,7 +1113,7 @@ def devolucao(request, termo_id):
 def cadastro_ativos_csv(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    
+
     form = CSVUploadForm()
     if request.method == 'POST':
         form = CSVUploadForm(request.POST, request.FILES)
@@ -1087,9 +1134,9 @@ def cadastro_ativos_csv(request):
 def acessorios(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    
+
     acessorios = Accessory.objects.select_related('fabricante').all()
-    
+
     obj_filter = AccessoryFilter(request.GET, queryset=acessorios)
 
     paginator = Paginator(obj_filter.qs.order_by('id'), 15)
@@ -1124,7 +1171,7 @@ def editar_acessorio(request, id):
             if form.is_valid():
                 if form.has_changed():
                     register_logentry(instance=form.save(), action=CHANGE,
-                                    user=request.user, modificacao='Editado Acessório')
+                                      user=request.user, modificacao='Editado Acessório')
                     messages.success(request, 'Acessório Salvo')
                 else:
                     messages.info(request, 'Nenhuma alteração foi feita')
@@ -1149,7 +1196,6 @@ def fabricantes(request):
     fabricantes = Manufacturer.objects.all()
 
     obj_filter = ManufacturerFilter(request.GET, queryset=fabricantes)
-
 
     paginator = Paginator(obj_filter.qs.order_by('id'), 15)
     page_number = request.GET.get('page')
@@ -1183,7 +1229,7 @@ def editar_fabricante(request, id):
             if form.is_valid():
                 if form.has_changed():
                     register_logentry(instance=form.save(), action=CHANGE,
-                                    user=request.user, modificacao='Editado Registro do Fabricante')
+                                      user=request.user, modificacao='Editado Registro do Fabricante')
                     messages.success(request, 'Fabricante Salvo')
                 else:
                     messages.info(request, 'Nenhuma alteração foi feita')
@@ -1241,11 +1287,11 @@ def editar_centro_custo(request, id):
             if form.is_valid():
                 if form.has_changed():
                     register_logentry(instance=form.save(), action=CHANGE,
-                                    user=request.user, modificacao='Editado Registro de Centro de Custo')
+                                      user=request.user, modificacao='Editado Registro de Centro de Custo')
                     messages.success(request, 'Centro de Custo Salvo')
                 else:
                     messages.info(request, 'Nenhuma alteração foi feita')
-                    
+
                 return redirect('centros_custo')
 
     context = {
@@ -1287,7 +1333,7 @@ def locais(request):
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_local(request, id):
     if not request.user.is_authenticated:
-        return redirect('login')    
+        return redirect('login')
     objeto = get_object_or_404(Location, pk=id)
     form = LocationForms(instance=objeto)
     if objeto:
@@ -1297,12 +1343,11 @@ def editar_local(request, id):
             if form.is_valid():
                 if form.has_changed():
                     register_logentry(instance=form.save(), action=CHANGE,
-                                    user=request.user, modificacao='Editado Registro de Local')
+                                      user=request.user, modificacao='Editado Registro de Local')
                     messages.success(request, 'Fabricante Salvo')
                 else:
                     messages.info(request, 'Nenhuma alteração foi feita')
                 return redirect('locais')
-
 
     context = {
         'form': form,
@@ -1356,7 +1401,7 @@ def editar_modelo(request, id):
             if form.is_valid():
                 if form.has_changed():
                     register_logentry(instance=form.save(), action=CHANGE,
-                                    user=request.user, modificacao='Editado Registro de Modelo de Ativo')
+                                      user=request.user, modificacao='Editado Registro de Modelo de Ativo')
                     messages.success(request, 'Modelo de Ativo Salvo')
                 else:
                     messages.info(request, 'Nenhuma alteração foi feita')
@@ -1413,7 +1458,7 @@ def editar_tipo_ativo(request, id):
             if form.is_valid():
                 if form.has_changed():
                     register_logentry(instance=form.save(), action=CHANGE,
-                                    user=request.user, modificacao='Editado Registro de Tipo de Ativo')
+                                      user=request.user, modificacao='Editado Registro de Tipo de Ativo')
                     messages.success(request, 'Tipo de Ativo Salvo')
                 else:
                     messages.info(request, 'Nenhuma alteração foi feita')
@@ -1568,7 +1613,7 @@ def get_models(request):
     if request.GET.get('id_tipo'):
         asset_type_id = request.GET.get('id_tipo')
         asset_model_queryset = AssetModel.objects.filter(tipo=asset_type_id
-        ).select_related(
+                                                         ).select_related(
             'tipo',
             'fabricante'
         )

@@ -508,7 +508,7 @@ class Termo(models.Model):
     ]
 
     movimentacao = models.ForeignKey(
-        Movement, on_delete=models.CASCADE, related_name='resp')
+        Movement, on_delete=models.CASCADE, related_name='termo_movimentacao')
     aprovacao = models.ForeignKey(
         Approval, on_delete=models.CASCADE, related_name='approval')
     data_criacao = models.DateTimeField(auto_now_add=True)

@@ -1,11 +1,15 @@
 {% extends 'shared/base.html' %} {% load static %} {% block content %}
 <main role="main" class="d-flex flex-nowrap">
     <div class="container-fluid" style="padding-top: 20px;">
+        <!--
         <div class="starter-template" style="justify-content: center; align-items: center;">
             <h1 style="text-align: center; color:#6c757d">Página principal!</h1>
         </div>
+        -->
         <!--<hr/>-->
+        {% if 'Suporte' in user_groups or 'Administradores' in user_groups %}
         {% include 'apps/tech_assets/partials_tech_assets/_index_content_alerts/_index_content_alerts.html' %}
+        {%endif%}
     </div>
 </main>
 
