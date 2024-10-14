@@ -84,6 +84,7 @@
             </div>
         </div>
         <div class="row">
+            <!--
             <div class="container-fluid" style="justify-content: center; display: flex; margin: 10px;">
                 <p class="d-inline-flex gap-1">
                     <button id="btn-aprovado" type="button" class="btn btn-outline-success"
@@ -94,6 +95,7 @@
                         onclick="toggleFilter('pendente', this)">Pendentes</button>
                 </p>
             </div>
+            -->
             {% for approval in page_obj %}
             <div class="col-sm-3" style="padding-bottom: 10px;">
                 <div class="card {{ approval.status_aprovacao|checa_resposta_aprovacoes }}  h-100">
