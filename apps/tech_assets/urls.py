@@ -17,6 +17,7 @@ from apps.tech_assets.views import zona_restrita, index, login, logout, cadastro
 # Lista de endpoints:
 urlpatterns = [
     path('', index, name='index'),
+    
     path('login', login, name='login'),
     path('logout', logout, name='logout'),
     path('zona_restrita', zona_restrita, name='zona_restrita'),

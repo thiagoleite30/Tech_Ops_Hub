@@ -20,6 +20,7 @@ from debug_toolbar.toolbar import debug_toolbar_urls
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
+    path('admin/doc/', include('django.contrib.admindocs.urls')),
     path('admin/', admin.site.urls),
     path('', include('apps.tech_assets.urls')),
     path('', include('apps.move_gpos.urls')),
@@ -27,5 +28,4 @@ urlpatterns = [
     path('api-token-auth/', obtain_auth_token),
     path('accounts/', include('allauth.urls')),
     path('', include('pwa.urls')),
-    #path('__debug__/', include('debug_toolbar.urls')),
 ] + debug_toolbar_urls()
