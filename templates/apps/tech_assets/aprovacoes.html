@@ -97,8 +97,8 @@
             {% for approval in page_obj %}
             <div class="col-sm-3" style="padding-bottom: 10px;">
                 <div class="card {{ approval.status_aprovacao|checa_resposta_aprovacoes }}  h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title"><a href="{% url 'aprovacao' approval.id %}">Aprovação
+                    <div class="card-header">
+                        <h5 class="card-title text-center"><a href="{% url 'aprovacao' approval.id %}">Aprovação
                                 Número:
                                 {{approval.id}}</a></h5>
                     </div>

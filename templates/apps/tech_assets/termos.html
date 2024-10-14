@@ -99,9 +99,12 @@
             {% for termo in page_obj %}
             <div class="col-sm-3" style="padding-bottom: 10px;">
                 <div class="card {{ termo.aceite_usuario|checa_resposta_termos }} h-100" >
-                    <div class="card-body text-center">
-                        <h5 class="card-title"><a href="{% url 'termo' termo.id %}">Termo Número:
-                                {{termo.id}}</a></h5>
+                    <div class="card-header">
+                        <h5 class="card-title text-center">
+                            <a href="{% url 'termo' termo.id %}">
+                                Termo Número: {{termo.id}}
+                            </a>
+                        </h5>
                     </div>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item"><b>ID Movimentação: </b>{{ termo.movimentacao.id }}</li>
