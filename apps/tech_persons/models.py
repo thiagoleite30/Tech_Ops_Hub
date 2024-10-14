@@ -15,8 +15,8 @@ class Employee(models.Model):
         CostCenter, on_delete=models.SET_NULL, null=True)
     situacao = models.CharField(max_length=100)
     situacao_data_fim = models.DateField(null=True, blank=True)
-    data_registro = models.DateField(auto_now_add=True, null=True, blank=True)
-    ultima_alteracao = models.DateField(auto_now=True, null=True, blank=True)
+    data_registro = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    ultima_alteracao = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
         return f'{self.matricula} - {self.nome}'
