@@ -1,0 +1,74 @@
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Mais Informações</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="container mt-5" style="font-size: 12pt;">
+                    <p>O sistema Tech Ops Hub (TOH) tem como finalidade centralizar operações de TI. A versão que atual
+                        oferece as seguintes aplicações:
+                    </p>
+                    <p>
+                    <ul>
+                        <li>
+                            <strong>Tech Assets: </strong>
+                            Gerenciar ativos de TI tal como documentar empréstimos e demais documentações. Com o Tech
+                            Assets à oepração de Service Desk tem maior rastreabilidade do que foi movimentado; controle
+                            de dispositivos que entram na TI para manutenção; histórico de manutenção de ativos; assim
+                            como eventos de movimentações que envolvam os mesmos.
+                        </li>
+                        <li>
+                            <strong>Move GPOS: </strong>
+                            Aplicação que permite a operação de A&B, Hotéis e lazeres façam pedidos de troca de PDVs
+                            para os dispositivos GPOS; assim como acompanhamento e histórico de todas as solicitações do
+                            usuário.
+                        </li>
+                    </ul>
+                    </p>
+                    </br>
+                    <p>
+                        <strong>Informações de versão:</strong>
+                        <p>
+                            <ul>
+                                <li>
+                                    <strong>Versão: </strong>
+                                    1.2
+                                </li>
+                                <li>
+                                    <strong>Desenvolvedor: </strong>
+                                    Thiago Leite
+                                </li>
+                            </ul>
+                        </p>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Seleciona o checkbox e o link "Aceitar"
+    const checkbox = document.getElementById('defaultCheck2');
+    const acceptLink = document.getElementById('acceptLink');
+
+    // Função para verificar o estado do checkbox e adicionar/remover a classe 'disabled'
+    function toggleLinkState() {
+        if (checkbox.checked) {
+            acceptLink.classList.remove('disabled');
+        } else {
+            acceptLink.classList.add('disabled');
+        }
+    }
+
+    // Adiciona um event listener ao checkbox para verificar quando o estado mudar
+    checkbox.addEventListener('change', toggleLinkState);
+
+    // Chama a função inicialmente para garantir que o link esteja no estado correto
+    toggleLinkState();
+</script>

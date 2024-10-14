@@ -176,13 +176,21 @@
                     <li>
                         <hr class="dropdown-divider">
                     </li>
-                    <li><a class="dropdown-item" href="{% url 'logout' %}">Sair</a></li>
+                    <li>
+                        <a type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Mais Informações</a>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'logout' %}">Sair</a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 </header>
-
+{% include 'partials/_modal_mais_informacoes/_modal_mais_informacoes.html' %}
 <script>
 
 function toggleDropdownClass() {
