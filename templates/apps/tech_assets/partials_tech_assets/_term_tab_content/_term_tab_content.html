@@ -1,11 +1,14 @@
 {% load static %} {% load template_tags %}
 <div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
     <h5 class="card-title">
-        Termo de {{movement.get_tipo_display}} para o responsável "{{movement.usuario.first_name}}
-        {{movement.usuario.last_name}}"
+        Termo de {{movement.get_tipo_display}}
     </h5>
     <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
         <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <b>Usuário Responsável: </b>
+                {{movement.usuario.first_name}} {{movement.usuario.last_name}} ({{movement.usuario.username}})
+            </li>
             <li class="list-group-item">
                 <b>Matricula Responsável: </b>
                 {{ movement.usuario.user_employee.employee.matricula }}
@@ -25,7 +28,7 @@
                 {{term.data_criacao}}
             </li>
             <li class="list-group-item">
-                <b>Aprovação de TI: </b>
+                <b>Resposta Aprovador: </b>
                 {{aprovall.get_status_aprovacao_display}} por {{aprovall.aprovador.first_name}}
                 {{aprovall.aprovador.last_name}} em {{aprovall.data_conclusao}}
             </li>

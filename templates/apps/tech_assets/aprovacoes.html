@@ -84,18 +84,6 @@
             </div>
         </div>
         <div class="row">
-            <!--
-            <div class="container-fluid" style="justify-content: center; display: flex; margin: 10px;">
-                <p class="d-inline-flex gap-1">
-                    <button id="btn-aprovado" type="button" class="btn btn-outline-success"
-                        onclick="toggleFilter('aprovado', this)">Aprovadas</button>
-                    <button id="btn-reprovado" type="button" class="btn btn-outline-danger"
-                        onclick="toggleFilter('reprovado', this)">Reprovadas</button>
-                    <button id="btn-pendente" type="button" class="btn btn-outline-primary"
-                        onclick="toggleFilter('pendente', this)">Pendentes</button>
-                </p>
-            </div>
-            -->
             {% for approval in page_obj %}
             <div class="col-sm-3" style="padding-bottom: 10px;">
                 <div class="card {{ approval.status_aprovacao|checa_resposta_aprovacoes }}  h-100">
@@ -105,19 +93,16 @@
                                 {{approval.id}}</a></h5>
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><b>ID Movimentação: </b>{{approval.movimentacao.id}}</li>
                         <li class="list-group-item"><b>Tipo de Movimentação:
                             </b>{{approval.movimentacao.get_tipo_display}}</li>
-                        <li class="list-group-item"><b>Status Movimentação:
-                            </b>{{approval.movimentacao.get_status_display}}</li>
                         <li class="list-group-item"><b>Usuário Responsável:
                             </b>{{approval.movimentacao.usuario.first_name}} {{approval.movimentacao.usuario.last_name}}
                             ({{approval.movimentacao.usuario}})</li>
                         <li class="list-group-item"><b>Matricula Responsável: </b>{{ approval.movimentacao.usuario.user_employee.employee.matricula }}</li>
-                        <li class="list-group-item"><b>Aprovador designado: </b>{{approval.aprovador.first_name}} {{approval.aprovador.last_name}}</li>
+                        <li class="list-group-item"><b>Aprovador: </b>{{approval.aprovador.first_name}} {{approval.aprovador.last_name}}</li>
                     </ul>
                     <div class="card-body h-100">
-                        <h5 class="card-title">Resposta do Aprovador Designado: </h5>
+                        <h5 class="card-title">Resposta do Aprovador: </h5>
                         {% if approval.status_aprovacao != 'pendente' %}
                         {{approval.get_status_aprovacao_display}} por <strong>{{approval.aprovador.first_name}} {{approval.aprovador.last_name}}</strong> em {{approval.data_conclusao}}{% else %}
                         Pendente

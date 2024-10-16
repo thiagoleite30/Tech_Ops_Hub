@@ -20,9 +20,9 @@ from apps.tech_assets.models import Asset, AssetInfo, AssetModel, \
 
 def register_logentry(instance, action, **kwargs):
     usuario = kwargs.get('user', None)
-    print(f'DEBUG :: SERVICE :: REGISTER LOG ENTRY :: {usuario}')
     content_type = ContentType.objects.get_for_model(instance)
     object_id = instance.pk
+
     if action == ADDITION:
         details = f"""O objeto {content_type.model} ID '{
             instance.pk}' foi criada pelo usuário {usuario}"""
@@ -62,12 +62,8 @@ def get_user_photo_microsoft(user):
         social_account = SocialAccount.objects.get(
             user=user, provider='microsoft')
 
-        # print(f"DEBUG :: SERVICES :: USER = {social_account}")
-
         social_token = SocialToken.objects.get(
             account_id=social_account.id).token
-
-        # print(f"DEBUG :: SERVICES :: TOKEN = {social_token}")
 
         headers = {
             'Authorization': 'Bearer ' + social_token
@@ -82,7 +78,6 @@ def get_user_photo_microsoft(user):
             return None
     # Caso o usuário logado não seja um login social, ou seja, um usuário criado em admin ou superusuario
     except SocialAccount.DoesNotExist as erro:
-        # print(f"ERROR :: SERVICES :: SOCIAL ACCOUNT ERROR = {erro}")
         return None
 
 
@@ -90,8 +85,6 @@ def get_employedId(user):
     try:
         social_account = SocialAccount.objects.get(
             user=user, provider='microsoft')
-
-        # print(f"DEBUG :: SERVICES :: USER = {social_account}")
 
         social_token = SocialToken.objects.get(
             account_id=social_account.id).token

@@ -136,10 +136,7 @@ class Asset(models.Model):
         super(Asset, self).save(*args, **kwargs)
 
         if is_new:
-            get, create = AssetInfo.objects.get_or_create(ativo=self)
-            
-            if create:
-                print(f'DEBUG :: Asset Save :: Create a new AssetInfo ID: {get.id}')
+            get, _ = AssetInfo.objects.get_or_create(ativo=self)
 
 class AssetInfo(models.Model):
     ativo = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='assetinfo')

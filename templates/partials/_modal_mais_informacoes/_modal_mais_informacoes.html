@@ -37,7 +37,7 @@
                             <ul>
                                 <li>
                                     <strong>Versão: </strong>
-                                    1.2
+                                    0.0
                                 </li>
                                 <li>
                                     <strong>Desenvolvedor: </strong>
@@ -51,24 +51,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    // Seleciona o checkbox e o link "Aceitar"
-    const checkbox = document.getElementById('defaultCheck2');
-    const acceptLink = document.getElementById('acceptLink');
-
-    // Função para verificar o estado do checkbox e adicionar/remover a classe 'disabled'
-    function toggleLinkState() {
-        if (checkbox.checked) {
-            acceptLink.classList.remove('disabled');
-        } else {
-            acceptLink.classList.add('disabled');
-        }
-    }
-
-    // Adiciona um event listener ao checkbox para verificar quando o estado mudar
-    checkbox.addEventListener('change', toggleLinkState);
-
-    // Chama a função inicialmente para garantir que o link esteja no estado correto
-    toggleLinkState();
-</script>

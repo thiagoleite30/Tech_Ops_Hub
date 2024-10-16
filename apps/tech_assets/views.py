@@ -59,10 +59,10 @@ def login(request):
 def logout(request):
     tipo_login = request.session.get('type_login', None)
     auth.logout(request)
-    print(f'DEBUG :: LOGOUT :: TIPO LOGIN :: {tipo_login}')
+
     if tipo_login == 'social':
-        print(f'DEBUG :: LOGOUT :: É SOCIAL LOGOUT')
         return redirect('https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=' + request.build_absolute_uri(reverse('logout')))
+    
     return redirect('login')
 
 
@@ -867,7 +867,7 @@ def termo(request, termo_id):
 
     term_res = get_object_or_404(Termo, pk=termo_id)
     grupos = user_groups_processor(request)['user_groups']
-    print(f'DEBUG :: TERMO :: LISTA DE GRUPOS :: {grupos}')
+
     if term_res.movimentacao.usuario != request.user and not set(['Administradores', 'Suporte', 'TH']) & set(grupos):
         messages.warning(
             request, 'Você não possui permissão para acessar este termo.')
