@@ -175,3 +175,7 @@ cython_debug/
 
 # Pasta Celery Ignore
 celery/
+
+# Ignorar arquivos .bak e .dat gerados pelo Celery
+*.bak
+*.dat
