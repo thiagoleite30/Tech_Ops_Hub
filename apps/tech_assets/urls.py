@@ -7,7 +7,7 @@ from apps.tech_assets.views import zona_restrita, index, login, logout, cadastro
     cadastro_ativos_csv, aprova_movimentacao, reprova_movimentacao, \
     termos, termo, cadastro_acessorio, get_accessory_options, \
     editar_aprovacao, aceita_termo, recusa_termo, devolucao, \
-    get_assets_return_options, acessorios, editar_acessorio, \
+    acessorios, editar_acessorio, \
     fabricantes, editar_fabricante, centros_custo, editar_centro_custo, \
     locais, editar_local, modelos_ativo, editar_modelo, tipos_ativo, \
     editar_tipo_ativo, minhas_movimentacoes, aprovacoes_pendentes, get_models, \
@@ -76,8 +76,6 @@ urlpatterns = [
     path('upload_csv/', cadastro_ativos_csv, name='upload_csv'),
     path('get_accessory_options/', get_accessory_options,
          name='get_accessory_options'),
-    path('get_assets_return_options/', get_assets_return_options,
-         name='get_assets_return_options'),
     path('minhas_movimentacoes/', minhas_movimentacoes, name='minhas_movimentacoes'),
     path('aprovacoes_pendentes/',aprovacoes_pendentes, name='aprovacoes_pendentes'),
     path('get_models/', get_models, name='get_models'),

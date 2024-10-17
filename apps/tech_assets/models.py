@@ -107,6 +107,7 @@ class Asset(models.Model):
         ('em_estoque', 'Em Estoque'),
         ('baixado', 'Baixado'),
         ('separado', 'Separado'),
+        ('nao_devolvido', 'Não Devolvido')
     ]
 
     nome = models.CharField(max_length=100, null=True, blank=True, unique=True)
@@ -243,12 +244,7 @@ class Movement(models.Model):
         self.status = 'concluido'
         self.data_devolucao_real = timezone.now()
         self.save()
-        ativos = self.ativos.all()
-        
-        for ativo in ativos:
-            movementAsset = MovementAsset.objects.get(ativo=ativo.id, movimento=self.id)
-            movementAsset.marcar_como_devolvido()
-
+                
     def dias_de_atraso(self):
         if self.status == 'em_andamento' and self.esta_atrasado():
             return (timezone.now() - self.data_devolucao_prevista).days
@@ -269,6 +265,7 @@ class MovementAsset(models.Model):
         return str(self.ativo.nome)
 
     def marcar_como_devolvido(self):
+        print(f'DEVOLVENDO :: ASSET {self.ativo.nome}')
         self.devolvido = True
         ativo = get_object_or_404(Asset, pk=self.ativo.id)
         if ativo:
@@ -478,8 +475,10 @@ class Approval(models.Model):
                     ativo.status = status
                     ativo.save()
                     if status == 'em_estoque':
+                        print(f'DEBUG :: APROVAL :: mudar_status_ativos')
                         movementAsset = MovementAsset.objects.get(ativo=ativo.id, movimento=self.movimentacao.id)
                         movementAsset.marcar_como_devolvido()
+    
     def mudar_status_movimentacao(self, status):
         
         movimento = self.movimentacao

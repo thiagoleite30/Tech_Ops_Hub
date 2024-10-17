@@ -53,7 +53,7 @@
         <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-placement="right"
         data-bs-trigger="hover focus"
         data-bs-content="Leia os termos pertinentes a movimentação clicando aqui.">
-        <a type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop"
+        <a type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_termo"
             style="width: 100%;">
             Termos e Condições de Aceite da movimentação
         </a>
@@ -78,10 +78,6 @@
         </span>
         {%else%}
 
-        <!--
-        <a href="#" class="btn btn-success btn-lg disabled" style="margin-right: 10px;">Aceitar</a>
-        <a href="#" class="btn btn-danger btn-lg disabled">Recusar</a>
-        -->
         {% if not ReturnTerm and not term.aceite_usuario == 'recusado' %}
         {% if 'TH' in user_groups or 'Suporte' in user_groups or 'Administradores' in user_groups and movement.tipo == 'emprestimo' %}
         <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-placement="right"

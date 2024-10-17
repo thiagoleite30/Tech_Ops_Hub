@@ -33,8 +33,6 @@ from django.contrib import messages, auth
 
 def login(request):
 
-    form = LoginForms()
-
     if request.method == 'POST':
         form = LoginForms(request.POST)
         if form.is_valid():
@@ -51,6 +49,8 @@ def login(request):
                 return redirect('index')
             else:
                 form.add_error(None, "Usuário ou senha inválidos.")
+    else:
+        form = LoginForms
 
     return render(request, 'shared/login.html', {"form": form, "url": "login"})
 
@@ -150,8 +150,6 @@ def cadastro_fabricante(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    form = ManufacturerForms
-
     if request.method == 'POST':
         form = ManufacturerForms(request.POST, request.FILES)
 
@@ -164,6 +162,8 @@ def cadastro_fabricante(request):
                 return redirect('index')
             elif 'save_and_add' in request.POST:
                 return redirect('cadastro_fabricante')
+    else:
+        form = ManufacturerForms
 
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
@@ -173,8 +173,6 @@ def cadastro_fabricante(request):
 def cadastro_modelo(request):
     if not request.user.is_authenticated:
         return redirect('login')
-
-    form = AssetModelForms
 
     if request.method == 'POST':
         form = AssetModelForms(request.POST, request.FILES)
@@ -188,6 +186,8 @@ def cadastro_modelo(request):
                 return redirect('index')
             elif 'save_and_add' in request.POST:
                 return redirect('cadastro_modelo')
+    else:
+        form = AssetModelForms
 
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
@@ -197,8 +197,6 @@ def cadastro_modelo(request):
 def cadastro_acessorio(request):
     if not request.user.is_authenticated:
         return redirect('login')
-
-    form = AccessoryForms
 
     if request.method == 'POST':
         form = AccessoryForms(request.POST, request.FILES)
@@ -212,6 +210,8 @@ def cadastro_acessorio(request):
                 return redirect('index')
             elif 'save_and_add' in request.POST:
                 return redirect('cadastro_acessorio')
+    else:
+        form = AccessoryForms
 
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
@@ -222,7 +222,7 @@ def cadastro_centro_custo(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    form = CostCenterForms
+    
 
     if request.method == 'POST':
         form = CostCenterForms(request.POST, request.FILES)
@@ -236,6 +236,8 @@ def cadastro_centro_custo(request):
                 return redirect('index')
             elif 'save_and_add' in request.POST:
                 return redirect('cadastro_centro_custo')
+    else:
+        form = CostCenterForms
 
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
@@ -245,8 +247,6 @@ def cadastro_centro_custo(request):
 def cadastro_tipo_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
-
-    form = AssetTypeForms
 
     if request.method == 'POST':
         form = AssetTypeForms(request.POST, request.FILES)
@@ -260,6 +260,8 @@ def cadastro_tipo_ativo(request):
                 return redirect('index')
             elif 'save_and_add' in request.POST:
                 return redirect('cadastro_tipo_ativo')
+    else:
+        form = AssetTypeForms
 
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
@@ -271,20 +273,19 @@ def cadastro_local(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    form = LocationForms
-
     if request.method == 'POST':
         form = LocationForms(request.POST, request.FILES)
 
         if form.is_valid():
             register_logentry(instance=form.save(),
                               action=ADDITION, user=request.user)
-            # messages.success(request, 'Nova imagem cadastrada na galeria')
 
             if 'save' in request.POST:
                 return redirect('index')
             elif 'save_and_add' in request.POST:
                 return redirect('cadastro_local')
+    else:
+        form = LocationForms
 
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
@@ -294,8 +295,6 @@ def cadastro_local(request):
 def cadastro_manutencao(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
-
-    form = MaintenanceForms(ativo=asset_id)
 
     asset = get_object_or_404(Asset, id=asset_id)
     if asset:
@@ -318,6 +317,8 @@ def cadastro_manutencao(request, asset_id):
                 return redirect('index')
             elif 'save_and_add' in request.POST:
                 return redirect('cadastro_manutencao')
+    else:
+        form = MaintenanceForms(ativo=asset_id)
 
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name, 'asset_id': asset_id})
 
@@ -339,8 +340,6 @@ def cadastro_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    form = AssetForms
-
     if request.method == 'POST':
         form = AssetForms(request.POST, request.FILES)
 
@@ -353,6 +352,8 @@ def cadastro_ativo(request):
                 return redirect('index')
             elif 'save_and_add' in request.POST:
                 return redirect('cadastro_ativo')
+    else:
+        form = AssetForms
 
     return render(request, 'apps/tech_assets/cadastro.html', {'form': form, 'url_form': resolve(request.path_info).url_name})
 
@@ -374,20 +375,13 @@ def novo_movimento(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    # Obtenha o carrinho do usuário logado
     cart = get_object_or_404(Cart, usuario_sessao=request.user)
 
-    # Recupere os itens do carrinho do usuario logado
     cart_items = AssetCart.objects.filter(carrinho=cart)
 
-    # Crie uma lista com is ids dos ativos no carrinho
     ids_assets_in_cart = [item.ativo_id for item in cart_items]
 
-    # Busca na tabela asset todos os ids na lista acima
     assets = Asset.objects.filter(id__in=ids_assets_in_cart)
-
-    # Inicialize os formulários
-    form = MovementForms(ativos=assets, formset=DynamicAccessoryFormSet)
 
     if request.method == 'POST':
         form = MovementForms(request.POST, request.FILES, ativos=assets,
@@ -406,6 +400,8 @@ def novo_movimento(request):
                 return redirect('index')
             elif 'save_and_add' in request.POST:
                 return redirect('carrinho')
+    else:
+        form = MovementForms(ativos=assets, formset=DynamicAccessoryFormSet)
 
     return render(request, 'apps/tech_assets/cadastro.html', {
         'form': form,
@@ -443,7 +439,7 @@ def ativos(request):
         'page_obj': page_obj,
         'filter': assets_filter,
         'assets_unavailable': list(assets_unavailable),
-        'query': query.urlencode(),  # Adiciona os parâmetros de consulta ao contexto
+        'query': query.urlencode(),
     }
     return render(request, 'apps/tech_assets/ativos.html', context)
 
@@ -456,7 +452,6 @@ def ativo(request, asset_id):
 
     asset = get_object_or_404(Asset, pk=asset_id)
     asset_infos = AssetInfo.objects.filter(ativo=asset).first()
-    # asset_infos = get_object_or_404(AssetInfo, ativo=asset)
     maintenances = Maintenance.objects.filter(
         ativo_id=asset_id).select_related('ativo')
     ultimo_logon = LogonInAsset.objects.filter(
@@ -493,7 +488,6 @@ def ativo(request, asset_id):
 @login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def carrinho(request):
-
     user_instance = request.user
     if not user_instance.is_authenticated:
         return redirect('login')
@@ -502,11 +496,11 @@ def carrinho(request):
 
     cart = get_object_or_404(Cart, usuario_sessao=user_instance)
 
-    cart_items = AssetCart.objects.filter(carrinho=cart)
+    cart_items = AssetCart.objects.select_related('ativo', 'carrinho').filter(carrinho=cart)
 
     ids_assets_in_cart = [item.ativo_id for item in cart_items]
 
-    assets = Asset.objects.filter(id__in=ids_assets_in_cart)
+    assets = Asset.objects.select_related('tipo', 'modelo').filter(id__in=ids_assets_in_cart)
 
     if query:
         assets = assets.filter(
@@ -529,38 +523,34 @@ def carrinho(request):
 @login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def add_carrinho(request, asset_id):
-    if not request.user.is_authenticated:
+    user_instance = request.user
+    if not user_instance.is_authenticated:
         return redirect('login')
 
     asset = get_object_or_404(Asset, id=asset_id)
-    user_instance = get_object_or_404(User, username=request.user)
-
+    
     if asset:
-        cart, created = Cart.objects.get_or_create(
+        cart, _ = Cart.objects.get_or_create(
             usuario_sessao=user_instance)
 
-        asset_cart, created = AssetCart.objects.get_or_create(
+        asset_cart, _ = AssetCart.objects.get_or_create(
             ativo=asset,
             carrinho=cart
         )
-        if created:
-            print(f"Asset {asset_id} adicionado ao carrinho.")
-            return redirect('ativos')
-        else:
-            print(f"Asset {asset_id} já está no carrinho.")
-            return redirect('ativos')
+
+        return redirect('ativos')
+    
     return redirect('index')
 
 
 @login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def remove_do_carrinho(request, asset_id):
-    if not request.user.is_authenticated:
+    user_instance = request.user
+    if not user_instance.is_authenticated:
         return redirect('login')
 
     asset = get_object_or_404(Asset, id=asset_id)
-
-    user_instance = get_object_or_404(User, username=request.user)
 
     if asset:
         try:
@@ -580,10 +570,9 @@ def remove_do_carrinho(request, asset_id):
 @login_required
 @group_required(['Suporte'], redirect_url='zona_restrita')
 def deleta_carrinho(request):
-    if not request.user.is_authenticated:
+    user_instance = request.user
+    if not user_instance.is_authenticated:
         return redirect('login')
-
-    user_instance = get_object_or_404(User, username=request.user)
 
     if user_instance:
         try:
@@ -602,10 +591,9 @@ def deleta_carrinho(request):
 @login_required
 @group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='zona_restrita')
 def aprovacoes(request):
-    if not request.user.is_authenticated:
+    user_instance = request.user
+    if not user_instance.is_authenticated:
         return redirect('login')
-
-    user_instance = get_object_or_404(User, username=request.user)
 
     if user_instance:
         try:
@@ -751,8 +739,8 @@ def editar_aprovacao(request, aprovacao_id):
 def aprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
         return redirect('login')
+    
     try:
-        # Pega da tabela asset o ativo pelo id
         aprovacao = get_object_or_404(Approval, id=aprovacao_id)
         if aprovacao:
             url = reverse('aprovacao', kwargs={'aprovacao_id': aprovacao_id})
@@ -777,9 +765,10 @@ def aprova_movimentacao(request, aprovacao_id):
 def reprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
         return redirect('login')
+    
     try:
         url = reverse('aprovacao', kwargs={'aprovacao_id': aprovacao_id})
-        # Pega da tabela asset o ativo pelo id
+
         aprovacao = get_object_or_404(Approval, id=aprovacao_id)
         if aprovacao:
             if aprovacao.status_aprovacao != 'pendente':
@@ -802,10 +791,9 @@ def reprova_movimentacao(request, aprovacao_id):
 @login_required
 @group_required(['Administradores', 'Suporte', 'TH'], redirect_url='zona_restrita')
 def termos(request):
+    user_instance = request.user
     if not request.user.is_authenticated:
         return redirect('login')
-
-    user_instance = get_object_or_404(User, username=request.user)
 
     if user_instance:
         try:
@@ -874,7 +862,7 @@ def termo(request, termo_id):
         return redirect('index')
 
     aprovacao = get_object_or_404(Approval, id=term_res.aprovacao_id)
-    # movimentacao = get_object_or_404(Movement, pk=aprovacao.movimentacao.id)
+
     movimentacao = aprovacao.movimentacao
     form = TermoForms(instance=term_res)
 
@@ -883,8 +871,7 @@ def termo(request, termo_id):
             id__in=MovementAsset.objects.filter(
                 movimento=aprovacao.movimentacao).values_list('ativo_id', flat=True)
         ))
-        # Caso não haja nenhum ativo atrelado a aprovação então ficará como uma lista vazia
-        # Pode ocorrer em casos de movimentações somente de itens classificados como acessórios
+
         if not ativos_na_movimentacao:
             ativos_na_movimentacao = []
 
@@ -898,7 +885,6 @@ def termo(request, termo_id):
     else:
         acessorios_com_quantidade = []
 
-    # Pegando o primeiro resultado de termo de devolução (feito assim pois só há um por termo)
     devolucao = movimentacao.returned.first()
 
     if request.method == 'POST':
@@ -959,8 +945,7 @@ def aceita_termo(request, termo_id):
                     messages.warning(
                         request, 'Você não é o usuário responsável por este termo.')
                     return redirect(url)
-                # Método abaixo já faz tudo que é preciso após o aceito \
-                    # como mudança de status de ativos, termos e etc...
+
                 term_res.marcar_como_aceito(movimentacao)
                 messages.success(request, f'Termo aceito com sucesso!')
                 register_logentry(instance=term_res, action=CHANGE,
@@ -991,8 +976,6 @@ def recusa_termo(request, termo_id):
                     request, 'Você não é o usuário responsável por este termo.')
                 return redirect('minhas_movimentacoes')
 
-            # Busca a movimentação ligada ao termo/fluxo
-            # movimentacao = get_object_or_404(Movement, pk=term_res.movimentacao.id)
             movimentacao = term_res.movimentacao
 
             if movimentacao:
@@ -1000,8 +983,7 @@ def recusa_termo(request, termo_id):
                     messages.warning(
                         request, 'Você não é o usuário responsável por este termo.')
                     return redirect(url)
-                # Método abaixo já faz tudo que é preciso após o aceito \
-                    # como mudança de status de ativos, termos e etc...
+
                 term_res.marcar_como_recusa(movimentacao)
                 messages.success(request, f'Termo recusado com sucesso!')
                 register_logentry(instance=term_res, action=CHANGE,
@@ -1011,17 +993,6 @@ def recusa_termo(request, termo_id):
         traceback.print_exc()
 
     return redirect(url)
-
-
-@login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
-def get_assets_return_options(request):
-    options = list(MovementAsset.objects.all().values('id'))
-    for option in options:
-        # Adiciona o valor retornado por __str__ para cada item
-        accessory = MovementAsset.objects.get(id=option['id'])
-        option['str'] = str(accessory)
-    return JsonResponse(options, safe=False)
 
 
 @login_required
@@ -1049,19 +1020,19 @@ def devolucao(request, termo_id):
         messages.warning(request, 'Devolução já registrada anteriormente.')
         return redirect(url)
 
-    accessory_queryset = MovementAccessory.objects.filter(
+    accessory_queryset = MovementAccessory.objects.select_related('acessorio', 'movimento').filter(
         movimento=movimentacao)
-    movement_assets = MovementAsset.objects.filter(
+    movement_assets = MovementAsset.objects.select_related('ativo', 'movimento').filter(
         movimento=movimentacao, devolvido=False)
-    form = ReturnTermForms()
+    
 
     if request.method == 'POST':
+        
         form = ReturnTermForms(request.POST)
 
         selected_assets = request.POST.getlist('assets')
 
-        # Convertendo os IDs para instâncias de MovementAsset
-        movement_assets = MovementAsset.objects.filter(id__in=selected_assets)
+        movement_assets_selected = movement_assets.filter(id__in=selected_assets)
 
         movement_accessory_ids = request.POST.getlist('movement_accessory_ids')
         quantities = {}
@@ -1071,7 +1042,6 @@ def devolucao(request, termo_id):
                 quantities[movement_accessory_id] = int(quantity)
 
         if form.is_valid():
-            # Salvar o termo de devolução
             instance, created = ReturnTerm.objects.get_or_create(
                 movimentacao=movimentacao)
             instance.usuario_recebedor = request.user
@@ -1081,20 +1051,27 @@ def devolucao(request, termo_id):
             else:
                 instance.save()
 
-            for movement_asset in movement_assets:
+            for movement_asset in movement_assets_selected:
                 movement_asset.marcar_como_devolvido()
-
+            
             for movement_accessory_id, quantity in quantities.items():
                 moviment_accessory = MovementAccessory.objects.get(
                     id=movement_accessory_id)
                 moviment_accessory.soma_quantidade_devolvida(quantity)
 
+            for asset in movement_assets.exclude(id__in=movement_assets_selected.values_list('id', flat=True)):
+                asset.ativo.status = 'nao_devolvido'
+                asset.ativo.save()
+                
             register_logentry(instance=instance, action=ADDITION,
                               user=request.user, detalhe='Devolução Inserida')
 
             messages.success(request, 'Devolução inserida com sucesso.')
 
             return redirect(url)
+        
+    else:
+        form = ReturnTermForms
 
     context = {
         'form': form,
