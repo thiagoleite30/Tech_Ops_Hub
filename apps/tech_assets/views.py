@@ -78,7 +78,7 @@ def usuario_nao_autorizado(request):
 
 
 @login_required
-@group_required(['Suporte', 'Basico', 'Move GPOS'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte', 'Basico', 'Move GPOS'], redirect_url='zona_restrita')
 def index(request):
     user = request.user
     if not user.is_authenticated:
@@ -145,7 +145,7 @@ def index(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def cadastro_fabricante(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -169,7 +169,7 @@ def cadastro_fabricante(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def cadastro_modelo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -193,7 +193,7 @@ def cadastro_modelo(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def cadastro_acessorio(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -217,7 +217,7 @@ def cadastro_acessorio(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def cadastro_centro_custo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -243,7 +243,7 @@ def cadastro_centro_custo(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def cadastro_tipo_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -267,7 +267,7 @@ def cadastro_tipo_ativo(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 # @group_required('Admin', redirect_url='zona_restrita')
 def cadastro_local(request):
     if not request.user.is_authenticated:
@@ -291,7 +291,7 @@ def cadastro_local(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def cadastro_manutencao(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -324,7 +324,7 @@ def cadastro_manutencao(request, asset_id):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def concluir_manutencao(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -335,7 +335,7 @@ def concluir_manutencao(request, asset_id):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def cadastro_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -359,7 +359,7 @@ def cadastro_ativo(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def get_accessory_options(request):
     options = list(Accessory.objects.all().values('id'))
     for option in options:
@@ -370,7 +370,7 @@ def get_accessory_options(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def novo_movimento(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -412,7 +412,7 @@ def novo_movimento(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def ativos(request):
     assets = Asset.objects.select_related('tipo').all()
 
@@ -445,7 +445,7 @@ def ativos(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def ativo(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -486,7 +486,7 @@ def ativo(request, asset_id):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def carrinho(request):
     user_instance = request.user
     if not user_instance.is_authenticated:
@@ -521,7 +521,7 @@ def carrinho(request):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def add_carrinho(request, asset_id):
     user_instance = request.user
     if not user_instance.is_authenticated:
@@ -544,7 +544,7 @@ def add_carrinho(request, asset_id):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def remove_do_carrinho(request, asset_id):
     user_instance = request.user
     if not user_instance.is_authenticated:
@@ -568,7 +568,7 @@ def remove_do_carrinho(request, asset_id):
 
 
 @login_required
-@group_required(['Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
 def deleta_carrinho(request):
     user_instance = request.user
     if not user_instance.is_authenticated:
@@ -1453,7 +1453,7 @@ def editar_tipo_ativo(request, id):
 
 
 @login_required
-# @group_required(['Basico'], redirect_url='zona_restrita')
+@group_required(['Basico', 'Suporte', 'Administradores', 'Aprovadores TI', 'TH'], redirect_url='zona_restrita')
 def minhas_movimentacoes(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -1517,7 +1517,7 @@ def minhas_movimentacoes(request):
 
 
 @login_required
-# @group_required(['Basico'], redirect_url='zona_restrita')
+@group_required(['Basico', 'Suporte', 'Administradores', 'Aprovadores TI', 'TH'], redirect_url='zona_restrita')
 def aprovacoes_pendentes(request):
     if not request.user.is_authenticated:
         return redirect('login')
