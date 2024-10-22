@@ -252,8 +252,8 @@ class Movement(models.Model):
 
     class Meta:
         ordering = ['-data_movimento']
-        verbose_name = 'Alocação de Ativo'
-
+        verbose_name = 'Movimentação'
+        verbose_name_plural = 'Movimentações'
 
 class MovementAsset(models.Model):
     ativo = models.ForeignKey(Asset,  on_delete=models.CASCADE)
@@ -263,6 +263,10 @@ class MovementAsset(models.Model):
 
     def __str__(self):
         return str(self.ativo.nome)
+    
+    class Meta:
+        verbose_name = 'Movimentação / Ativo'
+        verbose_name_plural = 'Movimentações / Ativo'
 
     def marcar_como_devolvido(self):
         print(f'DEVOLVENDO :: ASSET {self.ativo.nome}')
@@ -288,6 +292,10 @@ class MovementAccessory(models.Model):
     def __str__(self):
         return f"{self.quantidade} x {self.acessorio.nome}"
 
+    class Meta:
+        verbose_name = 'Movimentação / Acessório'
+        verbose_name_plural = 'Movimentações / Acessório'
+
     def soma_quantidade_devolvida(self, quantidade):
         if not self.quantidade_devolvida + quantidade > self.quantidade:
             self.quantidade_devolvida += quantidade
@@ -311,6 +319,10 @@ class AssetCart(models.Model):
 
     def __str__(self):
         return str(self.id)
+    
+    class Meta:
+        verbose_name = 'Ativo / Carrinho'
+        verbose_name_plural = 'Ativos / Carrinho'
 
 
 class Maintenance(models.Model):
@@ -370,6 +382,7 @@ class Maintenance(models.Model):
     class Meta:
         ordering = ['-data_inicio']
         verbose_name = 'Manutenção'
+        verbose_name_plural = 'Manutenções'
 
     def __str__(self):
         return f'Manutenção: {self.id}'
