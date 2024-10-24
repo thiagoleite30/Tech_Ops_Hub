@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = str(os.getenv('DEBUG_VAR'))
 
 ALLOWED_HOSTS = ['10.94.1.49', 'localhost',
                  '127.0.0.1', 'techopshub-test.aviva.com.br']

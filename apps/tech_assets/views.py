@@ -91,7 +91,7 @@ def index(request):
     if user.groups.filter(name__in=grupos).exists():
         return redirect('move_gpos')
 
-    if not user.groups.count() == 1 and not user.groups.filter(name='basico').exists():
+    if not user.groups.count() == 1 or not user.groups.filter(name='Basico').exists():
 
         alerts_movements = Movement.objects.select_related(
             'usuario',
