@@ -135,10 +135,13 @@ def index(request):
         termo_id=F('termo_movimentacao__id')
     ).distinct()
 
+    late_maintenance = Maintenance.objects.filter(dias_atraso__gt=0)
+
     context = {
         'alerts_movements': alerts_movements,
         'pending_movements': pending_movements,
-        'late_returns': late_returns
+        'late_returns': late_returns,
+        'late_maintenance': late_maintenance
     }
 
     return render(request, 'apps/tech_assets/index.html', context)

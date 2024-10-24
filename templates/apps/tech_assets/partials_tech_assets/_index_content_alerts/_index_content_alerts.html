@@ -1,149 +1,208 @@
 {% load template_tags %}
-{% if alerts_movements %}
+<!--{% if alerts_movements %}-->
 <div class="row" style="margin-bottom: 50px;">
-    <h1 style="text-align: center; color:#6c757d" name="assets">Movimentações em Alerta!</h1>
-    <div id="carouselExampleInterval" class="carousel carousel-dark slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            {% get_cards_per_slide as cards_per_slide %}
-            {% for obj_movement in alerts_movements %}
-            {% if forloop.first or forloop.counter0|divisibleby:cards_per_slide %}
+    <div class="col-lg-6 col-sm-12" style="margin-bottom: 50px;">
+        <h1 style="text-align: center; color:#6c757d" name="assets">Movimentações em alerta</h1>
+        <div id="carouselExampleInterval" class="carousel carousel-dark slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% get_cards_per_slide as cards_per_slide %}
+                {% for obj_movement in alerts_movements %}
+                {% if forloop.first or forloop.counter0|divisibleby:cards_per_slide %}
                 <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="10000">
                     <div class="row justify-content-center g-3">
-            {% endif %}
+                        {% endif %}
 
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                             <div class="card border-warning mb-3" style="max-width: 18rem;">
                                 <div class="card-header">
                                     <h5 class="card-title text-center">
-                                        <a href="{% url 'termo' obj_movement.termo_id %}">Movimentação {{ obj_movement.id }}</a>
+                                        <a href="{% url 'termo' obj_movement.termo_id %}">
+                                            Movimentação {{obj_movement.id}}
+                                        </a>
                                     </h5>
                                 </div>
-                                <div class="card-body ">
+                                <div class="card-body" style="max-height: 150px; overflow-y: auto;">
                                     <h5 class="card-title">Detalhe:</h5>
                                     <p>
-                                        O responsável matrícula {{ obj_movement.usuario.user_employee.employee.matricula }}
+                                        O responsável matrícula {{obj_movement.usuario.user_employee.employee.matricula}}
                                         encontra-se com a seguinte situação:
-                                        situação "{{ obj_movement.usuario.user_employee.employee.situacao }}"; contudo sua
+                                        situação "{{ obj_movement.usuario.user_employee.employee.situacao }}"; contudo
+                                        sua
                                         movimentação do
-                                        tipo "{{ obj_movement.get_tipo_display }}" ainda não foi concluída/finalizada. 
+                                        tipo "{{obj_movement.get_tipo_display}}" ainda não foi concluída/finalizada.
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                    {% if forloop.counter0|add:1|divisibleby:cards_per_slide or forloop.last %}
-                        </div>
+                        {% if forloop.counter0|add:1|divisibleby:cards_per_slide or forloop.last %}
                     </div>
-                    {% endif %}
-            {% endfor %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <!-- Controles do Carousel -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval"
+                data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval"
+                data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
         </div>
-        <!-- Controles do Carousel -->
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval"
-            data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval"
-            data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
     </div>
-</div>
-{%endif%}
-{% if pending_movements %}
-<div class="row" style="margin-bottom: 50px;">
-    <h1 style="text-align: center; color:#6c757d" name="assets">Devoluções incompletas!</h1>
-    <div id="carouselExampleInterval" class="carousel carousel-dark slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            {% get_cards_per_slide as cards_per_slide %}
-            {% for obj_movement in pending_movements %}
-            {% if forloop.first or forloop.counter0|divisibleby:cards_per_slide %}
+    <!--{%endif%}
+{% if pending_movements %}-->
+    <div class="col-lg-6 col-sm-12" style="margin-bottom: 50px;">
+        <h1 style="text-align: center; color:#6c757d" name="assets">Devoluções incompletas</h1>
+        <div id="carouselExampleInterval" class="carousel carousel-dark slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% get_cards_per_slide as cards_per_slide %}
+                {% for obj_movement in pending_movements %}
+                {% if forloop.first or forloop.counter0|divisibleby:cards_per_slide %}
                 <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="10000">
                     <div class="row justify-content-center g-3">
-            {% endif %}
+                        {% endif %}
 
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                             <div class="card border-warning mb-3" style="max-width: 18rem;">
                                 <div class="card-header">
                                     <h5 class="card-title text-center">
-                                        <a href="{% url 'termo' obj_movement.termo_id %}">Movimentação {{ obj_movement.id }}</a>
+                                        <a href="{% url 'termo' obj_movement.termo_id %}">
+                                            Movimentação {{obj_movement.id}}
+                                        </a>
                                     </h5>
                                 </div>
-                                <div class="card-body ">
+                                <div class="card-body" style="max-height: 150px; overflow-y: auto;">
                                     <h5 class="card-title">Detalhe:</h5>
                                     <p>
-                                        A movimentação em questão possui itens não devolvidos; ou seja, esta incompleta. 
+                                        A movimentação em questão possui itens não devolvidos; ou seja, esta incompleta.
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                    {% if forloop.counter0|add:1|divisibleby:cards_per_slide or forloop.last %}
-                        </div>
+                        {% if forloop.counter0|add:1|divisibleby:cards_per_slide or forloop.last %}
                     </div>
-                    {% endif %}
-            {% endfor %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <!-- Controles do Carousel -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval"
+                data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval"
+                data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
         </div>
-        <!-- Controles do Carousel -->
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval"
-            data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval"
-            data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
     </div>
 </div>
-{%endif%}
-{% if late_returns %}
+<!--{%endif%}-->
 <div class="row" style="margin-bottom: 50px;">
-    <h1 style="text-align: center; color:#6c757d" name="assets">Devoluções em atraso!</h1>
-    <div id="carouselExampleInterval" class="carousel carousel-dark slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            {% get_cards_per_slide as cards_per_slide %}
-            {% for obj_movement in late_returns %}
-            {% if forloop.first or forloop.counter0|divisibleby:cards_per_slide %}
+    <div class="col-lg-6 col-sm-12" style="margin-bottom: 50px;">
+        <h1 style="text-align: center; color:#6c757d" name="assets">Devoluções em atraso</h1>
+        <div id="carouselExampleInterval" class="carousel carousel-dark slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% get_cards_per_slide as cards_per_slide %}
+                {% for obj_movement in late_returns %}
+                {% if forloop.first or forloop.counter0|divisibleby:cards_per_slide %}
                 <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="10000">
                     <div class="row justify-content-center g-3">
-            {% endif %}
+                        {% endif %}
 
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                             <div class="card border-warning mb-3" style="max-width: 18rem;">
                                 <div class="card-header">
                                     <h5 class="card-title text-center">
-                                        <a href="{% url 'termo' obj_movement.termo_id %}">Movimentação {{ obj_movement.id }}</a>
+                                        <a href="{% url 'termo' obj_movement.termo_id %}">
+                                            Movimentação {{obj_movement.id}}
+                                        </a>
                                     </h5>
                                 </div>
-                                <div class="card-body ">
+                                <div class="card-body" style="max-height: 150px; overflow-y: auto;">
                                     <h5 class="card-title">Detalhe:</h5>
                                     <p>
-                                        A movimentações em questão encontra-se em atraso de devolução desde "{{obj_movement.data_devolucao_prevista}}". 
+                                        A movimentações em questão encontra-se em atraso de devolução desde
+                                        "{{obj_movement.data_devolucao_prevista}}".
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                    {% if forloop.counter0|add:1|divisibleby:cards_per_slide or forloop.last %}
-                        </div>
+                        {% if forloop.counter0|add:1|divisibleby:cards_per_slide or forloop.last %}
                     </div>
-                    {% endif %}
-            {% endfor %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <!-- Controles do Carousel -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval"
+                data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval"
+                data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
         </div>
-        <!-- Controles do Carousel -->
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval"
-            data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval"
-            data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
+    </div>
+    <div class="col-lg-6 col-sm-12" style="margin-bottom: 50px;">
+        <h1 style="text-align: center; color:#6c757d" name="assets">Manutenções em atraso</h1>
+        <div id="carouselExampleInterval" class="carousel carousel-dark slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% get_cards_per_slide as cards_per_slide %}
+                {% for obj_asset in late_maintenance %}
+                {% if forloop.first or forloop.counter0|divisibleby:cards_per_slide %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="10000">
+                    <div class="row justify-content-center g-3">
+                        {% endif %}
+
+                        <div class="col-sm-3">
+                            <div class="card border-warning mb-3" style="max-width: 18rem;">
+                                <div class="card-header">
+                                    <h5 class="card-title text-center">
+                                        <a href="{% url 'termo' obj_asset.ativo_id %}">
+                                            Movimentação {{obj_asset.id}}
+                                        </a>
+                                    </h5>
+                                </div>
+                                <div class="card-body" style="max-height: 150px; overflow-y: auto;">
+                                    <h5 class="card-title">Detalhe:</h5>
+                                    <p>
+                                        O ativo {{obj.ativo_nome}} encontra-se em atraso de manutenção desde a data de
+                                        "{{obj_asset.data_prevista_fim}}".
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if forloop.counter0|add:1|divisibleby:cards_per_slide or forloop.last %}
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <!-- Controles do Carousel -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval"
+                data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval"
+                data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
     </div>
 </div>
-{%endif%}

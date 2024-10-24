@@ -121,6 +121,11 @@ class TermoFilter(django_filters.FilterSet):
         choices=Movement.TIPOS,
         label='Tipo de Movimenação',
     )
+    status_movimento = django_filters.ChoiceFilter(
+        field_name = 'movimentacao__status',
+        choices=Movement.STATUS_CHOICES,
+        label='Status da Movimenação',
+    )
 
 
     class Meta:

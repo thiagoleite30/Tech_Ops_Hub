@@ -434,11 +434,15 @@ CELERY_BEAT_SCHEDULE = {
     },
     'rodar_rotina_checa_requisicoes': {
         'task': 'apps.move_gpos.tasks.rotina_checa_requisicoes',
-        'schedule': crontab(minute='*/5'),  # Executa a cada 20 minutos
+        'schedule': crontab(minute='*/5'),  # Executa a cada 5 minutos
     },
     'rodar_consulta_staging_tb_fp': {
         'task': 'apps.tech_persons.tasks.consulta_staging_tb_fp',
         'schedule': crontab(minute=0, hour='*/3'),  # Execute a cada três horas: meia-noite,
+    },
+    'atualiza_dias_atraso_manutencoes': {
+        'task': 'apps.tech_assets.tasks.rotina_dias_atraso_manutencao',
+        'schedule': crontab(minute='*/5'),  # Executa a cada 5 minutos
     },
 }
 
