@@ -56,7 +56,7 @@ def get_cards_per_slide(context):
         print(f'DEBUG :: É MOBILE')
         return 1
     elif user_agent_parsed.is_tablet:
-        return 3
+        return 2
     elif user_agent_parsed.is_pc:
         print(f'DEBUG :: É PC')
-        return 5
+        return 3

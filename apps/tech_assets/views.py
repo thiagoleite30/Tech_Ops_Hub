@@ -17,7 +17,7 @@ from apps.tech_assets.forms import AccessoryForms, ApprovalForms, \
     MovementForms, AssetForms, MaintenanceForms, \
     LocationForms, ManufacturerForms, CostCenterForms, \
     AssetTypeForms, ReturnTermForms, TermoForms, LoginForms
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from allauth.account.decorators import verified_email_required
 from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q, Case, \
@@ -62,7 +62,7 @@ def logout(request):
 
     if tipo_login == 'social':
         return redirect('https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=' + request.build_absolute_uri(reverse('logout')))
-    
+
     return redirect('login')
 
 
@@ -78,7 +78,7 @@ def usuario_nao_autorizado(request):
 
 
 @login_required
-@group_required(['Administradores','Suporte', 'Basico', 'Move GPOS'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte', 'Basico', 'Move GPOS', 'TH'], redirect_url='zona_restrita')
 def index(request):
     user = request.user
     if not user.is_authenticated:
@@ -91,64 +91,83 @@ def index(request):
     if user.groups.filter(name__in=grupos).exists():
         return redirect('move_gpos')
 
-    alerts_movements = Movement.objects.select_related(
-        'usuario',
-        'centro_de_custo_recebedor',
-    ).annotate(
-        termo_id=F('termo_movimentacao__id')
-    ).filter(
-        termo_movimentacao__isnull=False,
-        termo_movimentacao__aceite_usuario__in=['aceito'],
-        usuario__user_employee__employee__situacao='Demitido',
-        tipo='emprestimo',
-    ).exclude(
-        status__in=['concluido']
-    ).distinct()
+    if not user.groups.count() == 1 and not user.groups.filter(name='basico').exists():
 
-    pending_movements = Movement.objects.select_related(
-        'usuario',
-        'centro_de_custo_recebedor',
-    ).filter(
-        returned__status=True,
-        termo_movimentacao__isnull=False,
-        termo_movimentacao__aceite_usuario__in=['aceito']
-    ).filter(
-        Q(movementasset__devolvido=False) |
-        Q(movementaccessory__quantidade__gt=F(
-            'movementaccessory__quantidade_devolvida'))
-    ).annotate(
-        termo_id=F('termo_movimentacao__id')
-    ).distinct()
+        alerts_movements = Movement.objects.select_related(
+            'usuario',
+            'centro_de_custo_recebedor',
+        ).annotate(
+            termo_id=F('termo_movimentacao__id')
+        ).filter(
+            termo_movimentacao__isnull=False,
+            termo_movimentacao__aceite_usuario__in=['aceito'],
+            usuario__user_employee__employee__situacao='Demitido',
+            tipo='emprestimo',
+        ).exclude(
+            status__in=['concluido']
+        ).distinct()
 
-    late_returns = Movement.objects.select_related(
-        'usuario',
-        'centro_de_custo_recebedor',
-    ).exclude(
-        status__in=['concluido']
-    ).filter(
-        termo_movimentacao__isnull=False,
-        termo_movimentacao__aceite_usuario__in=['aceito']
-    ).filter(
-        Q(data_devolucao_prevista__lt=timezone.now()) &
-        Q(data_devolucao_prevista__isnull=False)
-    ).annotate(
-        termo_id=F('termo_movimentacao__id')
-    ).distinct()
+        pending_movements = Movement.objects.select_related(
+            'usuario',
+            'centro_de_custo_recebedor',
+        ).filter(
+            returned__status=True,
+            termo_movimentacao__isnull=False,
+            termo_movimentacao__aceite_usuario__in=['aceito']
+        ).filter(
+            Q(movementasset__devolvido=False) |
+            Q(movementaccessory__quantidade__gt=F(
+                'movementaccessory__quantidade_devolvida'))
+        ).annotate(
+            termo_id=F('termo_movimentacao__id')
+        ).distinct()
 
-    late_maintenance = Maintenance.objects.filter(dias_atraso__gt=0)
+        late_returns = Movement.objects.select_related(
+            'usuario',
+            'centro_de_custo_recebedor',
+        ).exclude(
+            status__in=['concluido']
+        ).filter(
+            termo_movimentacao__isnull=False,
+            termo_movimentacao__aceite_usuario__in=['aceito']
+        ).filter(
+            Q(data_devolucao_prevista__lt=timezone.now()) &
+            Q(data_devolucao_prevista__isnull=False)
+        ).annotate(
+            termo_id=F('termo_movimentacao__id')
+        ).distinct()
 
-    context = {
-        'alerts_movements': alerts_movements,
-        'pending_movements': pending_movements,
-        'late_returns': late_returns,
-        'late_maintenance': late_maintenance
-    }
+        late_maintenance = Maintenance.objects.filter(dias_atraso__gt=0)
+
+        context = {
+            'alerts_movements': alerts_movements,
+            'pending_movements': pending_movements,
+            'late_returns': late_returns,
+            'late_maintenance': late_maintenance
+        }
+
+    else:
+        movements = Movement.objects.filter(
+            status__in=['em_andamento', 'atrasado'],
+            usuario=user,
+            tipo__in=['emprestimo']
+        ).annotate(
+            termo_id=F('termo_movimentacao__id')
+        ).distinct()
+
+        print(f'DEBUG :: MOVEMENTS :: {movements}')
+
+        context = {
+            'movements' : movements
+            }
+    
+    print(f'DEBUG :: CONTEXT :: {context}')
 
     return render(request, 'apps/tech_assets/index.html', context)
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_fabricante(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -172,7 +191,7 @@ def cadastro_fabricante(request):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_modelo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -196,7 +215,7 @@ def cadastro_modelo(request):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_acessorio(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -220,12 +239,10 @@ def cadastro_acessorio(request):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_centro_custo(request):
     if not request.user.is_authenticated:
         return redirect('login')
-
-    
 
     if request.method == 'POST':
         form = CostCenterForms(request.POST, request.FILES)
@@ -246,7 +263,7 @@ def cadastro_centro_custo(request):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_tipo_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -270,7 +287,7 @@ def cadastro_tipo_ativo(request):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 # @group_required('Admin', redirect_url='zona_restrita')
 def cadastro_local(request):
     if not request.user.is_authenticated:
@@ -294,7 +311,7 @@ def cadastro_local(request):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_manutencao(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -327,7 +344,7 @@ def cadastro_manutencao(request, asset_id):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def concluir_manutencao(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -338,7 +355,7 @@ def concluir_manutencao(request, asset_id):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_ativo(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -362,7 +379,7 @@ def cadastro_ativo(request):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def get_accessory_options(request):
     options = list(Accessory.objects.all().values('id'))
     for option in options:
@@ -373,7 +390,7 @@ def get_accessory_options(request):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def novo_movimento(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -415,7 +432,7 @@ def novo_movimento(request):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def ativos(request):
     assets = Asset.objects.select_related('tipo').all()
 
@@ -448,7 +465,7 @@ def ativos(request):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def ativo(request, asset_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -464,7 +481,10 @@ def ativo(request, asset_id):
         for maintenance in maintenances:
             Maintenance.dias_de_atraso(maintenance)
 
-    movement = Movement.objects.filter(ativos=asset)
+    movement = Movement.objects.filter(ativos=asset).annotate(
+        termo_id=F('termo_movimentacao__id'))
+
+    movement = Termo.objects.filter(movimentacao__ativos=asset)
 
     paginator_movement = Paginator(movement, 10)
     paginator_maintenances = Paginator(maintenances, 10)
@@ -489,7 +509,7 @@ def ativo(request, asset_id):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def carrinho(request):
     user_instance = request.user
     if not user_instance.is_authenticated:
@@ -499,11 +519,13 @@ def carrinho(request):
 
     cart = get_object_or_404(Cart, usuario_sessao=user_instance)
 
-    cart_items = AssetCart.objects.select_related('ativo', 'carrinho').filter(carrinho=cart)
+    cart_items = AssetCart.objects.select_related(
+        'ativo', 'carrinho').filter(carrinho=cart)
 
     ids_assets_in_cart = [item.ativo_id for item in cart_items]
 
-    assets = Asset.objects.select_related('tipo', 'modelo').filter(id__in=ids_assets_in_cart)
+    assets = Asset.objects.select_related(
+        'tipo', 'modelo').filter(id__in=ids_assets_in_cart)
 
     if query:
         assets = assets.filter(
@@ -524,14 +546,14 @@ def carrinho(request):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def add_carrinho(request, asset_id):
     user_instance = request.user
     if not user_instance.is_authenticated:
         return redirect('login')
 
     asset = get_object_or_404(Asset, id=asset_id)
-    
+
     if asset:
         cart, _ = Cart.objects.get_or_create(
             usuario_sessao=user_instance)
@@ -542,12 +564,12 @@ def add_carrinho(request, asset_id):
         )
 
         return redirect('ativos')
-    
+
     return redirect('index')
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def remove_do_carrinho(request, asset_id):
     user_instance = request.user
     if not user_instance.is_authenticated:
@@ -571,7 +593,7 @@ def remove_do_carrinho(request, asset_id):
 
 
 @login_required
-@group_required(['Administradores','Suporte'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def deleta_carrinho(request):
     user_instance = request.user
     if not user_instance.is_authenticated:
@@ -742,7 +764,7 @@ def editar_aprovacao(request, aprovacao_id):
 def aprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
         return redirect('login')
-    
+
     try:
         aprovacao = get_object_or_404(Approval, id=aprovacao_id)
         if aprovacao:
@@ -768,7 +790,7 @@ def aprova_movimentacao(request, aprovacao_id):
 def reprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
         return redirect('login')
-    
+
     try:
         url = reverse('aprovacao', kwargs={'aprovacao_id': aprovacao_id})
 
@@ -1027,15 +1049,15 @@ def devolucao(request, termo_id):
         movimento=movimentacao)
     movement_assets = MovementAsset.objects.select_related('ativo', 'movimento').filter(
         movimento=movimentacao, devolvido=False)
-    
 
     if request.method == 'POST':
-        
+
         form = ReturnTermForms(request.POST)
 
         selected_assets = request.POST.getlist('assets')
 
-        movement_assets_selected = movement_assets.filter(id__in=selected_assets)
+        movement_assets_selected = movement_assets.filter(
+            id__in=selected_assets)
 
         movement_accessory_ids = request.POST.getlist('movement_accessory_ids')
         quantities = {}
@@ -1056,7 +1078,7 @@ def devolucao(request, termo_id):
 
             for movement_asset in movement_assets_selected:
                 movement_asset.marcar_como_devolvido()
-            
+
             for movement_accessory_id, quantity in quantities.items():
                 moviment_accessory = MovementAccessory.objects.get(
                     id=movement_accessory_id)
@@ -1065,14 +1087,14 @@ def devolucao(request, termo_id):
             for asset in movement_assets.exclude(id__in=movement_assets_selected.values_list('id', flat=True)):
                 asset.ativo.status = 'nao_devolvido'
                 asset.ativo.save()
-                
+
             register_logentry(instance=instance, action=ADDITION,
                               user=request.user, detalhe='Devolução Inserida')
 
             messages.success(request, 'Devolução inserida com sucesso.')
 
             return redirect(url)
-        
+
     else:
         form = ReturnTermForms
 

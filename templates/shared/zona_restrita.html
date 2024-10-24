@@ -18,7 +18,7 @@
                     src="{% static 'assets/info_user.svg' %}"/> Ops... algo deu errado, {{request.user.first_name }}!</h1>
             <p>Você precisa de algumas permissões para acessar esta e outras áreas. Mas não se preocupe,
                 procure o time de suporte para ajuda-lo(a).</p>
-            <p style="text-align: center;"><a href="{% url 'logout' %}">Clique aqui para sair</a></p>
+            <p style="text-align: center;"><a href="{% url 'index' %}">Voltar para a home</a> </br></br> Ou </br></br> <a href="{% url 'logout' %}">Clique aqui para sair</a></p>
         </div>
 
     </main>

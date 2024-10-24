@@ -1,10 +1,12 @@
 {% load static %} {% load template_tags %}
 <div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
-    <h5 class="card-title">
-        Termo de {{movement.get_tipo_display}}
-    </h5>
+    <div class="card-header">
+        <h5 class="card-title">
+            Termo #{{term.id}} ({{movement.get_tipo_display}})
+        </h5>
+    </div>
     <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
-        <ul class="list-group list-group-flush">
+        <ul class="list-group list-group-flush" style="text-align: start;">
             <li class="list-group-item">
                 <b>Usuário Responsável: </b>
                 {{movement.usuario.first_name}} {{movement.usuario.last_name}} ({{movement.usuario.username}})

@@ -5,27 +5,30 @@
         {% for accessory, quantity in accessorys %}
         <div class="col-sm-3">
             <div class="card h-100 text-center">
-                <div class="card-body">
+                <div class="card-header">
                     <h5 class="card-title">{{accessory.get_tipo_display}}</h5>
                 </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">Ativo: {{accessory.nome}}</li>
-                    <li class="list-group-item">Modelo: {{accessory.modelo}}</li>
-                    <li class="list-group-item">Quantidade: {{quantity}}</li>
-                </ul>
                 <div class="card-body">
-                    <a style="pointer-events: stroke;" href="#">
-                        <div class="cart-icon-container">
-                            <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
+                    <ul class="list-group list-group-flush" style="text-align: start;">
+                        <li class="list-group-item">Ativo: {{accessory.nome}}</li>
+                        <li class="list-group-item">Modelo: {{accessory.modelo}}</li>
+                        <li class="list-group-item">Quantidade: {{quantity}}</li>
+                    </ul>
+                    <li class="list-group-item" style="text-align: center;">
+                        <div class="card-body">
+                            <a style="pointer-events: stroke;" href="#">
+                                <div class="cart-icon-container">
+                                    <i class="fa fa-eye" style="margin-left: 8px; font-size: 25px;"></i>
+                                </div>
+                            </a>
                         </div>
-                    </a>
+                    </li>
                 </div>
-            </div>
 
+            </div>
+            {% endfor %}
+            {%else%}
+            <h5>{{movement.get_tipo_display}} não possui acessórios</h5>
+            {%endif%}
         </div>
-        {% endfor %}
-        {%else%}
-        <h5>{{movement.get_tipo_display}} não possui acessórios</h5>
-        {%endif%}
     </div>
-</div>

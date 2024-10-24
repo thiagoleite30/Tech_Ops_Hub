@@ -1,13 +1,15 @@
 {% load static %}
 <div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
-    <h5 class="card-title">{{asset.tipo}}</h5>
-    <div class="card" style="margin-top: 10px; margin-bottom: 10px;">
-        <ul class="list-group list-group-flush">
+    <div class="card-header">
+        <h5 class="card-title">{{asset.tipo}}</h5>
+    </div>
+    <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
+        <ul class="list-group list-group-flush" style="text-align: start;">
             <li class="list-group-item"><b>Nome:</b> {{asset.nome}}</li>
             <li class="list-group-item"><b>Patrimônio:</b> {{asset.patrimonio}}</li>
             <li class="list-group-item"><b>Número de série:</b> {{ asset.numero_serie }}</li>
             <li class="list-group-item"><b>Status:</b> {{ asset.get_status_display }}</li>
-            <li class="list-group-item"><b>Localização:</b> {{ asset.localizacao }}</li>
+            <li class="list-group-item"><b>Localização:</b> {% if not asset.localizacao %}-----{%else%}{{ asset.localizacao}}{%endif%}</li>
         </ul>
     </div>
     <a href="#" class="btn btn-primary">Editar Ativo</a>
@@ -20,9 +22,11 @@
     {% endif %}
 </div>
 <div class="tab-pane fade" id="info" role="tabpanel" aria-labelledby="info-tab">
-    <h5 class="card-title">{{asset_infos}}</h5>
-    <div class="card" style="margin-top: 10px; margin-bottom: 10px;">
-        <ul class="list-group list-group-flush">
+    <div class="card-header">
+        <h5 class="card-title">{{asset_infos}}</h5>
+    </div>
+    <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
+        <ul class="list-group list-group-flush" style="text-align: start;">
             <li class="list-group-item"><b>Fabricante:</b> {{asset_infos.fabricante}}</li>
             <li class="list-group-item"><b>Modelo:</b> {{asset.modelo}}</li>
             <li class="list-group-item"><b>MAC:</b> {{asset_infos.endereco_mac}}</li>

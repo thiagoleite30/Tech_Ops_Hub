@@ -2,9 +2,13 @@
 {% load template_tags %}
 
 <div class="tab-pane fade show active" id="perfil" role="tabpanel" aria-labelledby="perfil-tab">
-    <h5 class="card-title">{{approval.movimentacao.get_tipo_display}} para {{approval.movimentacao.usuario.first_name}} {{approval.movimentacao.usuario.last_name}}</h5>
+    <div class="card-header">
+        <h5 class="card-title">
+            {{approval.movimentacao.get_tipo_display}} para {{approval.movimentacao.usuario.first_name}} {{approval.movimentacao.usuario.last_name}}
+        </h5>
+    </div>
     <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
-        <ul class="list-group list-group-flush">
+        <ul class="list-group list-group-flush" style="text-align: start;">
             <li class="list-group-item"><b>ID Movimentação:</b> {{approval.movimentacao.id}}</li>
             <li class="list-group-item"><b>Data Inclusão:</b> {{approval.data_criacao}}</li>
             {% if approval.status_aprovacao == 'aprovado' %}

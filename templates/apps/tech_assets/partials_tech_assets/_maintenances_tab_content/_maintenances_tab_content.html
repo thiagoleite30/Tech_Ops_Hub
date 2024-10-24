@@ -5,7 +5,7 @@
         <div class="col-sm-3">
             <div class="card h-100 text-center">
                 {% if maintenance.dias_atraso > 0 %}
-                <div class="card-body">
+                <div class="card-header">
                     {% if maintenance.status %}
                     <h5 class="card-title" style="color: red;">Atrasada!</h5>
                     {% else %}
@@ -13,7 +13,7 @@
                     {% endif %}
                 </div>
                 {% else %}
-                <div class="card-body">
+                <div class="card-header">
                     {% if maintenance.status %}
                     <h5 class="card-title">Em Andamento</h5>
                     {% else %}
@@ -21,30 +21,33 @@
                     {% endif %}
                 </div>
                 {% endif %}
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">Ativo: {{maintenance.ativo}}</li>
-                    <li class="list-group-item">Operador Responsável: {{maintenance.operador}}
-                    </li>
-                    <li class="list-group-item">Chamado Interno: {{maintenance.chamado_top_desk}}
-                    </li>
-                    {% if maintenance.chamado_externo %}
-                    <li class="list-group-item">Chamado Externo: {{maintenance.chamado_externo}}
-                    </li>
-                    {% endif %}
-                    <li class="list-group-item">Data de Entrada: {{maintenance.data_inicio}}
-                    </li>
-                    {% if maintenance.data_prevista_fim != None %}
-                    <li class="list-group-item">Previsão de conclusão:
-                        {{maintenance.data_prevista_fim}}
-                    </li>
-                    {% endif %}
-                    {% if maintenance.dias_atraso > 0 %}
-                    <li class="list-group-item">Manutenção atrasada em {{maintenance.dias_atraso}}
-                        dias!</li>
-                    {% else %}
-                    <li class="list-group-item">Manutenção Dentro do Prazo</li>
-                    {% endif %}
-                </ul>
+                <div class="card-body h-100" style="margin-top: 10px; margin-bottom: 10px;">
+                    <ul class="list-group list-group-flush" style="text-align: start;">
+                        <li class="list-group-item">Ativo: {{maintenance.ativo}}</li>
+                        <li class="list-group-item">Operador Responsável: {{maintenance.operador}}
+                        </li>
+                        <li class="list-group-item">Chamado Interno: {{maintenance.chamado_top_desk}}
+                        </li>
+                        {% if maintenance.chamado_externo %}
+                        <li class="list-group-item">Chamado Externo: {{maintenance.chamado_externo}}
+                        </li>
+                        {% endif %}
+                        <li class="list-group-item">Data de Entrada: {{maintenance.data_inicio}}
+                        </li>
+                        {% if maintenance.data_prevista_fim != None %}
+                        <li class="list-group-item">Previsão de conclusão:
+                            {{maintenance.data_prevista_fim}}
+                        </li>
+                        {% endif %}
+                        {% if maintenance.dias_atraso > 0 %}
+                        <li class="list-group-item">Manutenção atrasada em {{maintenance.dias_atraso}}
+                            dias!</li>
+                        {% else %}
+                        <li class="list-group-item">Manutenção Dentro do Prazo</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <!--
                 <div class="card-body">
                     <a style="pointer-events: stroke;" href="#">
                         <div class="cart-icon-container">
@@ -58,6 +61,7 @@
                         </div>
                     </a>
                 </div>
+                -->
             </div>
         </div>
         {% endfor %}
