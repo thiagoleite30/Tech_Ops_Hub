@@ -7,51 +7,38 @@
         </div>
         <div class="row" style="justify-content: center;">
             <div class="col-sm-2 text-center  h-100" style="border-style: none; flex: 1; max-width: 300px;">
-                <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-placement="bottom"
-                    data-bs-trigger="hover focus" data-bs-content="Nova solicitação de mudança de GPOS.">
-                    <div class="card-body container_form_id" style="display: block;">
-                        <a id="nova_solicitacao" href="{% url 'requisicao_troca' %}" type="button"
-                            style="text-decoration: none">
-                            <img src="{% static 'assets/mais.svg' %}"
-                                alt="icone para realizar autenticação com Microsoft" class="img-fluid" width="100%"
-                                height="100%">
-                        </a>
-                    </div>
-                </span>
+                <div class="card-body container_form_id" style="display: block;">
+                    <a id="nova_solicitacao" href="{% url 'requisicao_troca' %}" type="button"
+                        style="text-decoration: none">
+                        <img src="{% static 'assets/mais.svg' %}" alt="icone para realizar autenticação com Microsoft"
+                            class="img-fluid" width="100%" height="100%">
+                    </a>
+                </div>
                 <div class="card-body">
                     <strong style="color: #bababa; font-size: 10pt;">Nova Solicitação</strong>
                 </div>
             </div>
 
             <div class="col-sm-2 text-center  h-100" style="border-style: none; flex: 1; max-width: 300px;">
-                <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-placement="bottom"
-                    data-bs-trigger="hover focus"
-                    data-bs-content="Acompanhe o andamento de suas solicitações. Veja também o seu histórico.">
-                    <div class="card-body container_form_id" style="display: block;">
-                        <a href="{% url 'solicitacoes' %}" type="button" style="text-decoration: none">
-                            <img src="{% static 'assets/ver.svg' %}"
-                                alt="icone para realizar autenticação com Microsoft" class="img-fluid" width="100%"
-                                height="100%">
-                        </a>
-                    </div>
-                </span>
+                <div class="card-body container_form_id" style="display: block;">
+                    <a href="{% url 'solicitacoes' %}" type="button" style="text-decoration: none">
+                        <img src="{% static 'assets/ver.svg' %}" alt="icone para realizar autenticação com Microsoft"
+                            class="img-fluid" width="100%" height="100%">
+                    </a>
+                </div>
                 <div class="card-body">
                     <strong style="color: #bababa; font-size: 10pt;">Acompanhar Solicitações</strong>
                 </div>
             </div>
 
             <div class="col-sm-2 text-center h-100" style="border-style: none; flex: 1; max-width: 300px;">
-                <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-placement="bottom"
-                    data-bs-trigger="hover focus" data-bs-content="Obtenha ajuda clicando aqui.">
-                    <div class="card-body container_form_id" style="display: block;">
-                        <a type="button" data-bs-toggle="modal" data-bs-target="#ajuda-modal-id"
-                            style="text-decoration: none">
-                            <img src="{% static 'assets/ajuda.svg' %}"
-                                alt="icone para realizar autenticação com Microsoft" class="img-fluid" width="100%"
-                                height="100%">
-                        </a>
-                    </div>
-                </span>
+                <div class="card-body container_form_id" style="display: block;">
+                    <a type="button" data-bs-toggle="modal" data-bs-target="#ajuda-modal-id"
+                        style="text-decoration: none">
+                        <img src="{% static 'assets/ajuda.svg' %}" alt="icone para realizar autenticação com Microsoft"
+                            class="img-fluid" width="100%" height="100%">
+                    </a>
+                </div>
                 <div class="card-body">
                     <strong style="color: #bababa; font-size: 10pt;">Precisa de Ajuda?</strong>
                 </div>
@@ -62,9 +49,6 @@
 
 {% include 'apps/move_gpos/_ajuda_modal/_ajuda_modal.html' %}
 
-<script>
-    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
-    const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
-</script>
+
 
 {% endblock %}

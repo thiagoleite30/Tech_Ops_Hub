@@ -15,15 +15,6 @@ main {
   flex: 1;
 }
 
-footer {
-  background-color: #04244f;
-  width: 100%;
-  padding: 1rem 0;
-  box-sizing: border-box;
-  color: #ffffff;
-  position: relative;
-  bottom: 0;
-}
 
 .form-group-new {
   align-items: center;
