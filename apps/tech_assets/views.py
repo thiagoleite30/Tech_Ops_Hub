@@ -938,7 +938,7 @@ def termo(request, termo_id):
         'assets': ativos_na_movimentacao,
         'accessorys': acessorios_com_quantidade,
         'ReturnTerm': ReturnTerm.objects.filter(movimentacao=movimentacao).exists(),
-        'conteudo_processado': conteudo_termo.conteudo
+        'conteudo_processado': conteudo_termo
     }
 
     return render(request, 'apps/tech_assets/termo.html', context)
