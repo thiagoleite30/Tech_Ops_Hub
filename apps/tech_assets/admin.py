@@ -106,6 +106,12 @@ class ListingMovementAccessory(admin.ModelAdmin):
     search_fields = ('movimento__id', 'acessorio__nome')
     list_per_page = 20
 
+class ListingConteudoTermo(admin.ModelAdmin):
+    list_display = ('versao', 'tipo','data_criacao')
+    search_fields = ('versao', 'tipo')
+    list_filter = ('tipo',)
+    list_per_page = 20
+
 
 # Novos registros e modificações
 
@@ -117,3 +123,4 @@ admin.site.register(Movement, ListingMovement)
 admin.site.register(MovementAsset, ListingMovementAsset)
 admin.site.register(MovementAccessory, ListingMovementAccessory)
 admin.site.register(AssetCart, ListingAssetCart)
+admin.site.register(ConteudoTermo, ListingConteudoTermo)

@@ -407,12 +407,13 @@ def novo_movimento(request):
         if form.is_valid():
             print(request.POST.getlist('form-acessorio'))
             print(request.POST.getlist('form-quantidade'))
+            print(f'Forms is valid!')
             movimento = form.save()
 
             register_logentry(instance=movimento,
                               action=ADDITION, user=request.user)
             deleta_carrinho(request)
-
+            print(f'DEBUG :: CRIADO OBJETO APROVALL')
             if 'save' in request.POST:
                 return redirect('index')
             elif 'save_and_add' in request.POST:
