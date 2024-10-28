@@ -131,9 +131,10 @@ class Asset(models.Model):
         return self.nome
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         super(Asset, self).save(*args, **kwargs)
 
-        if self.pk is None:
+        if is_new:
             AssetInfo.objects.get_or_create(ativo=self)
 
 
@@ -212,12 +213,13 @@ class Movement(models.Model):
         return f'Movimento Tipo: {self.tipo} ID: {self.id} para o usuário {self.usuario} no centro de custo {self.centro_de_custo_recebedor}'
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         ativos = kwargs.pop('ativos', None)
         aprovador = kwargs.pop('aprovador', None)
         acessorios = kwargs.pop('acessorios', None)
         super(Movement, self).save(*args, **kwargs)
 
-        if self.pk is None:
+        if is_new:
             if ativos:
                 for ativo in ativos:
                     MovementAsset.objects.create(ativo=ativo, movimento=self)
@@ -440,9 +442,10 @@ class Approval(models.Model):
         # return f'Apovação criada para analise do aprovador {self.aprovador.username}'
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         super(Approval, self).save(*args, **kwargs)
 
-        if self.pk is None:
+        if is_new:
             self.mudar_status_ativos('separado')
 
     def aprovar_movimentacao(self):
@@ -555,7 +558,8 @@ class Termo(models.Model):
     justificativa = models.TextField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if self.pk is None:
+        is_new = self.pk is None
+        if is_new:
             conteudo_termo = ConteudoTermo.objects.filter(tipo=self.movimentacao.tipo).latest('versao')
             if conteudo_termo:
                 self.conteudo_termo = conteudo_termo
