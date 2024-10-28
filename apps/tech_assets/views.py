@@ -4,12 +4,12 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import resolve, reverse
 from apps.tech_assets.context_processors_add import user_groups_processor
-from apps.tech_assets.filters import AccessoryFilter, ApprovalFilter, AssetFilter, AssetModelFilter, CostCenterFilter, LocationFilter, ManufacturerFilter, TermoFilter
+from apps.tech_assets.filters import AccessoryFilter, ApprovalFilter, AssetFilter, \
+      AssetModelFilter, CostCenterFilter, LocationFilter, ManufacturerFilter, TermoFilter
 from apps.tech_assets.models import *
 from django.shortcuts import get_object_or_404, render, redirect
 
-from apps.tech_assets.services import register_logentry, upload_assets, \
-    concluir_manutencao_service
+from apps.tech_assets.services import register_logentry, upload_assets, concluir_manutencao_service
 from django.contrib.admin.models import ADDITION, CHANGE
 
 from apps.tech_assets.forms import AccessoryForms, ApprovalForms, \
@@ -17,7 +17,7 @@ from apps.tech_assets.forms import AccessoryForms, ApprovalForms, \
     MovementForms, AssetForms, MaintenanceForms, \
     LocationForms, ManufacturerForms, CostCenterForms, \
     AssetTypeForms, ReturnTermForms, TermoForms, LoginForms
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from allauth.account.decorators import verified_email_required
 from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q, Case, \
@@ -26,10 +26,7 @@ from django.core.paginator import Paginator
 from apps.tech_persons.models import UserEmployee
 from utils.decorators import group_required
 from django.contrib import messages, auth
-# from django.views.decorators.cache import cache_page
-
-# Create your views here.
-
+from django.conf import settings
 
 def login(request):
 
@@ -61,7 +58,7 @@ def logout(request):
     auth.logout(request)
 
     if tipo_login == 'social':
-        return redirect('https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri=' + request.build_absolute_uri(reverse('logout')))
+        return redirect(settings.LOGOUT_REDIRECT_URL + request.build_absolute_uri(reverse('logout')))
 
     return redirect('login')
 
@@ -928,6 +925,9 @@ def termo(request, termo_id):
         else:
             print(f'Formulário inválido')
 
+
+    conteudo_termo = ConteudoTermo.objects.filter(tipo=movimentacao.tipo).latest('versao')
+
     context = {
         'form': form,
         'term': term_res,
@@ -936,7 +936,8 @@ def termo(request, termo_id):
         'return_term': devolucao,
         'assets': ativos_na_movimentacao,
         'accessorys': acessorios_com_quantidade,
-        'ReturnTerm': ReturnTerm.objects.filter(movimentacao=movimentacao).exists()
+        'ReturnTerm': ReturnTerm.objects.filter(movimentacao=movimentacao).exists(),
+        'conteudo_processado': conteudo_termo.conteudo
     }
 
     return render(request, 'apps/tech_assets/termo.html', context)

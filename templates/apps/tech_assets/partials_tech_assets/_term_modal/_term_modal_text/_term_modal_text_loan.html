@@ -1,30 +1,11 @@
 {% load static %}
 <div class="container mt-5" style="font-size: 12pt;">
     <p><strong>1. Identificação das Partes:</strong></p>
-    <p>Este Termo de Consentimento é celebrado entre <strong>Aviva</strong>, doravante denominada "EMPRESA", e <strong>{{movement.usuario.first_name}} {{movement.usuario.last_name}}</strong>, portador da matricula <strong>{{ movement.usuario.user_employee.employee.matricula }}</strong>, doravante denominado "USUÁRIO".</p>
-
-    <p><strong>2. Objeto:</strong></p>
-    <p>A EMPRESA concede ao USUÁRIO o empréstimo dos ATIVOS E/OU ACESSÓRIOS e/ou acessórios de tecnologia listados na tela deste termo, doravante denominados "ATIVOS E/OU ACESSÓRIOS".</p>
-
-    <p><strong>3. Condições de Uso:</strong></p>
-    <ul>
-        <li>Os ATIVOS E/OU ACESSÓRIOS emprestados deverão ser utilizados exclusivamente para fins profissionais, em atividades relacionadas às funções desempenhadas pelo USUÁRIO na EMPRESA.</li>
-        <li>O USUÁRIO se compromete a zelar pelos ATIVOS E/OU ACESSÓRIOS, mantendo-os em boas condições de uso e conservação.</li>
-        <li>Qualquer dano, perda ou roubo dos ATIVOS E/OU ACESSÓRIOS deverá ser comunicado imediatamente à EMPRESA. Em caso de negligência, o USUÁRIO poderá ser responsabilizado por arcar com os custos de reparo ou substituição dos ATIVOS E/OU ACESSÓRIOS.</li>
-        <li>
-            <strong>Obs.:</strong> Segundo a política operacional <strong>Instalação de Software - POL-093</strong>, “qualquer software que, por necessidade do serviço, necessite ser instalado, deve ser comunicado a GETI, que procederá a instalação caso constate a necessidade do mesmo”.
-        </li>
-    </ul>
-
-    <p><strong>4. Devolução:</strong></p>
-     <p>No término do prazo de empréstimo, o USUÁRIO deverá devolver os ATIVOS E/OU ACESSÓRIOS à EMPRESA em perfeitas condições de uso, exceto pelo desgaste natural decorrente do tempo e do uso adequado.</li>
-
-
-    <p><strong>5. Política de Privacidade e Segurança:</strong></p>
-    <p>O USUÁRIO se compromete a respeitar todas as políticas de privacidade e segurança da informação estabelecidas pela EMPRESA, abstendo-se de instalar softwares não autorizados ou utilizar os ATIVOS E/OU ACESSÓRIOS para atividades ilegais ou não relacionadas ao trabalho.</p>
-
-    <p><strong>6. Termo de Ciência:</strong></p>
-    <p>Estou ciente de que, todos os valores de hardware e softwares referentes a depreciação, serão alocadas de acordo com a movimentação dos equipamentos entre áreas. Declaro, ainda, que na qualidade de fiel depositário do equipamento acima descrito, assumo a inteira responsabilidade pela guarda do mesmo e comprometo-me a devolvê-lo em perfeito estado de conservação, após o uso ou por ocasião do rompimento do vínculo empregatício ou rescisão do contrato de prestação de serviços com a AVIVA.</p>
-
-    <p class="text-center mt-5">Data de empréstimo: <strong>{{term.data_criacao}}</strong></p>
+    <p>Este Termo de Consentimento é celebrado entre <strong>Aviva</strong>, doravante denominada "EMPRESA", e
+        <strong>{{movement.usuario.first_name}} {{movement.usuario.last_name}}</strong>, portador da matricula
+        <strong>{{ movement.usuario.user_employee.employee.matricula }}</strong>, doravante denominado "USUÁRIO".</p>
+    </br>
+    {{ term.conteudo_termo.conteudo|safe }}
+    </br></br>
+    <p class="text-center mt-5">Data de movimentação: <strong>{{term.data_criacao}}</strong></p>
 </div>

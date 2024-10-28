@@ -285,6 +285,7 @@ ACCOUNT_LOGOUT_ON_GET = True
 
 # ou a URL para onde deseja redirecionar após o logout - aqui tá indo pra index
 #LOGOUT_REDIRECT_URL = f'''https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri={LOGIN_URL}'''
+LOGOUT_REDIRECT_URL = r'https://login.microsoftonline.com/common/oauth2/v2.0/logout?post_logout_redirect_uri='
 
 URL_POS_CLICK_MS_LOGO = str(os.getenv('URL_POS_CLICK_MS_LOGO'))
 

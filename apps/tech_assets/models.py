@@ -4,9 +4,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
-# Create your models here.
-from django.db import models
-
 
 class Manufacturer(models.Model):
     nome = models.CharField(max_length=100, null=False, unique=True)
@@ -50,7 +47,8 @@ class AssetType(models.Model):
 class AssetModel(models.Model):
     tipo = models.ForeignKey(
         AssetType, on_delete=models.CASCADE, null=True, blank=True)
-    nome = models.CharField(max_length=100, null=False, blank=False, unique=True)
+    nome = models.CharField(max_length=100, null=False,
+                            blank=False, unique=True)
     fabricante = models.ForeignKey(
         Manufacturer, on_delete=models.CASCADE, null=True, blank=True)
     descricao = models.TextField(max_length=400, null=True, blank=True)
@@ -133,14 +131,15 @@ class Asset(models.Model):
         return self.nome
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None  # Verifica se é uma nova instância
         super(Asset, self).save(*args, **kwargs)
 
-        if is_new:
-            get, _ = AssetInfo.objects.get_or_create(ativo=self)
+        if self.pk is None:
+            AssetInfo.objects.get_or_create(ativo=self)
+
 
 class AssetInfo(models.Model):
-    ativo = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='assetinfo')
+    ativo = models.ForeignKey(
+        Asset, on_delete=models.CASCADE, related_name='assetinfo')
     fabricante = models.ForeignKey(
         Manufacturer, on_delete=models.SET_NULL, null=True, blank=True)
     memoria = models.CharField(max_length=100, null=True, blank=True)
@@ -148,22 +147,28 @@ class AssetInfo(models.Model):
     processador = models.CharField(max_length=100, null=True, blank=True)
     plataforma = models.CharField(max_length=100, null=True, blank=True)
     versao_plataforma = models.CharField(max_length=100, null=True, blank=True)
-    licenca_plataforma = models.CharField(max_length=100, null=True, blank=True)
+    licenca_plataforma = models.CharField(
+        max_length=100, null=True, blank=True)
     data_instalacao_plataforma = models.DateField(null=True, blank=True)
     data_garantia = models.DateField(null=True, blank=True)
     endereco_mac = models.CharField(max_length=40, null=True, blank=True)
     ultimo_logon = models.DateTimeField(null=True, blank=True)
     ultimo_scan = models.DateTimeField(null=True, blank=True)
-    data_registro = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    data_registro = models.DateTimeField(
+        auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return f'{self.ativo.nome}'
 
+
 class LogonInAsset(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='logon_user')
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name='logon_user')
     user_name = models.CharField(max_length=100, null=True, blank=True)
-    ativo = models.ForeignKey(Asset, on_delete=models.SET_NULL, null=True, related_name='logon_asset')
+    ativo = models.ForeignKey(
+        Asset, on_delete=models.SET_NULL, null=True, related_name='logon_asset')
     data_logon = models.DateTimeField(null=True, blank=True)
+
 
 class Movement(models.Model):
     STATUS_CHOICES = [
@@ -207,13 +212,12 @@ class Movement(models.Model):
         return f'Movimento Tipo: {self.tipo} ID: {self.id} para o usuário {self.usuario} no centro de custo {self.centro_de_custo_recebedor}'
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
         ativos = kwargs.pop('ativos', None)
         aprovador = kwargs.pop('aprovador', None)
         acessorios = kwargs.pop('acessorios', None)
         super(Movement, self).save(*args, **kwargs)
 
-        if is_new:
+        if self.pk is None:
             if ativos:
                 for ativo in ativos:
                     MovementAsset.objects.create(ativo=ativo, movimento=self)
@@ -232,7 +236,6 @@ class Movement(models.Model):
                     except Accessory.DoesNotExist as error:
                         print(f'ERROR :: {error}')
 
-            # Cria uma nova aprovação automaticamente
             Approval.objects.create(movimentacao=self, aprovador=aprovador)
 
     def esta_atrasado(self):
@@ -244,7 +247,7 @@ class Movement(models.Model):
         self.status = 'concluido'
         self.data_devolucao_real = timezone.now()
         self.save()
-                
+
     def dias_de_atraso(self):
         if self.status == 'em_andamento' and self.esta_atrasado():
             return (timezone.now() - self.data_devolucao_prevista).days
@@ -255,6 +258,7 @@ class Movement(models.Model):
         verbose_name = 'Movimentação'
         verbose_name_plural = 'Movimentações'
 
+
 class MovementAsset(models.Model):
     ativo = models.ForeignKey(Asset,  on_delete=models.CASCADE)
     movimento = models.ForeignKey(Movement, on_delete=models.CASCADE)
@@ -263,7 +267,7 @@ class MovementAsset(models.Model):
 
     def __str__(self):
         return str(self.ativo.nome)
-    
+
     class Meta:
         verbose_name = 'Movimentação / Ativo'
         verbose_name_plural = 'Movimentações / Ativo'
@@ -303,7 +307,6 @@ class MovementAccessory(models.Model):
 
 
 class Cart(models.Model):
-    # ativos = models.ManyToManyField(Asset, through='AssetCart')
     usuario_sessao = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='session_user_cart')
     data_criacao = models.DateTimeField(auto_now_add=True)
@@ -319,7 +322,7 @@ class AssetCart(models.Model):
 
     def __str__(self):
         return str(self.id)
-    
+
     class Meta:
         verbose_name = 'Ativo / Carrinho'
         verbose_name_plural = 'Ativos / Carrinho'
@@ -437,10 +440,9 @@ class Approval(models.Model):
         # return f'Apovação criada para analise do aprovador {self.aprovador.username}'
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None  # Verifica se é uma nova instância
         super(Approval, self).save(*args, **kwargs)
 
-        if is_new:
+        if self.pk is None:
             self.mudar_status_ativos('separado')
 
     def aprovar_movimentacao(self):
@@ -450,16 +452,18 @@ class Approval(models.Model):
         self.mudar_status_movimentacao('aprovar')
         self.save()
 
-        Termo.objects.create(movimentacao=self.movimentacao, aprovacao=self)
+        termo = Termo.objects.create(movimentacao=self.movimentacao, aprovacao=self)
+        termo.save()
 
     def reprovar_movimentacao(self):
         self.status_aprovacao = 'reprovado'
         self.data_conclusao = datetime.now()
         self.mudar_status_ativos('em_estoque')
-        
+
         for movement_accessory in MovementAccessory.objects.filter(movimento=self.movimentacao):
-            movement_accessory.soma_quantidade_devolvida(movement_accessory.quantidade)
-        
+            movement_accessory.soma_quantidade_devolvida(
+                movement_accessory.quantidade)
+
         self.mudar_status_movimentacao('reprovar')
         self.save()
 
@@ -488,12 +492,12 @@ class Approval(models.Model):
                     ativo.status = status
                     ativo.save()
                     if status == 'em_estoque':
-                        print(f'DEBUG :: APROVAL :: mudar_status_ativos')
-                        movementAsset = MovementAsset.objects.get(ativo=ativo.id, movimento=self.movimentacao.id)
+                        movementAsset = MovementAsset.objects.get(
+                            ativo=ativo.id, movimento=self.movimentacao.id)
                         movementAsset.marcar_como_devolvido()
-    
+
     def mudar_status_movimentacao(self, status):
-        
+
         movimento = self.movimentacao
 
         if movimento:
@@ -508,6 +512,26 @@ class Approval(models.Model):
             movimento.save()
 
 
+class ConteudoTermo(models.Model):
+    versao = models.CharField(max_length=12, unique=True, editable=False)
+    conteudo = models.TextField()
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    tipo=models.CharField(max_length=100, choices=Movement.TIPOS, default='emprestimo')
+
+    def __str__(self):
+        return f"Termo Versão {self.versao}"
+
+    def save(self, *args, **kwargs):
+        if not self.versao:
+            hoje = datetime.now().strftime('%Y.%m.%d')
+            contador_hoje = ConteudoTermo.objects.filter(
+                versao__startswith=hoje).count() + 1
+            self.versao = f"{hoje}.{contador_hoje}"
+        super().save(*args, **kwargs)
+
+def get_latest_termo_version():
+    return ConteudoTermo.objects.order_by('-data_criacao').first()
+
 class Termo(models.Model):
 
     status_aceite = [
@@ -520,12 +544,22 @@ class Termo(models.Model):
         Movement, on_delete=models.CASCADE, related_name='termo_movimentacao')
     aprovacao = models.ForeignKey(
         Approval, on_delete=models.CASCADE, related_name='approval')
+    conteudo_termo = models.ForeignKey(
+        ConteudoTermo, on_delete=models.PROTECT, related_name='termos', default=get_latest_termo_version
+    )
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_resposta = models.DateTimeField(null=True, blank=True)
     status_resposta = models.BooleanField(default=False)
     aceite_usuario = models.CharField(
         max_length=100, choices=status_aceite, default='pendente')
     justificativa = models.TextField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            conteudo_termo = ConteudoTermo.objects.filter(tipo=self.movimentacao.tipo).latest('versao')
+            if conteudo_termo:
+                self.conteudo_termo = conteudo_termo
+        super().save(*args, **kwargs)
 
     def marcar_como_aceito(self, movimentacao):
         self.status_resposta = True
@@ -554,6 +588,7 @@ class Termo(models.Model):
             movement_accessory.soma_quantidade_devolvida(movement_accessory.quantidade)
 
         self.save()
+
 
 class ReturnTerm(models.Model):
     movimentacao = models.ForeignKey(

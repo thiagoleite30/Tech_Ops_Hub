@@ -11,10 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 
 
-
-
-from apps.tech_assets.models import Asset, AssetInfo, AssetModel, \
-      AssetType, LogonInAsset, Movement, Maintenance, Manufacturer
+from apps.tech_assets.models import *
 
 
 

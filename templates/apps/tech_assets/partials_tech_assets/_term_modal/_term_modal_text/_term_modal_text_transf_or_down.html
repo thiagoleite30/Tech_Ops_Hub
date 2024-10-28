@@ -5,17 +5,8 @@
         <strong>{{movement.usuario.first_name}} {{movement.usuario.last_name}}</strong>, portador da matricula
         <strong>{{ movement.usuario.user_employee.employee.matricula }}</strong>, doravante denominado "USUÁRIO".
     </p>
-
-    <p><strong>2. Confirmação de Recebimento:</strong></p>
-    <p>O USUÁRIO confirma, por meio deste, o recebimento dos ativos transferidos e reconhece sua responsabilidade sobre
-        o uso, manutenção e eventual devolução dos mesmos, conforme aplicável. Em caso de baixa, o USUÁRIO está ciente
-        de que os ativos foram removidos do seu inventário e de suas responsabilidades.</p>
-
-    <p><strong>3. Assinatura e Validação:</strong></p>
-    <p>Este termo é considerado válido a partir do aceite do USUÁRIO, que confirma ter recebido e compreendido todas as
-        condições aqui estabelecidas. A assinatura também serve como comprovação da movimentação dos ativos e da
-        aceitação das responsabilidades associadas.</p>
-
-
-    <p class="text-center mt-5">Data de empréstimo: <strong>{{term.data_criacao}}</strong></p>
+    </br>
+    {{ term.conteudo_termo.conteudo|safe }}
+    </br></br>
+    <p class="text-center mt-5">Data de movimentação: <strong>{{term.data_criacao}}</strong></p>
 </div>
