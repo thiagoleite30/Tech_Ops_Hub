@@ -158,7 +158,10 @@ def index(request):
             'movements' : movements
             }
         
-    termo_pendente = Termo.objects.select_related('movimentacao').filter(aceite_usuario__in=['pendente','pendente_aceite_novos_termos'])
+    termo_pendente = Termo.objects.select_related('movimentacao').filter(
+        aceite_usuario__in=['pendente','pendente_aceite_novos_termos'],
+        movimentacao__usuario=user,
+        )
     context['termo_pendente'] = termo_pendente.first()
 
     return render(request, 'apps/tech_assets/index.html', context)
