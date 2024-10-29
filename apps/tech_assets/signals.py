@@ -42,7 +42,7 @@ def cria_primeira_versao_termo_emprestimo(sender, **kwargs):
     <p>Estou ciente de que, todos os valores de hardware e softwares referentes a depreciação, serão alocadas de acordo com a movimentação dos equipamentos entre áreas. Declaro, ainda, que na qualidade de fiel depositário do equipamento acima descrito, assumo a inteira responsabilidade pela guarda do mesmo e comprometo-me a devolvê-lo em perfeito estado de conservação, após o uso ou por ocasião do rompimento do vínculo empregatício ou rescisão do contrato de prestação de serviços com a AVIVA.</p>
     """
 
-    ConteudoTermo.objects.get_or_create(tipo='emprestimo', conteudo=conteudo)
+    ConteudoTermo.objects.get_or_create(tipo='emprestimo', conteudo=conteudo, publicar=True)
 
 @receiver(post_migrate)
 def cria_primeira_versao_termo_transferencia(sender, **kwargs):
@@ -58,7 +58,7 @@ def cria_primeira_versao_termo_transferencia(sender, **kwargs):
         aceitação das responsabilidades associadas.</p>
     """
 
-    ConteudoTermo.objects.get_or_create(tipo='transferencia', conteudo=conteudo)    
+    ConteudoTermo.objects.get_or_create(tipo='transferencia', conteudo=conteudo, publicar=True)    
 
 
 @receiver(post_migrate)
@@ -75,4 +75,4 @@ def cria_primeira_versao_termo_baixa(sender, **kwargs):
         aceitação das responsabilidades associadas.</p>
     """
 
-    ConteudoTermo.objects.get_or_create(tipo='baixa', conteudo=conteudo)
+    ConteudoTermo.objects.get_or_create(tipo='baixa', conteudo=conteudo, publicar=True)

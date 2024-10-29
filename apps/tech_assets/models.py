@@ -455,7 +455,8 @@ class Approval(models.Model):
         self.mudar_status_movimentacao('aprovar')
         self.save()
 
-        termo = Termo.objects.create(movimentacao=self.movimentacao, aprovacao=self)
+        termo = Termo.objects.create(
+            movimentacao=self.movimentacao, aprovacao=self)
         termo.save()
 
     def reprovar_movimentacao(self):
@@ -519,7 +520,9 @@ class ConteudoTermo(models.Model):
     versao = models.CharField(max_length=12, unique=True, editable=False)
     conteudo = models.TextField()
     data_criacao = models.DateTimeField(auto_now_add=True)
-    tipo=models.CharField(max_length=100, choices=Movement.TIPOS, default='emprestimo')
+    tipo = models.CharField(
+        max_length=100, choices=Movement.TIPOS, default='emprestimo')
+    publicar = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Termo Versão {self.versao}"
@@ -530,17 +533,38 @@ class ConteudoTermo(models.Model):
             contador_hoje = ConteudoTermo.objects.filter(
                 versao__startswith=hoje).count() + 1
             self.versao = f"{hoje}.{contador_hoje}"
+
         super().save(*args, **kwargs)
+
+        if self.publicar:
+            termos = Termo.objects.select_related('movimentacao').filter(
+                    movimentacao__status__in=[
+                        'em_andamento', 'atrasado', 'pendente_aprovacao', 'pendente_entrega'],
+                    movimentacao__tipo=self.tipo
+                )
+
+            termos.update(
+                        aceite_usuario='pendente_aceite_novos_termos',
+                        status_resposta=False
+                    )
+            
+            for termo in termos:
+                termo.conteudo_termo = self
+                print(f'DEBUG :: VALOR AGORA DO TERMO {termo.id} :: {termo.conteudo_termo} ')
+                termo.save()
+
 
 def get_latest_termo_version():
     return ConteudoTermo.objects.order_by('-data_criacao').first()
+
 
 class Termo(models.Model):
 
     status_aceite = [
         ('aceito', 'Aceito'),
         ('pendente', 'Pendente'),
-        ('recusado', 'Recusado')
+        ('recusado', 'Recusado'),
+        ('pendente_aceite_novos_termos', 'Pendente Aceitação de Novos Termos')
     ]
 
     movimentacao = models.ForeignKey(
@@ -560,7 +584,8 @@ class Termo(models.Model):
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         if is_new:
-            conteudo_termo = ConteudoTermo.objects.filter(tipo=self.movimentacao.tipo).latest('versao')
+            conteudo_termo = ConteudoTermo.objects.filter(
+                tipo=self.movimentacao.tipo).latest('versao')
             if conteudo_termo:
                 self.conteudo_termo = conteudo_termo
         super().save(*args, **kwargs)
@@ -573,7 +598,7 @@ class Termo(models.Model):
             movimentacao.status = 'em_andamento'
         elif movimentacao.tipo in ['transferencia', 'baixa']:
             movimentacao.status = 'concluido'
-            
+
         movimentacao.save()
         self.aprovacao.mudar_status_ativos('em_uso', origin_model_term=True)
         self.save()
@@ -588,8 +613,9 @@ class Termo(models.Model):
         self.aprovacao.mudar_status_ativos('em_estoque')
         self.aprovacao.mudar_status_movimentacao('reprovar')
         for movement_accessory in MovementAccessory.objects.filter(movimento=movimentacao):
-            
-            movement_accessory.soma_quantidade_devolvida(movement_accessory.quantidade)
+
+            movement_accessory.soma_quantidade_devolvida(
+                movement_accessory.quantidade)
 
         self.save()
 
