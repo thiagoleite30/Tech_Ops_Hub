@@ -949,7 +949,7 @@ def termo(request, termo_id):
 
 
 @login_required
-@group_required(['Administradores', 'Aprovadores TI', 'Basico'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Aprovadores TI', 'Basico', 'TH', 'Suporte'], redirect_url='zona_restrita')
 def aceita_termo(request, termo_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -988,7 +988,7 @@ def aceita_termo(request, termo_id):
 
 
 @login_required
-@group_required(['Administradores', 'Aprovadores TI', 'Basico'], redirect_url='zona_restrita')
+@group_required(['Administradores', 'Aprovadores TI', 'Basico', 'TH', 'Suporte'], redirect_url='zona_restrita')
 def recusa_termo(request, termo_id):
     if not request.user.is_authenticated:
         return redirect('login')
