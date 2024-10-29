@@ -8,10 +8,22 @@
         -->
         <!--<hr/>-->
         {% include 'apps/tech_assets/partials_tech_assets/_index_content_alerts/_index_content_alerts.html' %}
+
+        {% if termo_pendente %}
+        {% include 'apps/tech_assets/partials_tech_assets/_index_modal_alert/_modal_termo_pendente/_modal_termo_pendente.html' %}
+        {% endif %}
     </div>
-    {%  if termo_pendente %}
-    <h5>Você possui o termo {{termo_pendente}} pendente</h5>
-    {% endif %}
+    
 </main>
 
+<!-- Script para abrir o modal automaticamente -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var myModal = new bootstrap.Modal(document.getElementById('termo_pendente'));
+        myModal.show();
+        console.log("Opções recebidas:", myModal);
+    });
+</script>
+
 {% endblock %}
+

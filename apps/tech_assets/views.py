@@ -83,8 +83,6 @@ def index(request):
 
     if not UserEmployee.objects.filter(user=user).exists():
         return redirect('usuario_nao_autorizado')
-    
-    termo_pendente = Termo.objects.select_related('movimentacao').filter(aceite_usuario='pendente_aceite_novos_termos')
 
     #grupos = ['Move GPOS']
     #if user.groups.filter(name__in=grupos).exists():
@@ -159,8 +157,9 @@ def index(request):
         context = {
             'movements' : movements
             }
-    
-    context['termo_pendente'] = termo_pendente
+        
+    termo_pendente = Termo.objects.select_related('movimentacao').filter(aceite_usuario__in=['pendente','pendente_aceite_novos_termos'])
+    context['termo_pendente'] = termo_pendente.first()
 
     return render(request, 'apps/tech_assets/index.html', context)
 

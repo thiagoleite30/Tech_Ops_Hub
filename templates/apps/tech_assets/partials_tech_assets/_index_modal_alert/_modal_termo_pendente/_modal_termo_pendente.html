@@ -1,0 +1,32 @@
+<!-- Modal -->
+<div class="modal fade" id="termo_pendente" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="termo_pendenteLabel">Pendência de Aceite de Termos</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container mt-5" style="font-size: 12pt;">
+                    {% if termo_pendente.aceite_usuario == 'pendente' %}
+                    <h2 class="fs-5">Empréstimo aprovado e pendente de aceite do usuário:</h2>
+                    <p>Seu pedido de empréstimo de equipamento de TI foi aprovado. Para concluir o processo e liberar o
+                        equipamento, acesse sua conta e confirme a leitura e aceite dos termos do empréstimo.</p>
+                    {% else %}
+                    <h2 class="fs-5">Termos do Empréstimo Atualizados</h2>
+                    <p>
+                        Os termos do seu empréstimo de equipamento de TI foram atualizados. Por favor, revise as
+                        alterações e confirme o aceite para continuar utilizando o equipamento conforme o novo acordo.
+                    </p>
+                    {%endif%}
+                    </br><hr>
+                    <div style="align-items: center; justify-content: center;">
+                        <p style="text-align: center;"><a href="{% url 'termo' termo_pendente.id %}">Clique aqui para
+                                acessar o termo.</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
