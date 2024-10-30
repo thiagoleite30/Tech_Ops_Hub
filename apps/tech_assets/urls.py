@@ -67,5 +67,5 @@ urlpatterns = [
     path('minhas_movimentacoes/', minhas_movimentacoes, name='minhas_movimentacoes'),
     path('aprovacoes_pendentes/',aprovacoes_pendentes, name='aprovacoes_pendentes'),
     path('get_models/', get_models, name='get_models'),
-    path('termo_editor/', termo_editor, name='termo_editor'),
+    path('novo_termo/', novo_termo, name='novo_termo'),
 ]

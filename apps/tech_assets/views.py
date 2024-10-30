@@ -1632,8 +1632,8 @@ def get_models(request):
 
 
 @login_required
-@group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
-def termo_editor(request):
+@group_required(['Administradores'], redirect_url='zona_restrita')
+def novo_termo(request):
     try:
         
         conteudos_termo = ConteudoTermo.objects.all()
