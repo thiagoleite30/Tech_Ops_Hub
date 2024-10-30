@@ -3,10 +3,9 @@ from django.db import connection
 from django.contrib.auth.models import User, Group
 from django.shortcuts import get_object_or_404
 from apps.tech_assets.models import Accessory, Approval, Asset, \
-    AssetModel, Manufacturer, CostCenter, \
+    AssetModel, ConteudoTermo, Manufacturer, CostCenter, \
     AssetType, Location, Maintenance, \
     Movement, MovementAsset, ReturnTerm, Termo
-
 
 
 class LoginForms(forms.Form):
@@ -665,3 +664,20 @@ class CSVUploadForm(forms.Form):
         ),
         required=False
     )
+
+class ConteudoTermoForms(forms.ModelForm):
+    form_name = 'Conteúdo Termo'
+
+    class Meta:
+        model = ConteudoTermo
+        exclude = ['versao',]
+        labels = {
+            'conteudo': 'Conteúdo HTML',
+            'tipo': 'Tipo',
+            'publicar': 'Publicar?',
+        }
+        widgets = {
+            'conteudo': forms.Textarea(attrs={'class': 'form-control', 'required' : True}),
+            'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'publicar': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }

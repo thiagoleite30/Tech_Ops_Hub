@@ -1,17 +1,5 @@
 from django.urls import include, path
-from apps.tech_assets.views import zona_restrita, index, login, logout, cadastro_fabricante, \
-    cadastro_centro_custo, cadastro_tipo_ativo, cadastro_local, \
-    cadastro_manutencao, cadastro_ativo, ativos, novo_movimento, \
-    carrinho, add_carrinho, remove_do_carrinho, cadastro_modelo, \
-    deleta_carrinho, aprovacoes, aprovacao, ativo, concluir_manutencao, \
-    cadastro_ativos_csv, aprova_movimentacao, reprova_movimentacao, \
-    termos, termo, cadastro_acessorio, get_accessory_options, \
-    editar_aprovacao, aceita_termo, recusa_termo, devolucao, \
-    acessorios, editar_acessorio, \
-    fabricantes, editar_fabricante, centros_custo, editar_centro_custo, \
-    locais, editar_local, modelos_ativo, editar_modelo, tipos_ativo, \
-    editar_tipo_ativo, minhas_movimentacoes, aprovacoes_pendentes, get_models, \
-    usuario_nao_autorizado
+from apps.tech_assets.views import *
 
 
 # Lista de endpoints:
@@ -79,4 +67,5 @@ urlpatterns = [
     path('minhas_movimentacoes/', minhas_movimentacoes, name='minhas_movimentacoes'),
     path('aprovacoes_pendentes/',aprovacoes_pendentes, name='aprovacoes_pendentes'),
     path('get_models/', get_models, name='get_models'),
+    path('termo_editor/', termo_editor, name='termo_editor'),
 ]

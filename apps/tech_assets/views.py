@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.urls import resolve, reverse
 from apps.tech_assets.context_processors_add import user_groups_processor
 from apps.tech_assets.filters import AccessoryFilter, ApprovalFilter, AssetFilter, \
-      AssetModelFilter, CostCenterFilter, LocationFilter, ManufacturerFilter, TermoFilter
+    AssetModelFilter, CostCenterFilter, LocationFilter, ManufacturerFilter, TermoFilter
 from apps.tech_assets.models import *
 from django.shortcuts import get_object_or_404, render, redirect
 
@@ -13,7 +13,7 @@ from apps.tech_assets.services import register_logentry, upload_assets, concluir
 from django.contrib.admin.models import ADDITION, CHANGE
 
 from apps.tech_assets.forms import AccessoryForms, ApprovalForms, \
-    AssetModelForms, CSVUploadForm, DynamicAccessoryFormSet, \
+    AssetModelForms, CSVUploadForm, ConteudoTermoForms, DynamicAccessoryFormSet, \
     MovementForms, AssetForms, MaintenanceForms, \
     LocationForms, ManufacturerForms, CostCenterForms, \
     AssetTypeForms, ReturnTermForms, TermoForms, LoginForms
@@ -27,6 +27,7 @@ from apps.tech_persons.models import UserEmployee
 from utils.decorators import group_required
 from django.contrib import messages, auth
 from django.conf import settings
+
 
 def login(request):
 
@@ -84,8 +85,8 @@ def index(request):
     if not UserEmployee.objects.filter(user=user).exists():
         return redirect('usuario_nao_autorizado')
 
-    #grupos = ['Move GPOS']
-    #if user.groups.filter(name__in=grupos).exists():
+    # grupos = ['Move GPOS']
+    # if user.groups.filter(name__in=grupos).exists():
     #    return redirect('move_gpos')
 
     if not user.groups.count() == 1 or not user.groups.filter(name='Basico').exists():
@@ -155,13 +156,13 @@ def index(request):
         print(f'DEBUG :: MOVEMENTS :: {movements}')
 
         context = {
-            'movements' : movements
-            }
-        
+            'movements': movements
+        }
+
     termo_pendente = Termo.objects.select_related('movimentacao').filter(
-        aceite_usuario__in=['pendente','pendente_aceite_novos_termos'],
+        aceite_usuario__in=['pendente', 'pendente_aceite_novos_termos'],
         movimentacao__usuario=user,
-        )
+    )
     context['termo_pendente'] = termo_pendente.first()
 
     return render(request, 'apps/tech_assets/index.html', context)
@@ -930,8 +931,8 @@ def termo(request, termo_id):
         else:
             print(f'Formulário inválido')
 
-
-    conteudo_termo = ConteudoTermo.objects.filter(tipo=movimentacao.tipo).latest('versao')
+    conteudo_termo = ConteudoTermo.objects.filter(
+        tipo=movimentacao.tipo).latest('versao')
 
     context = {
         'form': form,
@@ -1462,7 +1463,7 @@ def editar_tipo_ativo(request, id):
     if objeto:
         if request.method == 'POST':
             form = AssetTypeForms(request.POST, request.FILES, instance=objeto)
-
+            
             if form.is_valid():
                 if form.has_changed():
                     register_logentry(instance=form.save(), action=CHANGE,
@@ -1628,3 +1629,37 @@ def get_models(request):
         asset_model_list = list(asset_model_queryset.values('id', 'nome'))
 
         return JsonResponse(asset_model_list, safe=False)
+
+
+@login_required
+@group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
+def termo_editor(request):
+    try:
+        
+        conteudos_termo = ConteudoTermo.objects.all()
+        
+        if request.method == 'POST':
+            form = ConteudoTermoForms(request.POST)
+            if form.is_valid():
+                conteudo = request.POST.get('conteudo')
+                tipo = request.POST.get('tipo')
+                publicar = 'publicar' in request.POST
+                print("Conteúdo recebido:", conteudo)
+                instance=form.save()
+                register_logentry(instance=instance, action=ADDITION,
+                                      user=request.user, modificacao=f'Novo termo de {instance.tipo} registrado com sucesso.')
+                messages.success(request, f'Novo termo de {instance.tipo} versão {instance.versao} registrado com sucesso.')
+            else:
+                print(form.errors)
+        
+        else:
+            form = ConteudoTermoForms()
+
+        context = {
+            'form': form,
+        }
+
+    except Exception as e:
+        print(f'ERROR :: TERMO EDITOR VIEW :: {e}')
+
+    return render(request, 'apps/tech_assets/termo_editor.html', context)
