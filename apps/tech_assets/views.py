@@ -1649,8 +1649,11 @@ def novo_termo(request):
                 register_logentry(instance=instance, action=ADDITION,
                                       user=request.user, modificacao=f'Novo termo de {instance.tipo} registrado com sucesso.')
                 messages.success(request, f'Novo termo de {instance.tipo} versão {instance.versao} registrado com sucesso.')
+
+                return redirect('novo_termo')
             else:
-                print(form.errors)
+                messages.error(request, f'form.errors')
+                return redirect('novo_termo')
         
         else:
             form = ConteudoTermoForms()
@@ -1662,4 +1665,4 @@ def novo_termo(request):
     except Exception as e:
         print(f'ERROR :: TERMO EDITOR VIEW :: {e}')
 
-    return render(request, 'apps/tech_assets/termo_editor.html', context)
+    return render(request, 'apps/tech_assets/novo_termo.html', context)
