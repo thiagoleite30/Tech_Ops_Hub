@@ -31,7 +31,7 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 DEBUG = os.getenv('DEBUG_VAR', 'False') == 'True'
 
 ALLOWED_HOSTS = ['10.94.1.49', 'localhost',
-                 '127.0.0.1', 'techopshub-test.aviva.com.br']
+                 '127.0.0.1', 'techopshub-test.aviva.com.br', 'techopshub.aviva.com.br']
 
 # Definindo o caminho/registro da aplicação
 # Por ser desenvolvimento então
