@@ -121,7 +121,7 @@ def requisicao_troca(request):
             posIMEI = posNumber['MacAddress']
 
             json = {
-                "posNumber": f'POS {posNumber['PosNumber']}',
+                "posNumber": f'POS {posNumber["PosNumber"]}',
                 "posIMEI": posIMEI,
                 "newPDV": newPDV.nome,
                 "oldPDV": oldPDV.nome,

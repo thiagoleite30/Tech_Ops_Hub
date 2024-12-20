@@ -22,7 +22,7 @@ def upload_gpos(df):
     df.dropna(subset=['Loja', 'Id', 'MacAddress',
               'PosNumber', 'PDV'], inplace=True)
     for index, row in df.iterrows():
-        print(f'GPOS : {row['ID_GPOS']}')
+        print(f'GPOS : {row["ID_GPOS"]}')
         tipo, created = AssetType.objects.get_or_create(nome='GPOS')
 
         fabricante, created = Manufacturer.objects.get_or_create(nome='Gertec')
