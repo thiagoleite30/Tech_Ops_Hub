@@ -83,8 +83,8 @@ def index(request):
     if not user.is_authenticated:
         return redirect('login')
 
-    #if not UserEmployee.objects.filter(user=user).exists():
-    #    return redirect('usuario_nao_autorizado')
+    if not UserEmployee.objects.filter(user=user).exists():
+        return redirect('usuario_nao_autorizado')
 
     # grupos = ['Move GPOS']
     # if user.groups.filter(name__in=grupos).exists():
