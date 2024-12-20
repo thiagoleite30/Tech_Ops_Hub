@@ -177,6 +177,7 @@ DATABASES = {
 # Configurações Mongo
 MONGO_HOST = str(os.getenv('MONGO_HOST'))
 MONGO_DB = str(os.getenv('MONGO_DB'))
+MONGO_COLLECTION_TECH_ASSETS = str(os.getenv('MONGO_COLLECTION_TECH_ASSETS'))
 
 # Configurações Staging
 

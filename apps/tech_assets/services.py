@@ -17,7 +17,7 @@ from django.conf import settings
 
 client = MongoClient(f'{settings.MONGO_HOST}')
 db = client[f'{settings.MONGO_DB}']
-collection = db['dsv_tech_ops_hub_tech_assets_asset_info'] # type: ignore
+collection = db[f'{settings.MONGO_COLLECTION_TECH_ASSETS}']
 
 def insert_one_mgdb(document):
     try:
