@@ -1,7 +1,10 @@
 import os
 import base64
+import traceback
 import requests
 import pandas as pd
+from pymongo import MongoClient
+from bson.objectid import ObjectId
 from allauth.socialaccount.models import SocialAccount, SocialToken
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.models import LogEntry, ADDITION, \
@@ -9,11 +12,45 @@ from django.contrib.admin.models import LogEntry, ADDITION, \
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
-
-
 from apps.tech_assets.models import *
+from django.conf import settings
 
+client = MongoClient(f'{settings.MONGO_HOST}')
+db = client[f'{settings.MONGO_DB}']
+collection = db['dsv_tech_ops_hub_tech_assets_asset_info'] # type: ignore
 
+def insert_one_mgdb(document):
+    try:
+        #print(f'DEBUG :: DOCUMENT :: {document}\n\n')
+        result = collection.insert_one(document)
+    except Exception as e:
+        print(f"""Insert One MGDB :: Erro inesperado ao processar: {e}""")
+        print(traceback.format_exc())
+        return -1
+    return result.inserted_id
+
+def update_one_mgdb(query, document):
+    try:
+        #print(f'DEBUG :: DOCUMENT :: {document}\n\n')
+        result = collection.update_one(query, document, upsert=True)
+    except Exception as e:
+        print(f"""Update One MGDB :: Erro inesperado ao processar: {e}""")
+        print(traceback.format_exc())
+        return -1
+    return result.upserted_id
+
+def find_one_mgdb(query):
+    try:
+        #print(f'DEBUG :: DOCUMENT :: {document}\n\n')
+        result = collection.find_one(query)
+    except Exception as e:
+        print(f"""Find One MGDB :: Erro inesperado ao processar: {e}""")
+        print(traceback.format_exc())
+        return -1
+    return result
+
+def find_mgbd():
+    pass
 
 def register_logentry(instance, action, **kwargs):
     usuario = kwargs.get('user', None)
@@ -158,7 +195,7 @@ def concluir_manutencao_service(asset_id, user):
         return True
     return False
 
-
+'''
 def upload_assets(csv_file):
     df = pd.read_csv(csv_file, sep=';')
     df = df[df['numero_serie'].notna() & (df['numero_serie'] != '')]
@@ -239,9 +276,98 @@ def upload_assets(csv_file):
         except Exception as e:
             print(f"""Erro inesperado ao processar '{
                   row['modelo']}' ativo {ativo.id}: {e}""")
+'''
+
+#O mongo não consegue ligar com valor NaT ou NaN
+def clean_document(document):
+    for key, value in document.items():
+        #Se o valor for NaT substitui por None
+        if isinstance(value, pd._libs.tslibs.nattype.NaTType):
+            document[key] = None
+        #Se o valor for Timestamp com fuso horário, converta para datetime sem fuso horário
+        elif isinstance(value, pd.Timestamp):
+            document[key] = value.to_pydatetime() if pd.notna(value) else None
+        #Se o valor for NaN substitui por None
+        elif pd.isna(value):
+            document[key] = None
+    return document
+
+def upload_assets_mongo(csv_file, **kwargs):
+    df = pd.read_csv(csv_file, sep=';')
+    df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+    df = df[df['numero_serie'].notna() & (df['numero_serie'] != '')]
+    df.dropna(subset=['numero_serie', 'nome', 'tipo', 'modelo'], inplace=True)
+    filtered_df = df[df['nome'].str.match(r'(?i)^(RQR|CDS|RQE)')]
+    df = filtered_df.reset_index(drop=True)
+    try:
+        # Processamento das datas
+        df['data_instalacao_so'] = pd.to_datetime(df['data_instalacao_so'], format='%m/%d/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
+        df['data_instalacao_so'] = df['data_instalacao_so'].dt.tz_convert('America/Sao_Paulo')
+        df['data_garantia'] = pd.to_datetime(df['data_garantia'], format='%m/%d/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
+        df['data_garantia'] = df['data_garantia'].dt.tz_convert('America/Sao_Paulo')
+        df['ultimo_logon'] = pd.to_datetime(df['ultimo_logon'], format='%m/%d/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
+        df['ultimo_logon'] = df['ultimo_logon'].dt.tz_convert('America/Sao_Paulo')
+        df['ultimo_scan'] = pd.to_datetime(df['ultimo_scan'], format='%m/%d/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
+        df['ultimo_scan'] = df['ultimo_scan'].dt.tz_convert('America/Sao_Paulo')
+    except Exception as e:
+        print(f'Erro ao converter informações de data!')
+
+    # Criando os assets, assetinfo (no banco Mongo), modelo, tipos e fabricantes
+    for index, row in df.iterrows():
+        #print(f'DEBUG :: ATIVO :: {row['nome']}')
+        tipo, _ = AssetType.objects.get_or_create(nome=row['tipo'] if row['tipo'] else 'Undefined')
+
+        fabricante, _ = Manufacturer.objects.get_or_create(nome=row['fabricante'] if row['fabricante'] else 'Undefined')
+
+        modelo, _ = AssetModel.objects.update_or_create(nome=row['modelo'] if row['modelo'] else 'Undefined', defaults={'tipo': tipo, 'fabricante': fabricante})
+
+        # Criando os objetos Asset e AssetInfo, tipos e fabricantes
+        try:
+            ativo, created = Asset.objects.update_or_create(
+                numero_serie=row['numero_serie'],
+                defaults={
+                    'nome': row['nome'],
+                    'tipo': tipo,
+                    'modelo': modelo,
+                }
+            )
+
+            document = row.to_dict()
+
+            if created:
+                mongo_id = insert_one_mgdb(clean_document(document))
+                
+                if mongo_id != -1:
+                    ativo.mongo_id = mongo_id
+                    ativo.save()
+            else:
+                novo_valor = {}
+                novo_valor['$set'] = clean_document(document)
+                mongo_id = update_one_mgdb(query={'_id' : ObjectId(f'{ativo.mongo_id}')}, document=novo_valor)
+            
+
+            User = get_user_model()
+
+            if User.objects.filter(username=row['username']).exists():
+                user_logon = User.objects.get(username=row['username'])
+            else:
+                user_logon = None
 
 
-def read_file():
-    full_path = os.path.join(r'\\10.94.1.49\Thiago',r'web50repecef7965a477415281b850050f8b6615 (5).csv')
-    df = pd.read_csv(full_path, sep=';')
-    print(df)
+            logon_in_asset, created = LogonInAsset.objects.get_or_create(
+                ativo=ativo,
+                data_logon=row['ultimo_logon'],
+                defaults={
+                    'user': user_logon,
+                    'user_name': row['username'],
+                    'data_logon': row['ultimo_logon'] if row['ultimo_logon'] else None,
+                }
+            )
+
+        except IntegrityError as e:
+            # Ignora o erro e continua o fluxo
+            print(f"""Erro ao criar o tipo '{row['modelo']}': {e}""")
+        except Exception as e:
+            print(f"""Erro inesperado ao processar '{
+                  row['modelo']}' ativo {ativo.id}: {e}""")
+            print(traceback.format_exc())

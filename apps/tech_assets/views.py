@@ -1,4 +1,5 @@
 import traceback
+from bson import ObjectId
 from django.utils import timezone
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -9,7 +10,7 @@ from apps.tech_assets.filters import AccessoryFilter, ApprovalFilter, AssetFilte
 from apps.tech_assets.models import *
 from django.shortcuts import get_object_or_404, render, redirect
 
-from apps.tech_assets.services import register_logentry, upload_assets, concluir_manutencao_service
+from apps.tech_assets.services import register_logentry, find_one_mgdb, concluir_manutencao_service, upload_assets_mongo
 from django.contrib.admin.models import ADDITION, CHANGE
 
 from apps.tech_assets.forms import AccessoryForms, ApprovalForms, \
@@ -82,8 +83,8 @@ def index(request):
     if not user.is_authenticated:
         return redirect('login')
 
-    if not UserEmployee.objects.filter(user=user).exists():
-        return redirect('usuario_nao_autorizado')
+    #if not UserEmployee.objects.filter(user=user).exists():
+    #    return redirect('usuario_nao_autorizado')
 
     # grupos = ['Move GPOS']
     # if user.groups.filter(name__in=grupos).exists():
@@ -474,7 +475,8 @@ def ativo(request, asset_id):
         return redirect('login')
 
     asset = get_object_or_404(Asset, pk=asset_id)
-    asset_infos = AssetInfo.objects.filter(ativo=asset).first()
+    #asset_infos = AssetInfo.objects.filter(ativo=asset).first()
+    asset_infos = find_one_mgdb(query={'_id' : ObjectId(f'{asset.mongo_id}')})
     maintenances = Maintenance.objects.filter(
         ativo_id=asset_id).select_related('ativo')
     ultimo_logon = LogonInAsset.objects.filter(
@@ -1128,7 +1130,7 @@ def cadastro_ativos_csv(request):
         form = CSVUploadForm(request.POST, request.FILES)
         if form.is_valid():
             csv_file = request.FILES['csv_file']
-            upload_assets(csv_file, request.user)
+            upload_assets_mongo(csv_file)
 
     context = {
         'form': form,

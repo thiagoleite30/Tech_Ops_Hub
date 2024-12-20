@@ -2,7 +2,7 @@ import pandas as pd
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from apps.tech_api.api.serializers import FileUploadSerializer
-from apps.tech_assets.services import upload_assets
+from apps.tech_assets.services import upload_assets_mongo
 
 
 class FileUploadViewSet(viewsets.ModelViewSet):
@@ -19,7 +19,7 @@ class FileUploadViewSet(viewsets.ModelViewSet):
                 return Response({'error': 'Nenhum arquivo enviado'}, status=status.HTTP_400_BAD_REQUEST)
             
             try:
-                upload_assets(file)
+                upload_assets_mongo(file)
                 #df = pd.read_csv(file, sep=';')
 
                 #print(df)

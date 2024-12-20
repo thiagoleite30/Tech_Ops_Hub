@@ -174,12 +174,15 @@ DATABASES = {
     }
 }
 
+# Configurações Mongo
+MONGO_HOST = str(os.getenv('MONGO_HOST'))
+MONGO_DB = str(os.getenv('MONGO_DB'))
+
 # Configurações Staging
 
 TNS_NAME=str(os.getenv('TNS_NAME'))
 STAGING_USER=str(os.getenv('STAGING_USER'))
 STAGING_PASSWORD=str(os.getenv('STAGING_PASSWORD'))
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

@@ -6,7 +6,7 @@ from django.contrib import messages
 import pandas as pd
 import requests
 
-from apps.tech_assets.models import Asset, AssetInfo, AssetModel, AssetType, Location, LogonInAsset, Manufacturer
+from apps.tech_assets.models import Asset, AssetModel, AssetType, Location, LogonInAsset, Manufacturer
 from apps.move_gpos.models import GPOS, Request
 from apps.move_gpos.TopDesk.TopDesk import TopDesk
 from apps.tech_assets.services import register_logentry

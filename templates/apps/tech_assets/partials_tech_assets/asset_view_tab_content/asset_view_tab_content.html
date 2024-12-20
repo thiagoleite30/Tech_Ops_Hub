@@ -23,28 +23,15 @@
 </div>
 <div class="tab-pane fade" id="info" role="tabpanel" aria-labelledby="info-tab">
     <div class="card-header">
-        <h5 class="card-title">{{asset_infos}}</h5>
+        <h5 class="card-title">{{ asset_infos.nome }}</h5>
     </div>
     <div class="card h-100" style="margin-top: 10px; margin-bottom: 10px;">
         <ul class="list-group list-group-flush" style="text-align: start;">
-            <li class="list-group-item"><b>Fabricante:</b> {{asset_infos.fabricante}}</li>
-            <li class="list-group-item"><b>Modelo:</b> {{asset.modelo}}</li>
-            <li class="list-group-item"><b>MAC:</b> {{asset_infos.endereco_mac}}</li>
-            <li class="list-group-item"><b>Memória:</b> {{asset_infos.memoria}}</li>
-            <li class="list-group-item"><b>HD:</b> {{asset_infos.armazenamento}}</li>
-            <li class="list-group-item"><b>Processador:</b> {{ asset_infos.processador }}</li>
-            <li class="list-group-item"><b>Plataforma:</b> {{ asset_infos.plataforma }}</li>
-            <li class="list-group-item"><b>Versão Plataforma:</b> {{ asset_infos.versao_plataforma }}</li>
-            <li class="list-group-item"><b>Licenciamento Plataforma:</b> {{ asset_infos.licenca_plataforma }}</li>
-
-            <li class="list-group-item"><b>Data de Instalação do SO:</b> {{asset_infos.data_instalacao_plataforma}}
-            </li>
-            <li class="list-group-item"><b>Fim de Garantia:</b> {{ asset_infos.data_garantia }}</li>
-            <li class="list-group-item">
-                <b>Último Logon: </b>
-                {{ asset_infos.ultimo_logon }} (usuário: {{ ultimo_logon.user_name }})
-            </li>
-            <li class="list-group-item"><b>Último Scan Lansweeper:</b> {{asset_infos.ultimo_scan}}</li>
+            {% for key, value in asset_infos.items %}
+                <li class="list-group-item">
+                    <b>{{ key|title }}:</b> {{ value }}
+                </li>
+            {% endfor %}
         </ul>
     </div>
 </div>

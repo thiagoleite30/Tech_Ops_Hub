@@ -8,7 +8,7 @@ from django.contrib import messages
 from apps.move_gpos.forms import RequestForms
 from apps.move_gpos.models import GPOS, Request
 from apps.move_gpos.services import dispara_fluxo, dispara_fluxo_debug
-from apps.tech_assets.models import AssetInfo, Location
+from apps.tech_assets.models import Location
 from apps.tech_assets.services import register_logentry
 from allauth.account.decorators import verified_email_required
 from django.contrib.auth.decorators import login_required

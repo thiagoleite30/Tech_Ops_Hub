@@ -122,6 +122,7 @@ class Asset(models.Model):
         Location, on_delete=models.SET_NULL, max_length=100, blank=True, null=True)
     modelo = models.ForeignKey(
         AssetModel, on_delete=models.SET_NULL, null=True, blank=True)
+    mongo_id = models.CharField(max_length=100, unique=True, null=True)
 
     class Meta:
         verbose_name = 'Ativo'
@@ -134,10 +135,10 @@ class Asset(models.Model):
         is_new = self.pk is None
         super(Asset, self).save(*args, **kwargs)
 
-        if is_new:
-            AssetInfo.objects.get_or_create(ativo=self)
+        #if is_new:
+        #    AssetInfo.objects.get_or_create(ativo=self)
 
-
+'''
 class AssetInfo(models.Model):
     ativo = models.ForeignKey(
         Asset, on_delete=models.CASCADE, related_name='assetinfo')
@@ -160,7 +161,7 @@ class AssetInfo(models.Model):
 
     def __str__(self):
         return f'{self.ativo.nome}'
-
+'''
 
 class LogonInAsset(models.Model):
     user = models.ForeignKey(
