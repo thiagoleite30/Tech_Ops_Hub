@@ -22,6 +22,7 @@ def upload_gpos(df):
     df.dropna(subset=['Loja', 'Id', 'MacAddress',
               'PosNumber', 'PDV'], inplace=True)
     for index, row in df.iterrows():
+        print(f'GPOS : {row['ID_GPOS']}')
         tipo, created = AssetType.objects.get_or_create(nome='GPOS')
 
         fabricante, created = Manufacturer.objects.get_or_create(nome='Gertec')
@@ -45,7 +46,6 @@ def upload_gpos(df):
 
             if created:
                 mongo_id = insert_one_mgdb(clean_document(document))
-                
                 if mongo_id != -1:
                     ativo.mongo_id = mongo_id
                     ativo.save()
@@ -53,14 +53,6 @@ def upload_gpos(df):
                 novo_valor = {}
                 novo_valor['$set'] = clean_document(document)
                 mongo_id = update_one_mgdb(query={'_id' : ObjectId(f'{ativo.mongo_id}')}, document=novo_valor)
-            
-
-            User = get_user_model()
-
-            if User.objects.filter(username=row['username']).exists():
-                user_logon = User.objects.get(username=row['username'])
-            else:
-                user_logon = None
 
             # Crie ou atualize o GPOS
             gpos, created = GPOS.objects.update_or_create(

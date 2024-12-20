@@ -16,6 +16,7 @@ from django.db.models import Exists, OuterRef, Q, Case, \
     When, Value, IntegerField
 from django.core.paginator import Paginator
 from utils.decorators import group_required
+from apps.tech_assets.services import find_one_mgdb
 
 # Create your views here.
 
@@ -115,17 +116,21 @@ def requisicao_troca(request):
             instance.existe_novo_pdv = gpos.filter(
                 pdv=newPDV, pos_number=posNumber.pos_number).exists()
 
+            posNumber = find_one_mgdb(query={'PosNumber' : 1004})
 
-            posIMEI = posNumber.ativo.assetinfo.get().endereco_mac
+            posIMEI = posNumber['MacAddress']
+
             json = {
-                "posNumber": f'POS {posNumber.pos_number}',
+                "posNumber": f'POS {posNumber['PosNumber']}',
                 "posIMEI": posIMEI,
                 "newPDV": newPDV.nome,
                 "oldPDV": oldPDV.nome,
                 "posHaveInNewPDV": instance.existe_novo_pdv,
-                "posTypeId": 1 if posNumber.is_mac else 0,
+                "posTypeId": 1 if ':' in posNumber['MacAddress'] else 0,
                 "chamado": ""
             }
+
+            print(f'\n\nJSON :: {json}')
 
             response = dispara_fluxo(request, json)
             instance.chamado = response[1] if response else None
