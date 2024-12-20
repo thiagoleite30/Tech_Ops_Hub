@@ -1,4 +1,5 @@
 import time
+from bson import ObjectId
 from django.db import IntegrityError
 from django.utils import timezone
 
@@ -9,7 +10,7 @@ import requests
 from apps.tech_assets.models import Asset, AssetModel, AssetType, Location, LogonInAsset, Manufacturer
 from apps.move_gpos.models import GPOS, Request
 from apps.move_gpos.TopDesk.TopDesk import TopDesk
-from apps.tech_assets.services import register_logentry
+from apps.tech_assets.services import update_one_mgdb, insert_one_mgdb, clean_document
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -29,7 +30,7 @@ def upload_gpos(df):
             nome=row['PDV'], defaults={'local_pai': loja})
         try:
             # Se não existir, crie o Asset o save() do asset já cria o AssetInfo
-            ativo, _ = Asset.objects.update_or_create(
+            ativo, created = Asset.objects.update_or_create(
                 nome=row['ID_GPOS'],
                 defaults={
                     'numero_serie': row['MacAddress'],
@@ -40,15 +41,26 @@ def upload_gpos(df):
                 ativo.localizacao = pdv
                 ativo.save()
 
-            ativo_info = AssetInfo.objects.update_or_create(
-                ativo=ativo,
-                defaults={
-                    'fabricante': fabricante,
-                    'endereco_mac': row['MacAddress'],
-                    'ultimo_logon': timezone.make_aware(row['DATA_ULTIMO_LOGON']) if not pd.isna(row['DATA_ULTIMO_LOGON']) else None,
-                    'ultimo_scan': timezone.now()
-                }
-            )
+            document = row.to_dict()
+
+            if created:
+                mongo_id = insert_one_mgdb(clean_document(document))
+                
+                if mongo_id != -1:
+                    ativo.mongo_id = mongo_id
+                    ativo.save()
+            else:
+                novo_valor = {}
+                novo_valor['$set'] = clean_document(document)
+                mongo_id = update_one_mgdb(query={'_id' : ObjectId(f'{ativo.mongo_id}')}, document=novo_valor)
+            
+
+            User = get_user_model()
+
+            if User.objects.filter(username=row['username']).exists():
+                user_logon = User.objects.get(username=row['username'])
+            else:
+                user_logon = None
 
             # Crie ou atualize o GPOS
             gpos, created = GPOS.objects.update_or_create(
