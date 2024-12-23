@@ -25,7 +25,7 @@ from django.db.models import Exists, OuterRef, Q, Case, \
     When, Value, IntegerField, F
 from django.core.paginator import Paginator
 from apps.tech_persons.models import UserEmployee
-from utils.decorators import group_required
+from utils.decorators import employee_required, group_required
 from django.contrib import messages, auth
 from django.conf import settings
 
@@ -77,14 +77,13 @@ def usuario_nao_autorizado(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte', 'Basico', 'Move GPOS', 'TH'], redirect_url='zona_restrita')
 def index(request):
     user = request.user
     if not user.is_authenticated:
         return redirect('login')
 
-    if not UserEmployee.objects.filter(user=user).exists():
-        return redirect('usuario_nao_autorizado')
 
     # grupos = ['Move GPOS']
     # if user.groups.filter(name__in=grupos).exists():
@@ -170,6 +169,7 @@ def index(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_fabricante(request):
     if not request.user.is_authenticated:
@@ -194,6 +194,7 @@ def cadastro_fabricante(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_modelo(request):
     if not request.user.is_authenticated:
@@ -218,6 +219,7 @@ def cadastro_modelo(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_acessorio(request):
     if not request.user.is_authenticated:
@@ -242,6 +244,7 @@ def cadastro_acessorio(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_centro_custo(request):
     if not request.user.is_authenticated:
@@ -266,6 +269,7 @@ def cadastro_centro_custo(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_tipo_ativo(request):
     if not request.user.is_authenticated:
@@ -290,8 +294,8 @@ def cadastro_tipo_ativo(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
-# @group_required('Admin', redirect_url='zona_restrita')
 def cadastro_local(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -314,6 +318,7 @@ def cadastro_local(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_manutencao(request, asset_id):
     if not request.user.is_authenticated:
@@ -347,6 +352,7 @@ def cadastro_manutencao(request, asset_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def concluir_manutencao(request, asset_id):
     if not request.user.is_authenticated:
@@ -358,6 +364,7 @@ def concluir_manutencao(request, asset_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def cadastro_ativo(request):
     if not request.user.is_authenticated:
@@ -382,6 +389,7 @@ def cadastro_ativo(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def get_accessory_options(request):
     options = list(Accessory.objects.all().values('id'))
@@ -393,6 +401,7 @@ def get_accessory_options(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def novo_movimento(request):
     if not request.user.is_authenticated:
@@ -436,6 +445,7 @@ def novo_movimento(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def ativos(request):
     assets = Asset.objects.select_related('tipo').all()
@@ -469,6 +479,7 @@ def ativos(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def ativo(request, asset_id):
     if not request.user.is_authenticated:
@@ -514,6 +525,7 @@ def ativo(request, asset_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def carrinho(request):
     user_instance = request.user
@@ -551,6 +563,7 @@ def carrinho(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def add_carrinho(request, asset_id):
     user_instance = request.user
@@ -574,6 +587,7 @@ def add_carrinho(request, asset_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def remove_do_carrinho(request, asset_id):
     user_instance = request.user
@@ -598,6 +612,7 @@ def remove_do_carrinho(request, asset_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def deleta_carrinho(request):
     user_instance = request.user
@@ -619,6 +634,7 @@ def deleta_carrinho(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Aprovadores TI', 'Administradores', 'Suporte'], redirect_url='zona_restrita')
 def aprovacoes(request):
     user_instance = request.user
@@ -677,6 +693,7 @@ def aprovacoes(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Aprovadores TI'], redirect_url='zona_restrita')
 def aprovacao(request, aprovacao_id):
     if not request.user.is_authenticated:
@@ -722,6 +739,7 @@ def aprovacao(request, aprovacao_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Suporte', 'Administradores', 'Aprovadores TI'], redirect_url='zona_restrita')
 def editar_aprovacao(request, aprovacao_id):
     if not request.user.is_authenticated:
@@ -765,6 +783,7 @@ def editar_aprovacao(request, aprovacao_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Aprovadores TI'], redirect_url='zona_restrita')
 def aprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
@@ -791,6 +810,7 @@ def aprova_movimentacao(request, aprovacao_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Aprovadores TI'], redirect_url='zona_restrita')
 def reprova_movimentacao(request, aprovacao_id):
     if not request.user.is_authenticated:
@@ -819,6 +839,7 @@ def reprova_movimentacao(request, aprovacao_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte', 'TH'], redirect_url='zona_restrita')
 def termos(request):
     user_instance = request.user
@@ -878,6 +899,7 @@ def termos(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte', 'TH', 'Basico'], redirect_url='zona_restrita')
 def termo(request, termo_id):
     if not request.user.is_authenticated:
@@ -952,6 +974,7 @@ def termo(request, termo_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Aprovadores TI', 'Basico', 'TH', 'Suporte'], redirect_url='zona_restrita')
 def aceita_termo(request, termo_id):
     if not request.user.is_authenticated:
@@ -991,6 +1014,7 @@ def aceita_termo(request, termo_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Aprovadores TI', 'Basico', 'TH', 'Suporte'], redirect_url='zona_restrita')
 def recusa_termo(request, termo_id):
     if not request.user.is_authenticated:
@@ -1030,6 +1054,7 @@ def recusa_termo(request, termo_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte', 'TH'], redirect_url='zona_restrita')
 def devolucao(request, termo_id):
     if not request.user.is_authenticated:
@@ -1120,6 +1145,7 @@ def devolucao(request, termo_id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores'], redirect_url='zona_restrita')
 def cadastro_ativos_csv(request):
     if not request.user.is_authenticated:
@@ -1141,6 +1167,7 @@ def cadastro_ativos_csv(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def acessorios(request):
     if not request.user.is_authenticated:
@@ -1167,6 +1194,7 @@ def acessorios(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_acessorio(request, id):
     if not request.user.is_authenticated:
@@ -1200,6 +1228,7 @@ def editar_acessorio(request, id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def fabricantes(request):
     if not request.user.is_authenticated:
@@ -1225,6 +1254,7 @@ def fabricantes(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_fabricante(request, id):
     if not request.user.is_authenticated:
@@ -1258,6 +1288,7 @@ def editar_fabricante(request, id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def centros_custo(request):
     if not request.user.is_authenticated:
@@ -1284,6 +1315,7 @@ def centros_custo(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_centro_custo(request, id):
     if not request.user.is_authenticated:
@@ -1316,6 +1348,7 @@ def editar_centro_custo(request, id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def locais(request):
     if not request.user.is_authenticated:
@@ -1341,6 +1374,7 @@ def locais(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_local(request, id):
     if not request.user.is_authenticated:
@@ -1371,6 +1405,7 @@ def editar_local(request, id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def modelos_ativo(request):
     if not request.user.is_authenticated:
@@ -1397,6 +1432,7 @@ def modelos_ativo(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_modelo(request, id):
     if not request.user.is_authenticated:
@@ -1429,6 +1465,7 @@ def editar_modelo(request, id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def tipos_ativo(request):
     if not request.user.is_authenticated:
@@ -1455,6 +1492,7 @@ def tipos_ativo(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores', 'Suporte'], redirect_url='zona_restrita')
 def editar_tipo_ativo(request, id):
     if not request.user.is_authenticated:
@@ -1487,6 +1525,7 @@ def editar_tipo_ativo(request, id):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Basico', 'Suporte', 'Administradores', 'Aprovadores TI', 'TH'], redirect_url='zona_restrita')
 def minhas_movimentacoes(request):
     if not request.user.is_authenticated:
@@ -1551,6 +1590,7 @@ def minhas_movimentacoes(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Basico', 'Suporte', 'Administradores', 'Aprovadores TI', 'TH'], redirect_url='zona_restrita')
 def aprovacoes_pendentes(request):
     if not request.user.is_authenticated:
@@ -1610,6 +1650,7 @@ def aprovacoes_pendentes(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def get_type(request):
     asset_type_queryset = AssetType.objects.all()
@@ -1618,6 +1659,7 @@ def get_type(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def get_models(request):
     asset_model_list = []
@@ -1634,6 +1676,7 @@ def get_models(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Administradores'], redirect_url='zona_restrita')
 def novo_termo(request):
     try:

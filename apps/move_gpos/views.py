@@ -15,13 +15,14 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef, Q, Case, \
     When, Value, IntegerField
 from django.core.paginator import Paginator
-from utils.decorators import group_required
+from utils.decorators import employee_required, group_required
 from apps.tech_assets.services import find_one_mgdb
 
 # Create your views here.
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def move_gpos(request):
 
@@ -29,6 +30,7 @@ def move_gpos(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def get_pdvs(request):
     pdvs_list = []
@@ -70,6 +72,7 @@ def get_pdvs(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def get_gpos(request):
     gpos_queryset = GPOS.objects.filter(
@@ -90,6 +93,7 @@ def get_gpos(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def requisicao_troca(request):
     if not request.user.is_authenticated:
@@ -157,6 +161,7 @@ def requisicao_troca(request):
 
 
 @login_required
+@employee_required(redirect_url='usuario_nao_autorizado')
 @group_required(['Suporte', 'Move GPOS', 'Administradores'], redirect_url='zona_restrita')
 def solicitacoes(request):
     if not request.user.is_authenticated:
