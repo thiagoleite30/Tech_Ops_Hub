@@ -1,6 +1,6 @@
 from django.urls import include, path
 from apps.tech_assets.views import *
-
+from django.views.generic import TemplateView
 
 # Lista de endpoints:
 urlpatterns = [

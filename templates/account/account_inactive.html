@@ -1,0 +1,32 @@
+
+{% load i18n %}
+{% load allauth %}
+
+{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/login.css' %}">
+    <title>TechOps Hub</title>
+</head>
+
+<body>
+
+    <main>
+
+        <div class="login-card">
+            <h1><img alt="" width="32" height="32" class="rounded-circle me-2"
+                    src="{% static 'assets/info_user.svg' %}"/> Ops... usuário desativado!</h1>
+            <p>Seu usuário encontra-se desativado. Favor entrar em contato com o Suporte para saber mais.</p>
+            <p style="text-align: center;"><a href="{% url 'login' %}">Clique aqui para sair</a></p>
+        </div>
+
+    </main>
+</body>
+
+</html>
+{% endblock content %}

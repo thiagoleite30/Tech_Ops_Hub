@@ -44,10 +44,12 @@ def login(request):
                 password=senha
             )
             if usuario is not None:
-                auth.login(request, usuario)
-                return redirect('index')
+                if usuario.is_active:
+                    auth.login(request, usuario)
+                    return redirect('index')
             else:
                 form.add_error(None, "Usuário ou senha inválidos.")
+
     else:
         form = LoginForms
 
@@ -81,6 +83,9 @@ def usuario_nao_autorizado(request):
 @group_required(['Administradores', 'Suporte', 'Basico', 'Move GPOS', 'TH'], redirect_url='zona_restrita')
 def index(request):
     user = request.user
+    if not user.is_active:
+        print(f'Usuário inativo!')
+        return redirect('usuario_nao_autorizado')
     if not user.is_authenticated:
         return redirect('login')
 

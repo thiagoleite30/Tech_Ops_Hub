@@ -27,6 +27,11 @@ def employee_required(redirect_url=None):
             if not UserEmployee.objects.filter(user=user).exists():
                 return redirect(redirect_url)
             else:
+                userEmp = UserEmployee.objects.get(user=user)
+                if userEmp.employee.situacao == 'Demitido':
+                    user.is_active = False
+                    user.save()
+                    return redirect(redirect_url)
                 return view_func(request, *args, **kwargs)
         return _wrapped_view
     return decorator

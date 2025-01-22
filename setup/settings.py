@@ -280,7 +280,7 @@ SOCIALACCOUNT_STORE_TOKENS = True  # Para que o model guarde o social token
 LOGIN_URL = str(os.getenv('URL_REDIRECT_POSLOGOUT'))
 
 LOGIN_REDIRECT_URL = '/'  # ou a URL para onde deseja redirecionar após o login
-
+ACCOUNT_INACTIVE_REDIRECT_URL = '/usuario_desativado/'
 # Altera o comportamento de, após login social do provedor, ir para uma tela padrão do Allauth. Vai direto pro URL definido acima
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
