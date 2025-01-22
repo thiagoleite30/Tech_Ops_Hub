@@ -297,29 +297,44 @@ def upload_assets_mongo(csv_file, **kwargs):
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     df = df[df['numero_serie'].notna() & (df['numero_serie'] != '')]
     df.dropna(subset=['numero_serie', 'nome', 'tipo', 'modelo'], inplace=True)
-    filtered_df = df[df['nome'].str.match(r'(?i)^(RQR|CDS|RQE)')]
-    df = filtered_df.reset_index(drop=True)
+    #filtered_df = df[df['nome'].str.match(r'(?i)^(RQR|CDS|RQE)')]
+    #df = filtered_df.reset_index(drop=True)
+    colunas_datas = ['data_instalacao_so', 'data_garantia', 'ultimo_logon', 'ultimo_scan']
+
     try:
-        # Processamento das datas
-        df['data_instalacao_so'] = pd.to_datetime(df['data_instalacao_so'], format='%m/%d/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
-        df['data_instalacao_so'] = df['data_instalacao_so'].dt.tz_convert('America/Sao_Paulo')
-        df['data_garantia'] = pd.to_datetime(df['data_garantia'], format='%m/%d/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
-        df['data_garantia'] = df['data_garantia'].dt.tz_convert('America/Sao_Paulo')
-        df['ultimo_logon'] = pd.to_datetime(df['ultimo_logon'], format='%m/%d/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
-        df['ultimo_logon'] = df['ultimo_logon'].dt.tz_convert('America/Sao_Paulo')
-        df['ultimo_scan'] = pd.to_datetime(df['ultimo_scan'], format='%m/%d/%Y %I:%M:%S %p %z', errors='coerce', utc=True)
-        df['ultimo_scan'] = df['ultimo_scan'].dt.tz_convert('America/Sao_Paulo')
+        for coluna in colunas_datas:
+            if coluna in df.columns:
+                df[coluna] = pd.to_datetime(
+                    df[coluna], 
+                    format='%m/%d/%Y %I:%M:%S %p %z', 
+                    errors='coerce', 
+                    utc=True
+                )
+                df[coluna] = df[coluna].dt.tz_convert('America/Sao_Paulo')
     except Exception as e:
-        print(f'Erro ao converter informações de data!')
+        print(f'Erro ao converter informações de data: {e}')
 
     # Criando os assets, assetinfo (no banco Mongo), modelo, tipos e fabricantes
     for index, row in df.iterrows():
         #print(f'DEBUG :: ATIVO :: {row['nome']}')
-        tipo, _ = AssetType.objects.get_or_create(nome=row['tipo'] if row['tipo'] else 'Undefined')
+        tipo, _ = AssetType.objects.get_or_create(nome__iexact=row['tipo'] if row['tipo'] else 'Undefined')
 
-        fabricante, _ = Manufacturer.objects.get_or_create(nome=row['fabricante'] if row['fabricante'] else 'Undefined')
+        fabricante, _ = Manufacturer.objects.get_or_create(nome__iexact=row['fabricante'] if row['fabricante'] else 'Undefined')
 
-        modelo, _ = AssetModel.objects.update_or_create(nome=row['modelo'] if row['modelo'] else 'Undefined', defaults={'tipo': tipo, 'fabricante': fabricante})
+        modelo, _ = AssetModel.objects.get_or_create(nome__iexact=row['modelo'] if row['modelo'] else 'Undefined')
+
+
+        if modelo:
+            modelo.tipo = tipo
+            modelo.fabricante = fabricante
+            modelo.save()
+        """else:
+            modelo = AssetModel.objects.create(
+                nome = row['modelo'] if row['modelo'] else 'Undefined',
+                tipo = tipo,
+                fabricante = fabricante
+            )"""
+
 
         # Criando os objetos Asset e AssetInfo, tipos e fabricantes
         try:
@@ -345,24 +360,25 @@ def upload_assets_mongo(csv_file, **kwargs):
                 novo_valor['$set'] = clean_document(document)
                 mongo_id = update_one_mgdb(query={'_id' : ObjectId(f'{ativo.mongo_id}')}, document=novo_valor)
             
+            # Verifica se o CSV passado tem a coluna 'username'
+            if 'username' in df.columns:
+            
+                User = get_user_model()
+            
+                if User.objects.filter(username=row['username']).exists():
+                    user_logon = User.objects.get(username=row['username'])
+                else:
+                    user_logon = None
 
-            User = get_user_model()
-
-            if User.objects.filter(username=row['username']).exists():
-                user_logon = User.objects.get(username=row['username'])
-            else:
-                user_logon = None
-
-
-            logon_in_asset, created = LogonInAsset.objects.get_or_create(
-                ativo=ativo,
-                data_logon=row['ultimo_logon'],
-                defaults={
-                    'user': user_logon,
-                    'user_name': row['username'],
-                    'data_logon': row['ultimo_logon'] if row['ultimo_logon'] else None,
-                }
-            )
+                logon_in_asset, created = LogonInAsset.objects.get_or_create(
+                    ativo=ativo,
+                    data_logon=row['ultimo_logon'],
+                    defaults={
+                        'user': user_logon,
+                        'user_name': row['username'],
+                        'data_logon': row['ultimo_logon'] if row['ultimo_logon'] else None,
+                    }
+                )
 
         except IntegrityError as e:
             # Ignora o erro e continua o fluxo
