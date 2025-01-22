@@ -314,76 +314,77 @@ def upload_assets_mongo(csv_file, **kwargs):
     except Exception as e:
         print(f'Erro ao converter informações de data: {e}')
 
-    # Criando os assets, assetinfo (no banco Mongo), modelo, tipos e fabricantes
-    for index, row in df.iterrows():
-        #print(f'DEBUG :: ATIVO :: {row['nome']}')
-        tipo, _ = AssetType.objects.get_or_create(nome__iexact=row['tipo'] if row['tipo'] else 'Undefined')
+    try:
+        # Criando os assets, assetinfo (no banco Mongo), modelo, tipos e fabricantes
+        for index, row in df.iterrows():
+            #print(f'DEBUG :: ATIVO :: {row['nome']}')
+            tipo, _ = AssetType.objects.get_or_create(nome__iexact=row['tipo'] if row['tipo'] else 'Undefined')
 
-        fabricante, _ = Manufacturer.objects.get_or_create(nome__iexact=row['fabricante'] if row['fabricante'] else 'Undefined')
+            fabricante, _ = Manufacturer.objects.get_or_create(nome__iexact=row['fabricante'] if row['fabricante'] else 'Undefined')
 
-        modelo, _ = AssetModel.objects.get_or_create(nome__iexact=row['modelo'] if row['modelo'] else 'Undefined')
-
-
-        if modelo:
-            modelo.tipo = tipo
-            modelo.fabricante = fabricante
-            modelo.save()
-        """else:
-            modelo = AssetModel.objects.create(
-                nome = row['modelo'] if row['modelo'] else 'Undefined',
-                tipo = tipo,
-                fabricante = fabricante
-            )"""
+            modelo = AssetModel.objects.filter(nome__iexact=row['modelo'] if row['modelo'] else 'Undefined').first()
 
 
-        # Criando os objetos Asset e AssetInfo, tipos e fabricantes
-        try:
-            ativo, created = Asset.objects.update_or_create(
-                numero_serie=row['numero_serie'],
-                defaults={
-                    'nome': row['nome'],
-                    'tipo': tipo,
-                    'modelo': modelo,
-                }
-            )
-
-            document = row.to_dict()
-
-            if created:
-                mongo_id = insert_one_mgdb(clean_document(document))
-                
-                if mongo_id != -1:
-                    ativo.mongo_id = mongo_id
-                    ativo.save()
+            if modelo:
+                modelo.tipo = tipo
+                modelo.fabricante = fabricante
+                modelo.save()
             else:
-                novo_valor = {}
-                novo_valor['$set'] = clean_document(document)
-                mongo_id = update_one_mgdb(query={'_id' : ObjectId(f'{ativo.mongo_id}')}, document=novo_valor)
-            
-            # Verifica se o CSV passado tem a coluna 'username'
-            if 'username' in df.columns:
-            
-                User = get_user_model()
-            
-                if User.objects.filter(username=row['username']).exists():
-                    user_logon = User.objects.get(username=row['username'])
-                else:
-                    user_logon = None
+                modelo = AssetModel.objects.create(
+                    nome = row['modelo'] if row['modelo'] else 'Undefined',
+                    tipo = tipo,
+                    fabricante = fabricante
+                )
 
-                logon_in_asset, created = LogonInAsset.objects.get_or_create(
-                    ativo=ativo,
-                    data_logon=row['ultimo_logon'],
+
+            # Criando os objetos Asset e AssetInfo, tipos e fabricantes
+            
+                ativo, created = Asset.objects.update_or_create(
+                    numero_serie=row['numero_serie'],
                     defaults={
-                        'user': user_logon,
-                        'user_name': row['username'],
-                        'data_logon': row['ultimo_logon'] if row['ultimo_logon'] else None,
+                        'nome': row['nome'],
+                        'tipo': tipo,
+                        'modelo': modelo,
                     }
                 )
 
-        except IntegrityError as e:
-            # Ignora o erro e continua o fluxo
-            print(f"""Erro ao criar o tipo '{row['modelo']}': {e}""")
-        except Exception as e:
-            print(f"""Erro inesperado ao processar '{
+                document = row.to_dict()
+
+                if created:
+                    mongo_id = insert_one_mgdb(clean_document(document))
+                    
+                    if mongo_id != -1:
+                        ativo.mongo_id = mongo_id
+                        ativo.save()
+                else:
+                    novo_valor = {}
+                    novo_valor['$set'] = clean_document(document)
+                    mongo_id = update_one_mgdb(query={'_id' : ObjectId(f'{ativo.mongo_id}')}, document=novo_valor)
+                
+                # Verifica se o CSV passado tem a coluna 'username'
+                if 'username' in df.columns:
+                
+                    User = get_user_model()
+                
+                    if User.objects.filter(username=row['username']).exists():
+                        user_logon = User.objects.get(username=row['username'])
+                    else:
+                        user_logon = None
+
+                    logon_in_asset, created = LogonInAsset.objects.get_or_create(
+                        ativo=ativo,
+                        data_logon=row['ultimo_logon'],
+                        defaults={
+                            'user': user_logon,
+                            'user_name': row['username'],
+                            'data_logon': row['ultimo_logon'] if row['ultimo_logon'] else None,
+                        }
+                    )
+
+    except IntegrityError as e:
+        # Ignora o erro e continua o fluxo
+        print(f"""Erro ao criar o tipo '{row['modelo']}': {e}""")
+    except Exception as e:
+        print(f"""Erro inesperado ao processar '{
                   row['modelo']}' ativo {ativo.id}: {e}""")
-            print(traceback.format_exc())
+        print(traceback.format_exc())
