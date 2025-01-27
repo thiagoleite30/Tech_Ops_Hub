@@ -66,8 +66,8 @@ class ListingUsers(UserAdmin):
 
 class ListingMaintenance(admin.ModelAdmin):
     list_display = ('id', 'ativo__nome', 'operador', 'chamado_top_desk', 'chamado_externo', 'dias_atraso', 'status')
-    list_display_links = ('id', 'ativo__nome')
-    search_fields = ('id', 'ativo__nome', 'operador', 'chamado_top_desk')
+    list_display_links = ('id', 'ativo__nome',)
+    search_fields = ('id', 'chamado_top_desk', 'ativo__nome__icontains',)
     list_filter = ('tipo_manutencao', 'status',)
     list_per_page = 20
 
@@ -75,27 +75,28 @@ class ListingMaintenance(admin.ModelAdmin):
 class ListingAssetCart(admin.ModelAdmin):
     list_display = ('carrinho__usuario_sessao', 'ativo__nome')
     list_display_links = ('carrinho__usuario_sessao',)
-    search_fields = ('carrinho__usuario_sessao', 'ativo__nome')
+    search_fields = ('ativo__nome__icontains',)
     list_per_page = 20
     actions = ['delete_selected']
 
+
 class ListingAsset(admin.ModelAdmin):
     list_display = ('id', 'nome', 'patrimonio', 'numero_serie')
-    search_fields = ('id', 'nome', 'patrimonio', 'numero_serie', 'modelo')
+    search_fields = ('id', 'nome', 'patrimonio', 'numero_serie', 'operador__nome__icontains', 'modelo__nome__icontains',)
     list_filter = ('modelo', 'tipo')
     list_per_page = 20
 
 
 class ListingMovement(admin.ModelAdmin):
     list_display = ('id', 'tipo', 'usuario', 'status')
-    search_fields = ('id', 'tipo', 'usuario')
+    search_fields = ('id', 'tipo', 'usuario__username__icontains',)
     list_filter = ('tipo', 'status',)
     list_per_page = 20
 
 
 class ListingMovementAsset(admin.ModelAdmin):
     list_display = ('ativo__nome', 'movimento__id', 'devolvido')
-    search_fields = ('movimento__id', 'ativo__nome')
+    search_fields = ('ativo__nome__icontains', 'movimento__id',)
     list_filter = ('devolvido',)
     list_per_page = 20
 
